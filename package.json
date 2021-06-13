@@ -1,5 +1,5 @@
 {
-  "name": "liquidx-mem-ts",
+  "name": "liquidx-mem",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -24,6 +24,7 @@
   "devDependencies": {
     "@types/jest": "^26.0.23",
     "@types/lodash": "^4.14.170",
+    "@types/luxon": "^1.27.0",
     "@typescript-eslint/eslint-plugin": "^4.26.1",
     "@typescript-eslint/parser": "^4.26.1",
     "@vue/cli-plugin-babel": "~4.5.13",
