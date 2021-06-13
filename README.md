@@ -1,34 +1,19 @@
-# liquidx-mem-ts
+A structured note-taking service that is designed to simple.
 
-## Project setup
-```
-npm install
-```
+The goal is to have a generalized storage that is easy to add to,
+expanding to many different types of data, and facilitating visualizing
+and recalling easily.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+The input is to be as simple as possible, using only text.
 
-### Compiles and minifies for production
-```
-npm run build
-```
+The data is stored in Firebase Firestore as a flat list and all processing
+is done using Firebase Functions or in the browser.
 
-### Run your unit tests
-```
-npm run test:unit
-```
+# Setup
 
-### Run your end-to-end tests
-```
-npm run test:e2e
-```
+Instructions to set up for yourself is still work in progress, but the basics are:
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+1. Setup a Firebase project with Firestore, Hosting and Functions enabled.
+   a. Run firebase init and select the above.
+   b. Overwrite .firebaserc to use your firebase project.
+2. Create a [service account](https://firebase.google.com/docs/admin/setup) for Firebase/Google by following the instructions.
