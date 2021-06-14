@@ -1,14 +1,26 @@
 <template>
   <div class="home">
     <header>
-      <a href="/">#mem</a>
+      <h1><a href="/">#mem</a></h1>
 
-      <!-- <div v-show="notSignedIn" class="signin">
-        <input type="email" class="email" name="email" placeholder="email" />
-        <input type="password" class="password" name="password" />
-        <a href="#" class="signinButton" @click="signIn">Sign In</a>
+      <div v-show="!user" class="signin">
+        <input
+          type="email"
+          v-model="signInEmail"
+          class="email"
+          name="email"
+          placeholder="email"
+        />
+        <input
+          type="password"
+          v-model="signInPassword"
+          class="password"
+          name="password"
+        />
+        <button class="signin-button" @click="signIn">Sign In</button>
       </div>
-    <div v-if="!notSignedIn" v-show="!notSignedIn">Signed in as {{ user.email }}</div> -->
+
+      <div v-if="user" v-show="user">Signed in as {{ user.email }}</div>
     </header>
     <main>
       <div class="add">
@@ -37,12 +49,21 @@
 
   header {
     width: 200px;
+    margin-top: 50px;
     max-height: 100vh;
     flex-grow: none;
 
     display: flex;
     flex-direction: column;
-    justify-content: center;
+
+    h1 {
+      font-size: 1.2rem;
+    }
+
+    .signin-button {
+      color: white;
+      background: black;
+    }
   }
 }
 
@@ -89,28 +110,50 @@ import { parseText } from "../../functions/core/parser";
   },
 })
 export default class Home extends Vue {
+  // Typescript declarations.
+  $firebase: any; // firebase.app.App
+
+  // Vue data
   mems: Mem[] = [];
   rawInput = "";
-  // user = null;
+  user: firebase.User | null = null;
+  signInEmail = "";
+  signInPassword = "";
 
-  // mounted() {
-  //   this.$firebase.auth().setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
-  //   this.$firebase.auth().onAuthStateChanged((user) => {
-  //     // https://firebase.google.com/docs/reference/js/firebase.User
-  //     this.user = user;
-  //     console.log('Signed in user:', this.user);
-  //   });
-  // }
+  mounted(): void {
+    // this.$firebase
+    //   .auth()
+    //   .setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
+    this.$firebase.auth().onAuthStateChanged((user: firebase.User) => {
+      this.user = user;
+      console.log("Signed in user:", this.user);
+    });
+  }
 
-  // get signedIn() : boolean {
-  //   return !!this.user;
-  // }
+  get signedIn(): boolean {
+    return !!this.user;
+  }
 
   get orderMems(): Mem[] {
     const mems = this.mems.map((o: Mem) => {
       return Object.assign(o, { addedDate: o.added ? o.added.toDate() : null });
     });
     return orderBy(mems, ["added"], ["desc"]);
+  }
+
+  signIn(): void {
+    this.$firebase
+      .auth()
+      .signInWithEmailAndPassword(this.signInEmail, this.signInPassword)
+      .then((userCredential: firebase.auth.UserCredential) => {
+        console.log("signed in", userCredential);
+        this.user = userCredential.user;
+      })
+      .catch((error: { code: any; message: any }) => {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.log(errorCode, errorMessage);
+      });
   }
 
   memsCollection(): firebase.firestore.CollectionReference<firebase.firestore.DocumentData> {
