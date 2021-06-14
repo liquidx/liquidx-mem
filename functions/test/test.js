@@ -1,5 +1,4 @@
 // End to end tests for Firebase Functions.
-
 const fetch = require("make-fetch-happen");
 const FormData = require("form-data");
 
@@ -17,13 +16,27 @@ const testQuery = () => {
     });
 };
 
+const testJsonWrongSecret = () => {
+  fetch("http://localhost:5001/liquidx-mem/asia-northeast1/add", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({ text: testData, secret: "wrongSecret" })
+  })
+    .then(response => response.text())
+    .then(response => {
+      console.log(response);
+    });
+};
+
 const testJson = () => {
   fetch("http://localhost:5001/liquidx-mem/asia-northeast1/add", {
     method: "POST",
     headers: {
       "content-type": "application/json"
     },
-    body: JSON.stringify({ text: testData })
+    body: JSON.stringify({ text: testData, secret: "shibainu" })
   })
     .then(response => response.text())
     .then(response => {
