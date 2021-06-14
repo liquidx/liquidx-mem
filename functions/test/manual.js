@@ -38,7 +38,7 @@ const testJson = () => {
     headers: {
       "content-type": "application/json"
     },
-    body: JSON.stringify({ text: testData, secret: "shibainu" })
+    body: JSON.stringify({ text: testData, secret: "akita-inu" })
   })
     .then(response => response.text())
     .then(response => {
