@@ -12,11 +12,14 @@
   "engines": {
     "node": "14"
   },
-  "main": "lib/index.js",
+  "main": "dist/src/index.js",
   "dependencies": {
     "cors": "^2.8.5",
+    "firebase": "^8.6.7",
     "firebase-admin": "^9.9.0",
     "firebase-functions": "^3.11.0",
+    "form-data": "^4.0.0",
+    "make-fetch-happen": "^9.0.2",
     "url-regex": "^5.0.0"
   },
   "devDependencies": {

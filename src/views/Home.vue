@@ -2,6 +2,13 @@
   <div class="home">
     <header>
       <a href="/">#mem</a>
+
+      <!-- <div v-show="notSignedIn" class="signin">
+        <input type="email" class="email" name="email" placeholder="email" />
+        <input type="password" class="password" name="password" />
+        <a href="#" class="signinButton" @click="signIn">Sign In</a>
+      </div>
+    <div v-if="!notSignedIn" v-show="!notSignedIn">Signed in as {{ user.email }}</div> -->
     </header>
     <main>
       <div class="add">
@@ -23,6 +30,22 @@
 </template>
 
 <style lang="scss" scoped>
+.home {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+
+  header {
+    width: 200px;
+    max-height: 100vh;
+    flex-grow: none;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
 .add {
   display: flex;
   flex-direction: column;
@@ -53,9 +76,9 @@ import MemRow from "@/components/MemRow.vue";
 
 import firebase from "firebase/app";
 import orderBy from "lodash/orderBy";
-import { db } from "../db";
-import { Mem } from "../../core/mems";
-import { parseText } from "../../core/parser";
+import { db } from "../firebase";
+import { Mem } from "../../functions/core/mems";
+import { parseText } from "../../functions/core/parser";
 
 @Component({
   components: {
@@ -68,8 +91,20 @@ import { parseText } from "../../core/parser";
 export default class Home extends Vue {
   mems: Mem[] = [];
   rawInput = "";
-  addUrl = "";
-  addNote = "";
+  // user = null;
+
+  // mounted() {
+  //   this.$firebase.auth().setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
+  //   this.$firebase.auth().onAuthStateChanged((user) => {
+  //     // https://firebase.google.com/docs/reference/js/firebase.User
+  //     this.user = user;
+  //     console.log('Signed in user:', this.user);
+  //   });
+  // }
+
+  // get signedIn() : boolean {
+  //   return !!this.user;
+  // }
 
   get orderMems(): Mem[] {
     const mems = this.mems.map((o: Mem) => {

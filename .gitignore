@@ -2,7 +2,7 @@
 .firebase/
 node_modules/
 
-/dist
+dist/
 
 /tests/e2e/videos/
 /tests/e2e/screenshots/
@@ -28,10 +28,6 @@ ui-debug.log*
 *.njsproj
 *.sln
 *.sw?
-
-# Compiled JavaScript files
-functions/lib/**/*.js
-functions/lib/**/*.js.map
 
 # TypeScript v1 declaration files
 functions/typings/

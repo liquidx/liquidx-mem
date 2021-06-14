@@ -13,7 +13,8 @@ const firebaseConfig = {
 };
 
 // Get a Firestore instance
-export const db = firebase.initializeApp(firebaseConfig).firestore();
+export const firebaseApp = firebase.initializeApp(firebaseConfig);
+export const db = firebaseApp.firestore();
 
 // Export types that exists in Firestore
 // This is not always necessary, but it's used in other examples

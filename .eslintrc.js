@@ -16,7 +16,8 @@ module.exports = {
     "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off"
   },
   ignorePatterns: [
-    "functions/lib/**/*" // Ignore built files.
+    "functions/dist/**/*", // Ignore built files.
+    "functions/tests/*"
   ],
   overrides: [
     {

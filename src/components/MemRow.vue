@@ -44,7 +44,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { Mem } from "../../core/mems";
+import { Mem } from "../../functions/core/mems";
 import { DateTime } from "luxon";
 
 @Component
