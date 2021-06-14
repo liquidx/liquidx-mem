@@ -16,7 +16,10 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites": [
+    "rewrites": [{
+        "source": "/api/add",
+        "function": "add"
+      },
       {
         "source": "**",
         "destination": "/index.html"

@@ -11,7 +11,7 @@ import { firestoreAdd } from "../core/firestore-add";
 //const corsAllowOrigin = cors({ origin: true });
 
 export const add = functions
-  .region("us-central1")
+  .region("us-central1") // Must use us-central1 if using firebase.json:rewrites. :sadge:
   .https.onRequest(async (request, response) => {
     functions.logger.debug("request.original.url", request.originalUrl);
     functions.logger.debug("request.body", request.body);
