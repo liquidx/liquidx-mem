@@ -7,6 +7,9 @@ import {
 } from "../core/firestore-user-secrets";
 import { firestoreAdd } from "../core/firestore-add";
 
+// Initialize firebase app.
+const firebaseApp = admin.initializeApp();
+
 //import cors from "cors";
 //const corsAllowOrigin = cors({ origin: true });
 
@@ -29,8 +32,7 @@ export const add = functions
       return;
     }
 
-    admin.initializeApp();
-    const db = admin.firestore();
+    const db = firebaseApp.firestore();
     const userId = await userForSharedSecret(db, secret);
 
     if (!userId || userId === USER_NOT_FOUND) {
@@ -44,7 +46,9 @@ export const add = functions
       return;
     }
 
-    mem.addedMs = admin.firestore.Timestamp.fromDate(new Date()).toMillis();
+    mem.addedMs = firebaseApp.firestore.Timestamp.fromDate(
+      new Date()
+    ).toMillis();
     functions.logger.debug("mem", mem);
 
     firestoreAdd(db, userId, mem)
