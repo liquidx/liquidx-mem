@@ -19,7 +19,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import firebase from "firebase/app";
 import { db } from "../firebase";
-import { Mem } from "../../functions/core/mems";
+import { Mem, memFromJson } from "../../functions/core/mems";
 
 @Component({
   components: {},
@@ -87,7 +87,11 @@ export default class Home extends Vue {
   async finishImport(): Promise<void> {
     console.log(this.importMems);
     for (const mem of this.importMems) {
-      await this.memsCollection().add(mem);
+      if (mem.id) {
+        await this.memsCollection().doc(mem.id).set(mem);
+      } else {
+        await this.memsCollection().add(mem);
+      }
     }
   }
 
@@ -102,7 +106,10 @@ export default class Home extends Vue {
         const reader = new FileReader();
         reader.onload = () => {
           if (reader.result) {
-            this.importMems = JSON.parse(reader.result.toString());
+            this.importMems = JSON.parse(reader.result.toString()).map(
+              (o: Mem) => memFromJson(o)
+            );
+            console.log(this.importMems);
           }
         };
         reader.readAsText(file);

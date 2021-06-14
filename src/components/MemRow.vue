@@ -75,11 +75,11 @@ export default class MemRow extends Vue {
   }
 
   get prettyDate(): string {
-    if (!this.mem.added) {
+    if (!this.mem.addedMs) {
       return "";
     }
 
-    const date = this.mem.added.toDate();
+    const date = new Date(this.mem.addedMs);
     return DateTime.fromJSDate(date).toFormat("yyyy-MM-dd hh:mm");
   }
 }

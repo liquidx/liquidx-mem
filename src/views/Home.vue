@@ -111,9 +111,6 @@ import { parseText } from "../../functions/core/parser";
   components: {
     MemRow,
   },
-  firestore: {
-    mems: db.collection("users").doc("1").collection("mems"),
-  },
 })
 export default class Home extends Vue {
   // Typescript declarations.
@@ -132,6 +129,7 @@ export default class Home extends Vue {
     //   .setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
     this.$firebase.auth().onAuthStateChanged((user: firebase.User) => {
       this.user = user;
+      this.$bind("mems", this.memsCollection());
       console.log("Signed in user:", this.user);
     });
   }
@@ -141,10 +139,7 @@ export default class Home extends Vue {
   }
 
   get orderMems(): Mem[] {
-    const mems = this.mems.map((o: Mem) => {
-      return Object.assign(o, { addedDate: o.added ? o.added.toDate() : null });
-    });
-    return orderBy(mems, ["added"], ["desc"]);
+    return orderBy(this.mems, ["addedMs"], ["desc"]);
   }
 
   signIn(): void {
@@ -171,7 +166,8 @@ export default class Home extends Vue {
 
   addNewMem(): void {
     const mem = parseText(this.rawInput);
-    mem.added = firebase.firestore.Timestamp.fromDate(new Date());
+    // TODO: Probably there's a better way to get milliseconds?
+    mem.addedMs = firebase.firestore.Timestamp.fromDate(new Date()).toMillis();
     this.memsCollection()
       .add(mem)
       .then(() => {

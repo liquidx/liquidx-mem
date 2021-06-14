@@ -44,7 +44,7 @@ export const add = functions
       return;
     }
 
-    mem.added = admin.firestore.Timestamp.fromDate(new Date());
+    mem.addedMs = admin.firestore.Timestamp.fromDate(new Date()).toMillis();
     functions.logger.debug("mem", mem);
 
     firestoreAdd(db, userId, mem)
