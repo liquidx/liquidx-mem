@@ -62,7 +62,6 @@ section p {
 
 header {
   font-size: 1.0rem;
-  min-height: 4rem;
   overflow-x: scroll;
   .sep {
     padding: 0 0.5rem;
@@ -131,11 +130,11 @@ img.oneup {
 }
 
 header {
-  padding: 4rem 4rem 2rem 4rem;
+  padding: 2rem;
 }
 
 header.mini {
-  padding: 4rem 4rem 1rem 4rem;
+  padding: 1rem;
   min-height: auto;
 }
 

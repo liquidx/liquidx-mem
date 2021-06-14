@@ -1,8 +1,5 @@
 <template>
   <div class="mem" :title="mem.id">
-    <div class="controls">
-      <a href="#" @click.prevent="$emit('delete', mem)">❌</a>
-    </div>
     <div class="contents">
       <div class="title">
         <a :href="mem.url" target="_blank">
@@ -12,6 +9,11 @@
       <div v-if="mem.note" class="note">{{ mem.note }}</div>
       <div class="date">{{ prettyDate }}</div>
     </div>
+    <div class="controls">
+      <a href="#" @click.prevent="$emit('delete', mem)"
+        ><span class="material-icons md-18">&#xE872;</span></a
+      >
+    </div>
   </div>
 </template>
 
@@ -19,15 +21,22 @@
 .mem {
   margin: 0.5rem 0;
   padding: 0.5rem 1rem;
-  border: 1px solid rgb(240, 240, 240);
 
   display: flex;
   flex-direction: row;
 
+  .contents {
+    flex-grow: 1;
+  }
+
   .controls {
     width: 2rem;
+    flex-grow: 0;
+    .material-icons {
+      color: rgba(0, 0, 0, 0.5);
+    }
     a {
-      border: none;
+      text-decoration: none;
     }
   }
 

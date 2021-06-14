@@ -48,10 +48,11 @@
   min-height: 100vh;
 
   header {
-    width: 200px;
+    flex-grow: 0;
+    width: 150px;
+    min-width: 150px;
     margin-top: 50px;
     max-height: 100vh;
-    flex-grow: none;
 
     display: flex;
     flex-direction: column;
@@ -65,6 +66,10 @@
       background: black;
     }
   }
+
+  main {
+    flex-grow: 1;
+  }
 }
 
 .add {
@@ -73,7 +78,6 @@
   width: 40rem;
   padding: 1rem 1rem;
   margin: 1rem 0;
-  border: 1px solid rgb(240, 240, 240);
 
   h2 {
   }
@@ -81,8 +85,10 @@
   input,
   textarea {
     font-family: inherit;
-    padding: 0.2rem 0.5rem;
+    padding: 0.5rem 0.5rem;
     margin: 0.2rem 0;
+    border-radius: 10px;
+    border: 1px solid rgb(240, 240, 240);
   }
 
   textarea {
