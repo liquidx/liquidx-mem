@@ -4,6 +4,10 @@ node_modules/
 
 dist/
 
+# credentials
+credentials-*.json
+
+
 /tests/e2e/videos/
 /tests/e2e/screenshots/
 
