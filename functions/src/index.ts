@@ -1,43 +1,59 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { parseText } from "../core/parser";
+import {
+  userForSharedSecret,
+  USER_NOT_FOUND
+} from "../core/firestore-user-secrets";
+import { firestoreAdd } from "../core/firestore-add";
 
 //import cors from "cors";
 //const corsAllowOrigin = cors({ origin: true });
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
 export const add = functions
-  .region("asia-northeast1")
-  .https.onRequest((request, response) => {
+  .region("us-central1")
+  .https.onRequest(async (request, response) => {
     functions.logger.debug("request.original.url", request.originalUrl);
     functions.logger.debug("request.body", request.body);
     //return corsAllowOrigin(request, response, () => {
     const text = request.query.text || request.body.text || "";
+    const secret = request.query.secret || request.body.secret || "";
 
     if (!text) {
-      response.status(500).send("Error: Text parameter not found");
+      response.status(500).send("Error: 'text' parameter not found");
+      return;
+    }
+
+    if (!secret) {
+      response.status(500).send("Error: 'secret' parameter not found");
+      return;
+    }
+
+    admin.initializeApp();
+    const db = admin.firestore();
+    const userId = await userForSharedSecret(db, secret);
+
+    if (!userId || userId === USER_NOT_FOUND) {
+      response.status(403).send("Error: Permission denied.");
       return;
     }
 
     const mem = parseText(text.toString());
     if (!mem) {
-      response.status(500).send("Error: Invalid data");
+      response.status(500).send("Error: Invalid data.");
       return;
     }
 
     mem.added = admin.firestore.Timestamp.fromDate(new Date());
     functions.logger.debug("mem", mem);
 
-    admin.initializeApp();
-    const db = admin.firestore();
-    db.collection("users")
-      .doc("1")
-      .collection("mems")
-      .add(mem)
+    firestoreAdd(db, userId, mem)
       .then(() => {
         response.send("OK");
+      })
+      .catch(err => {
+        functions.logger.error(err);
+        response.send(`Error saving: ${err}`);
       });
     //});
   });
