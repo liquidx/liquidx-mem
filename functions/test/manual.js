@@ -2,12 +2,14 @@
 const fetch = require("make-fetch-happen");
 const FormData = require("form-data");
 
-const testData = "https://liquidx.net/ #test";
+//const server = 'http://localhost:5001/liquidx-mem/asia-northeast1';
+const server = "https://liquidx-mem.web.app/api";
+const testData = "https://liquidx.net/ This is a #test";
 
 const testQuery = () => {
   const data = encodeURIComponent(testData);
 
-  fetch(`http://localhost:5001/liquidx-mem/asia-northeast1/add?text=${data}`, {
+  fetch(`${server}/add?text=${data}`, {
     method: "GET"
   })
     .then(response => response.text())
@@ -17,7 +19,7 @@ const testQuery = () => {
 };
 
 const testJsonWrongSecret = () => {
-  fetch("http://localhost:5001/liquidx-mem/asia-northeast1/add", {
+  fetch(`${server}/add`, {
     method: "POST",
     headers: {
       "content-type": "application/json"
@@ -31,7 +33,7 @@ const testJsonWrongSecret = () => {
 };
 
 const testJson = () => {
-  fetch("http://localhost:5001/liquidx-mem/asia-northeast1/add", {
+  fetch(`${server}/add`, {
     method: "POST",
     headers: {
       "content-type": "application/json"
@@ -48,7 +50,7 @@ const testFormData = () => {
   const body = new FormData();
   body.append("text", testData);
 
-  fetch("http://localhost:5001/liquidx-mem/asia-northeast1/add", {
+  fetch(`${server}/add`, {
     method: "POST",
     headers: {
       "content-type": "application/x-www-form-urlencoded"
@@ -62,7 +64,7 @@ const testFormData = () => {
 };
 
 const testGet = () => {
-  fetch("http://localhost:5001/liquidx-mem/asia-northeast1/add")
+  fetch(`${server}/add`)
     .then(response => response.text())
     .then(response => {
       console.log(response);
