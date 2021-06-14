@@ -101,8 +101,8 @@
 import { Component, Vue } from "vue-property-decorator";
 import MemRow from "@/components/MemRow.vue";
 
-import firebase from "firebase/app";
 import orderBy from "lodash/orderBy";
+import firebase from "firebase/app";
 import { db } from "../firebase";
 import { Mem } from "../../functions/core/mems";
 import { parseText } from "../../functions/core/parser";
@@ -163,7 +163,10 @@ export default class Home extends Vue {
   }
 
   memsCollection(): firebase.firestore.CollectionReference<firebase.firestore.DocumentData> {
-    return db.collection("users").doc("1").collection("mems");
+    if (!this.user) {
+      return db.collection("users").doc("1").collection("mems");
+    }
+    return db.collection("users").doc(this.user.uid).collection("mems");
   }
 
   addNewMem(): void {
