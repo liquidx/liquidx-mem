@@ -1,10 +1,13 @@
 <template>
   <div class="mem" :title="mem.id">
     <div class="contents">
-      <div class="title">
+      <div v-if="mem.url" class="title">
         <a :href="mem.url" target="_blank">
           {{ prettyTitle }}
         </a>
+      </div>
+      <div v-if="!mem.url" class="note">
+        {{ mem.raw }}
       </div>
       <div v-if="mem.note" class="note">{{ mem.note }}</div>
       <div class="date">{{ prettyDate }}</div>
@@ -47,6 +50,7 @@
   .note {
     font-size: 0.9rem;
     line-height: 1.1rem;
+    white-space: pre;
   }
 }
 </style>
