@@ -16,4 +16,18 @@ Instructions to set up for yourself is still work in progress, but the basics ar
 1. Setup a Firebase project with Firestore, Hosting and Functions enabled.
    a. Run firebase init and select the above.
    b. Overwrite .firebaserc to use your firebase project.
+
 2. Create a [service account](https://firebase.google.com/docs/admin/setup) for Firebase/Google by following the instructions.
+
+3. Place credentials in `credentials-firebase-web.json` that have the following :
+```
+{
+   "apiKey": "AIza...HY",
+   "authDomain": "project-name.firebaseapp.com",
+   "projectId": "project-name",
+   "storageBucket": "project-name.appspot.com",
+   "messagingSenderId": "...",
+   "appId": "1:5...:web:62...",
+   "measurementId": "G-..."
+}
+   ```
