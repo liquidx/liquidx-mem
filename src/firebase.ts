@@ -1,16 +1,7 @@
 import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAZelmIftjq1u0g-64mIXq00YYcSKnecHY",
-  authDomain: "liquidx-mem.firebaseapp.com",
-  projectId: "liquidx-mem",
-  storageBucket: "liquidx-mem.appspot.com",
-  messagingSenderId: "509558279171",
-  appId: "1:509558279171:web:628db1628b86b161635236",
-  measurementId: "G-LLJ84BZNKV"
-};
+import firebaseConfig from '../credentials-firebase-web.json';
 
 // Get a Firestore instance
 export const firebaseApp = firebase.initializeApp(firebaseConfig);
