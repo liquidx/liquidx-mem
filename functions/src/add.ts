@@ -13,7 +13,7 @@ const firebaseApp = admin.initializeApp();
 //import cors from "cors";
 //const corsAllowOrigin = cors({ origin: true });
 
-export const add: functions.HttpsFunction = functions
+export const add = functions
   .region("us-central1") // Must use us-central1 if using firebase.json:rewrites. :sadge:
   .https.onRequest(async (request, response) => {
     functions.logger.debug("request.original.url", request.originalUrl);
@@ -46,9 +46,7 @@ export const add: functions.HttpsFunction = functions
       return;
     }
 
-    mem.addedMs = firebaseApp.firestore.Timestamp.fromDate(
-      new Date()
-    ).toMillis();
+    mem.addedMs = admin.firestore.Timestamp.fromDate(new Date()).toMillis();
     functions.logger.debug("mem", mem);
 
     firestoreAdd(db, userId, mem)

@@ -15,6 +15,13 @@ export interface Mem {
   url?: string;
   note?: string;
   title?: string;
+  description?: string;
+  thumbnail?: {
+    height: string;
+    type: string;
+    url: string;
+    width: string;
+  };
 }
 
 export const memFromJson = (json: Mem) => {
