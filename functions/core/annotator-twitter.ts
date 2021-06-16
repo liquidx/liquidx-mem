@@ -10,6 +10,10 @@ const twitterApiUserAgent = "liquidx-mem/1";
 interface Tweet {
   id: number,
   text: string,
+  user?: {
+    screen_name?: string,
+    url?: string
+  },
   entities?: {
     hashtags?: any,
     urls?: any,
@@ -20,56 +24,63 @@ interface Tweet {
   }
 }
 
-export const tweetVisibleText = (tweet: Tweet): { description?: string, descriptionHtml?: string, twitterMedia?: any } => {
-  console.dir(tweet);
-  if (!tweet.entities) {
-    return { description: tweet.text };
-  }
-
+export const tweetVisibleText = (tweet: Tweet): Mem => {
+  const authorName = tweet.user ? tweet.user.screen_name : 'unknown';
+  const authorUrl = tweet.user ? tweet.user.url : undefined;
+  let title = ''
   let text = '';
-  let html = text;
+  let html = '';
   const entities = [];
   const media = [];
 
-  if (tweet.entities.urls) {
-    for (const url of tweet.entities.urls) {
-      console.dir(url);
-      entities.push(url);
-    }
-  }
-
-  if (tweet.extended_entities && tweet.extended_entities.media) {
-    for (const media of tweet.extended_entities.media) {
-      console.dir(media);
-      if (media.video_info) {
-        console.dir(media.video_info);
+  if (tweet.entities) {
+    if (tweet.entities.urls) {
+      for (const url of tweet.entities.urls) {
+        //console.dir(url);
+        entities.push(url);
       }
-      entities.push(media);
     }
+
+    if (tweet.extended_entities && tweet.extended_entities.media) {
+      for (const media of tweet.extended_entities.media) {
+        // console.dir(media);
+        // if (media.video_info) {
+        //   console.dir(media.video_info);
+        // }
+        entities.push(media);
+      }
+    }
+
+    // sort replacements.
+    entities.sort((a, b) => { return a.indices[0] - b.indices[0]})
+    let index = 0;
+    for (const entity of entities) {
+      text += tweet.text.substring(index, entity.indices[0])
+      html += tweet.text.substring(index, entity.indices[0])
+      if (entity.url) {
+        text += entity.display_url;
+        html += `<a href="${entity.expanded_url}">${entity.display_url}</a>`
+      } else if (entity.media_url) {
+        media.push(entity);
+        // no-op, ignore.
+      }
+      index = entity.indices[1]
+    }
+    text += tweet.text.substring(index, tweet.text.length)
+  } else {
+    text = tweet.text;
   }
 
-  // sort replacements.
-  entities.sort((a, b) => { return a.indices[0] - b.indices[0]})
-  let index = 0;
-  for (const entity of entities) {
-    text += tweet.text.substring(index, entity.indices[0])
-    html += tweet.text.substring(index, entity.indices[0])
-    if (entity.url) {
-      text += entity.display_url;
-      html += `<a href="${entity.expanded_url}">${entity.display_url}</a>`
-    } else if (entity.media_url) {
-      media.push(entity);
-      // no-op, ignore.
-    }
-    index = entity.indices[1]
-  }
-  text += tweet.text.substring(index, tweet.text.length)
+  title = `@${authorName} on twitter: ${text}`
 
   return {
+    title: title,
     description: text,
     descriptionHtml: html,
-    twitterMedia: media
-  };
+    twitterMedia: media,
+    authorName: authorName,
+    authorUrl: authorUrl
+};
 }
 
 export const annotateWithTwitterApi = (mem: Mem, url: string): Promise<Mem> => {
