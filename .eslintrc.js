@@ -17,7 +17,8 @@ module.exports = {
   },
   ignorePatterns: [
     "functions/dist/**/*", // Ignore built files.
-    "functions/test/*"
+    "functions/test/*",
+    "functions/test-tools/*"
   ],
   overrides: [
     {
