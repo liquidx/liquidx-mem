@@ -9,13 +9,28 @@
       <div v-if="!mem.url" class="note">
         {{ mem.raw }}
       </div>
+      <div v-if="mem.description" class="note">{{ mem.description }}</div>
       <div v-if="mem.note" class="note">{{ mem.note }}</div>
+      <div v-if="mem.videos" class="videos">
+        <div v-for="video in mem.videos" :key="video.mediaUrl">
+          <video :src="video.mediaUrl" class="video-player"></video>
+        </div>
+      </div>
+      <div v-if="mem.photos" class="photos">
+        <div v-for="photo in mem.photos" :key="photo.mediaUrl">
+          <img :src="photo.mediaUrl" />
+        </div>
+      </div>
+
       <div class="date">{{ prettyDate }}</div>
     </div>
     <div class="controls">
-      <a href="#" @click.prevent="$emit('delete', mem)"
-        ><span class="material-icons md-18">&#xE872;</span></a
-      >
+      <a href="#" @click.prevent="$emit('delete', mem)">
+        <span class="material-icons md-18">&#xE872;</span>
+      </a>
+      <a href="#" @click.prevent="$emit('update', mem)">
+        <span class="material-icons md-18">&#xe863;</span>
+      </a>
     </div>
   </div>
 </template>
@@ -49,16 +64,29 @@
   }
 
   .date {
-    margin-top: 0.5rem;
+    margin: 0.5rem 0;
     font-size: 0.8rem;
     line-height: 1.1rem;
     color: rgb(220, 220, 220);
   }
+
+  .videos {
+    .video-player {
+      max-width: 400px;
+    }
+  }
+
+  .photos {
+    img {
+      max-width: 400px;
+    }
+  }
+
   .note {
-    margin-top: 0.5rem;
+    margin: 0.5rem 0;
     font-size: 0.9rem;
     line-height: 1.1rem;
-    white-space: pre;
+    max-width: 400px;
   }
 }
 </style>

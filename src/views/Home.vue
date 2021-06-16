@@ -36,6 +36,7 @@
         :key="mem.id"
         :mem="mem"
         @delete="deleteMem"
+        @update="updateMem"
       />
     </main>
   </div>
@@ -59,6 +60,9 @@
 
     h1 {
       font-size: 1.2rem;
+      a {
+        text-decoration: none;
+      }
     }
 
     .signin-button {
@@ -177,6 +181,16 @@ export default class Home extends Vue {
 
   deleteMem(mem: Mem): void {
     this.memsCollection().doc(mem.id).delete();
+  }
+
+  updateMem(mem: Mem): void {
+    if (!this.user || !this.user.uid) {
+      return;
+    }
+
+    fetch(`/api/annotate?user=${this.user.uid}&mem=${mem.id}`)
+      .then((response) => response.text())
+      .then((response) => console.log(response));
   }
 }
 </script>
