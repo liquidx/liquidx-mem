@@ -9,7 +9,6 @@
       <div v-if="!mem.url" class="note">
         {{ mem.raw }}
       </div>
-      <div v-if="mem.description" class="note">{{mem.description}}</div>
       <div v-if="mem.note" class="note">{{ mem.note }}</div>
       <div class="date">{{ prettyDate }}</div>
     </div>
@@ -29,6 +28,11 @@
   display: flex;
   flex-direction: row;
 
+  .title a {
+    font-weight: 700;
+    text-decoration: none;
+  }
+
   .contents {
     flex-grow: 1;
   }
@@ -45,10 +49,13 @@
   }
 
   .date {
-    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
     line-height: 1.1rem;
+    color: rgb(220, 220, 220);
   }
   .note {
+    margin-top: 0.5rem;
     font-size: 0.9rem;
     line-height: 1.1rem;
     white-space: pre;
@@ -72,6 +79,8 @@ export default class MemRow extends Vue {
 
     if (this.mem.title) {
       return this.mem.title;
+    } else if (this.mem.description) {
+      return this.mem.description;
     } else if (this.mem.url) {
       return this.mem.url.replace(/http[s]:\/\//, "");
     } else {
