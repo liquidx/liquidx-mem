@@ -49,8 +49,6 @@ describe("annotator", () => {
       url: "https://twitter.com/hyappy717/status/1404416312282017798"
     };
     const result = await annotateMem(mem);
-    console.log(result.twitterMedia[0]);
-    console.log(result.videos);
     result.should.have.property("descriptionHtml");
   });
 
@@ -60,5 +58,14 @@ describe("annotator", () => {
     };
     const result = await annotateMem(mem);
     result.should.have.property("twitterMedia").with.lengthOf(2);
+  });
+
+  it("should get twitter animated gifs", async () => {
+    const mem = {
+      url: "https://twitter.com/ggsimm/status/1390017555612512257"
+    };
+    const result = await annotateMem(mem);
+    console.log(result);
+    result.should.have.property("videos").with.lengthOf(1);
   });
 });
