@@ -9,6 +9,7 @@
       <div v-if="!mem.url" class="note">
         {{ mem.raw }}
       </div>
+      <div v-if="mem.description" class="note">{{mem.description}}</div>
       <div v-if="mem.note" class="note">{{ mem.note }}</div>
       <div class="date">{{ prettyDate }}</div>
     </div>

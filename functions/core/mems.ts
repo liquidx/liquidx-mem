@@ -14,14 +14,20 @@ export interface Mem {
   // Derived
   url?: string;
   note?: string;
+
+  // Open Graph or Tweet.
   title?: string;
   description?: string;
+  descriptionHtml?: string;
   thumbnail?: {
-    height: string;
-    type: string;
-    url: string;
-    width: string;
+    height?: string;
+    type?: string;
+    url?: string;
+    width?: string;
   };
+  authorName?: string;
+  authorUrl?: string;
+  twitterMedia?: any;
 }
 
 export const memFromJson = (json: Mem) => {

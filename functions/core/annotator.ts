@@ -1,14 +1,14 @@
 import openGraphScraper from "open-graph-scraper";
 import { Mem } from "./mems";
+import { annotateWithTwitterApi, twitterStatusUrlRegex } from './annotator-twitter';
 
-export const annotateMem = (mem: Mem): Promise<Mem> => {
+const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
   const annotated: Mem = Object.assign({}, mem);
-  if (mem.url) {
-    const request = {
-      url: mem.url,
-      peekSize: 100000
-    };
-    return openGraphScraper(request).then(data => {
+  const request: openGraphScraper.Options = {
+    url: url,
+  };
+  return openGraphScraper(request)
+    .then((data) => {
       if (data.error) {
         return mem;
       }
@@ -27,10 +27,24 @@ export const annotateMem = (mem: Mem): Promise<Mem> => {
         // }
       }
       return annotated;
+    })
+    .catch((err) => {
+      console.log(err);
+      return mem;
     });
+};
+
+
+export const annotateMem = (mem: Mem): Promise<Mem> => {
+  if (mem.url) {
+    if (mem.url.match(twitterStatusUrlRegex)) {
+      return annotateWithTwitterApi(mem, mem.url);
+    } else {
+      return annotateWithOpenGraph(mem, mem.url);
+    }
   }
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     resolve(mem);
   });
 };
