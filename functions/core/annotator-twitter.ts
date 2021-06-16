@@ -1,37 +1,39 @@
-
 import twitterToken from "../credentials-twitter.json";
-//import twitterText from "twitter-text";
 import needle from "needle";
-import { Mem } from "./mems";
+import { Mem, MemVideo, MemPhoto } from "./mems";
 
-export const twitterStatusUrlRegex = new RegExp("https://twitter.com/.*/status/([0-9]+)");
+export const twitterStatusUrlRegex = new RegExp(
+  "https://twitter.com/.*/status/([0-9]+)"
+);
 const twitterApiUserAgent = "liquidx-mem/1";
 
 interface Tweet {
-  id: number,
-  text: string,
+  id: number;
+  text: string;
   user?: {
-    screen_name?: string,
-    url?: string
-  },
+    screen_name?: string;
+    url?: string;
+  };
   entities?: {
-    hashtags?: any,
-    urls?: any,
-    media?: any
-  }
+    hashtags?: any;
+    urls?: any;
+    media?: any;
+  };
   extended_entities?: {
-    media?: any
-  }
+    media?: any;
+  };
 }
 
 export const tweetVisibleText = (tweet: Tweet): Mem => {
-  const authorName = tweet.user ? tweet.user.screen_name : 'unknown';
+  const authorName = tweet.user ? tweet.user.screen_name : "unknown";
   const authorUrl = tweet.user ? tweet.user.url : undefined;
-  let title = ''
-  let text = '';
-  let html = '';
+  let title = "";
+  let text = "";
+  let html = "";
   const entities = [];
   const media = [];
+  const photos: MemPhoto[] = [];
+  const videos: MemVideo[] = [];
 
   if (tweet.entities) {
     if (tweet.entities.urls) {
@@ -52,36 +54,61 @@ export const tweetVisibleText = (tweet: Tweet): Mem => {
     }
 
     // sort replacements.
-    entities.sort((a, b) => { return a.indices[0] - b.indices[0]})
+    entities.sort((a, b) => {
+      return a.indices[0] - b.indices[0];
+    });
     let index = 0;
     for (const entity of entities) {
-      text += tweet.text.substring(index, entity.indices[0])
-      html += tweet.text.substring(index, entity.indices[0])
-      if (entity.url) {
-        text += entity.display_url;
-        html += `<a href="${entity.expanded_url}">${entity.display_url}</a>`
-      } else if (entity.media_url) {
+      text += tweet.text.substring(index, entity.indices[0]);
+      html += tweet.text.substring(index, entity.indices[0]);
+      if (entity.media_url_https) {
         media.push(entity);
-        // no-op, ignore.
+        const mediaType = entity.type || "";
+        if (mediaType === "photo") {
+          photos.push({
+            mediaUrl: entity.media_url_https,
+            size: { w: entity.sizes.large.w, h: entity.sizes.large.h }
+          });
+        } else if (mediaType === "animated_gif" || mediaType == "video") {
+          const variants = entity.video_info.variants;
+          if (variants.length > 0) {
+            const video = variants[0];
+            videos.push({
+              posterUrl: entity.media_url_https,
+              size: { w: entity.sizes.large.w, h: entity.sizes.large.h },
+              contentType: video.content_type,
+              mediaUrl: video.url
+            });
+          }
+        }
+
+        // no-op for text - remove media from the tweet.
+      } else if (entity.url) {
+        text += `${entity.display_url} `;
+        html += `<a href="${entity.expanded_url}">${entity.display_url}</a> `;
       }
-      index = entity.indices[1]
+      index = entity.indices[1];
     }
-    text += tweet.text.substring(index, tweet.text.length)
+    text += tweet.text.substring(index, tweet.text.length);
+    html += tweet.text.substring(index, tweet.text.length);
   } else {
     text = tweet.text;
+    html = tweet.text;
   }
 
-  title = `@${authorName} on twitter: ${text}`
+  title = `@${authorName} on twitter`;
 
   return {
     title: title,
     description: text,
     descriptionHtml: html,
     twitterMedia: media,
+    photos: photos,
+    videos: videos,
     authorName: authorName,
     authorUrl: authorUrl
+  };
 };
-}
 
 export const annotateWithTwitterApi = (mem: Mem, url: string): Promise<Mem> => {
   const match = url.match(twitterStatusUrlRegex);
@@ -90,28 +117,30 @@ export const annotateWithTwitterApi = (mem: Mem, url: string): Promise<Mem> => {
     const endpointURL = "https://api.twitter.com/1.1/statuses/show.json";
     const params = {
       id: match[1],
-      include_entities: 'true'
+      include_entities: "true"
     };
     const headers = {
       "User-Agent": twitterApiUserAgent,
-      authorization: `Bearer ${twitterToken.bearerToken}`,
+      authorization: `Bearer ${twitterToken.bearerToken}`
     };
 
     return needle("get", endpointURL, params, { headers })
-      .then((response) => {
+      .then(response => {
         if (response && response.body && response.body.text) {
           const contents = tweetVisibleText(response.body as Tweet);
           annotated = Object.assign(annotated, contents);
+        } else {
+          console.log(response.body);
         }
         return annotated;
       })
-      .catch((err) => {
-        console.log(err);
+      .catch(err => {
+        console.log("Error", err);
         return mem;
       });
   }
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     resolve(mem);
   });
 };

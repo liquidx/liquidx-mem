@@ -1,6 +1,24 @@
 import firebase from "firebase/app";
 import "firebase/firestore";
 
+export interface MemPhoto {
+  mediaUrl?: string;
+  size?: {
+    w: number;
+    h: number;
+  };
+}
+
+export interface MemVideo {
+  mediaUrl?: string;
+  posterUrl?: string;
+  contentType?: string;
+  size?: {
+    w: number;
+    h: number;
+  };
+}
+
 export interface Mem {
   id?: string;
   raw?: string;
@@ -28,6 +46,8 @@ export interface Mem {
   authorName?: string;
   authorUrl?: string;
   twitterMedia?: any;
+  photos?: MemPhoto[];
+  videos?: MemVideo[];
 }
 
 export const memFromJson = (json: Mem) => {

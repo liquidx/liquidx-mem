@@ -2,8 +2,8 @@
 const fetch = require("make-fetch-happen");
 const FormData = require("form-data");
 
-//const server = 'http://localhost:5001/liquidx-mem/asia-northeast1';
-const server = "https://liquidx-mem.web.app/api";
+const server = "http://localhost:5001/liquidx-mem/us-central1";
+//const server = "https://liquidx-mem.web.app/api";
 const testData = "https://liquidx.net/ This is a #test";
 
 const testQuery = () => {
@@ -71,4 +71,5 @@ const testGet = () => {
     });
 };
 
-testJson();
+//testJson();
+testAnnotate("BB8zGVrCbrQ2QryHyiZNaUZJjQ93", "57xoLmtby1lGIy7QgnQx");

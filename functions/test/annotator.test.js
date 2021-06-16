@@ -15,13 +15,22 @@ describe("annotator", () => {
       .property("description")
       .equal("Node.js scraper module for Open Graph and Twitter Card info");
   });
+
   it("should get twitter description", async () => {
     const mem = {
       url: "https://twitter.com/hyappy717/status/1404416312282017798"
     };
     const result = await annotateMem(mem);
-    console.log(result)
-    result.should.have
-      .property("descriptionHtml")
-  })
+    console.log(result.twitterMedia[0]);
+    console.log(result.videos);
+    result.should.have.property("descriptionHtml");
+  });
+
+  it("should get twitter images", async () => {
+    const mem = {
+      url: "https://twitter.com/0_skyblue/status/1404741709548769281"
+    };
+    const result = await annotateMem(mem);
+    result.should.have.property("twitterMedia").with.lengthOf(2);
+  });
 });

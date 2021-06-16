@@ -6,19 +6,13 @@ import {
   USER_NOT_FOUND
 } from "../core/firestore-user-secrets";
 import { firestoreAdd } from "../core/firestore-add";
-
-// Initialize firebase app.
-const firebaseApp = admin.initializeApp();
-
-//import cors from "cors";
-//const corsAllowOrigin = cors({ origin: true });
+import { firebaseApp } from "./firebase-app";
 
 export const add = functions
   .region("us-central1") // Must use us-central1 if using firebase.json:rewrites. :sadge:
   .https.onRequest(async (request, response) => {
     functions.logger.debug("request.original.url", request.originalUrl);
     functions.logger.debug("request.body", request.body);
-    //return corsAllowOrigin(request, response, () => {
     const text = request.query.text || request.body.text || "";
     const secret = request.query.secret || request.body.secret || "";
 
@@ -32,7 +26,7 @@ export const add = functions
       return;
     }
 
-    const db = firebaseApp.firestore();
+    const db = firebaseApp().firestore();
     const userId = await userForSharedSecret(db, secret);
 
     if (!userId || userId === USER_NOT_FOUND) {
@@ -57,5 +51,4 @@ export const add = functions
         functions.logger.error(err);
         response.send(`Error saving: ${err}`);
       });
-    //});
   });

@@ -21,6 +21,10 @@
         "function": "add"
       },
       {
+        "source": "/api/annotate",
+        "function": "annotate"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

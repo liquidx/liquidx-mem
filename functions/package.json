@@ -2,7 +2,7 @@
   "name": "functions",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
-    "build": "tsc",
+    "build": "cp ../credentials-twitter.json . &&  tsc",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
@@ -23,7 +23,6 @@
     "make-fetch-happen": "^9.0.2",
     "needle": "^2.6.0",
     "open-graph-scraper": "^4.9.0",
-    "twitter-text": "^3.1.0",
     "url-regex": "^5.0.0"
   },
   "devDependencies": {
