@@ -13,7 +13,14 @@
       <div v-if="mem.note" class="note">{{ mem.note }}</div>
       <div v-if="mem.videos" class="videos">
         <div v-for="video in mem.videos" :key="video.mediaUrl">
-          <video :src="video.mediaUrl" class="video-player"></video>
+          <video
+            :src="video.mediaUrl"
+            class="video-player"
+            :poster="video.posterUrl"
+            playsinline
+            controls
+            loop
+          ></video>
         </div>
       </div>
       <div v-if="mem.photos" class="photos">
