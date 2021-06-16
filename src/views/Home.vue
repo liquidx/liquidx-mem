@@ -43,10 +43,13 @@
 </template>
 
 <style lang="scss" scoped>
+@import "src/layout";
+
 .home {
   display: flex;
   flex-direction: row;
   min-height: 100vh;
+  width: 100vw;
 
   header {
     flex-grow: 0;
@@ -79,12 +82,9 @@
 .add {
   display: flex;
   flex-direction: column;
-  width: 40rem;
+  width: 400px;
   padding: 1rem 1rem;
   margin: 1rem 0;
-
-  h2 {
-  }
 
   input,
   textarea {
@@ -97,6 +97,26 @@
 
   textarea {
     height: 4rem;
+  }
+}
+
+@media (max-width: $layout-mobile-width) {
+  .home {
+    flex-direction: column;
+    width: 100vw;
+    header {
+      margin-top: 0;
+      padding: 1rem 2rem;
+      min-width: 100vw;
+      width: 100vw;
+    }
+    main {
+      max-width: 100vw;
+    }
+  }
+
+  .add {
+    width: 80vw;
   }
 }
 </style>

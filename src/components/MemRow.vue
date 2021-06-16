@@ -36,6 +36,8 @@
 </template>
 
 <style lang="scss" scoped>
+@import "src/layout";
+
 .mem {
   margin: 0.5rem 0;
   padding: 0.5rem 1rem;
@@ -87,6 +89,28 @@
     font-size: 0.9rem;
     line-height: 1.1rem;
     max-width: 400px;
+  }
+}
+
+@media (max-width: $layout-mobile-width) {
+  .mem {
+    flex-direction: column;
+
+    .controls {
+      width: 80vw;
+    }
+
+    .photos {
+      img {
+        max-width: 80vw;
+      }
+    }
+
+    .videos {
+      .video-player {
+        max-width: 80vw;
+      }
+    }
   }
 }
 </style>
