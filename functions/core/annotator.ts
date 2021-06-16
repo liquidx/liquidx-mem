@@ -1,20 +1,23 @@
 import openGraphScraper from "open-graph-scraper";
-import { Mem } from "./mems";
-import { annotateWithTwitterApi, twitterStatusUrlRegex } from './annotator-twitter';
+import { Mem, MemPhoto } from "./mems";
+import {
+  annotateWithTwitterApi,
+  twitterStatusUrlRegex
+} from "./annotator-twitter";
 
 const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
   const annotated: Mem = Object.assign({}, mem);
   const request: openGraphScraper.Options = {
-    url: url,
+    url: url
   };
   return openGraphScraper(request)
-    .then((data) => {
+    .then(data => {
       if (data.error) {
         return mem;
       }
 
       const result = data.result;
-      //console.log(result);
+      console.log(result);
       if (result) {
         if (result.ogTitle) {
           annotated.title = result.ogTitle;
@@ -22,18 +25,33 @@ const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
         if (result.ogDescription) {
           annotated.description = result.ogDescription;
         }
-        // if (typeof result.ogImage !== "string") {
-        //   annotated.thumbnail = result.ogImage[0];
-        // }
+        if (result.ogImage) {
+          if ("url" in result.ogImage) {
+            const photo: MemPhoto = {
+              mediaUrl: result.ogImage.url
+            };
+            if (
+              "width" in result.ogImage &&
+              "height" in result.ogImage &&
+              typeof result.ogImage.width === "string" &&
+              typeof result.ogImage.height === "string"
+            ) {
+              photo.size = {
+                w: parseInt(result.ogImage.width),
+                h: parseInt(result.ogImage.height)
+              };
+            }
+            annotated.photos = [photo];
+          }
+        }
       }
       return annotated;
     })
-    .catch((err) => {
+    .catch(err => {
       console.log(err);
       return mem;
     });
 };
-
 
 export const annotateMem = (mem: Mem): Promise<Mem> => {
   if (mem.url) {
@@ -44,7 +62,7 @@ export const annotateMem = (mem: Mem): Promise<Mem> => {
     }
   }
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     resolve(mem);
   });
 };
