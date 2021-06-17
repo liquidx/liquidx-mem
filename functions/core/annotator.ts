@@ -5,6 +5,8 @@ import {
   twitterStatusUrlRegex
 } from "./annotator-twitter";
 
+import { isResultBlocked } from "./annotator-og-blocklist";
+
 const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
   const annotated: Mem = Object.assign({}, mem);
   const request: openGraphScraper.Options = {
@@ -21,7 +23,7 @@ const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
 
       const result = data.result;
       console.log(result);
-      if (result) {
+      if (result && !isResultBlocked(result)) {
         if (result.ogTitle) {
           annotated.title = result.ogTitle;
         }
