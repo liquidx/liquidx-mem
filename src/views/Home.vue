@@ -36,7 +36,8 @@
         :key="mem.id"
         :mem="mem"
         @delete="deleteMem"
-        @update="updateMem"
+        @annotate="annotateMem"
+        @note-changed="updateNoteForMem"
       />
     </main>
   </div>
@@ -203,7 +204,7 @@ export default class Home extends Vue {
     this.memsCollection().doc(mem.id).delete();
   }
 
-  updateMem(mem: Mem): void {
+  annotateMem(mem: Mem): void {
     if (!this.user || !this.user.uid) {
       return;
     }
@@ -211,6 +212,16 @@ export default class Home extends Vue {
     fetch(`/api/annotate?user=${this.user.uid}&mem=${mem.id}`)
       .then((response) => response.text())
       .then((response) => console.log(response));
+  }
+
+  updateNoteForMem(changed: { mem: Mem; note: string }): void {
+    //const updated = Object.assign({}, mem, {note: note, id: undefined});
+    this.memsCollection()
+      .doc(changed.mem.id)
+      .update({ note: changed.note })
+      .then(() => {
+        console.log("Updated mem", changed.mem.id, { note: changed.note });
+      });
   }
 }
 </script>

@@ -6,11 +6,20 @@
           {{ prettyTitle }}
         </a>
       </div>
-      <div v-if="!mem.url" class="note">
+      <div v-if="!mem.url">
         {{ mem.raw }}
       </div>
-      <div v-if="mem.description" class="note">{{ mem.description }}</div>
-      <div v-if="mem.note" class="note">{{ mem.note }}</div>
+      <div v-if="mem.description" class="description">
+        {{ shortDescription }}
+      </div>
+      <div
+        class="note"
+        :class="{ nocontent: !mem.note }"
+        contenteditable=""
+        @blur="noteDidChange"
+      >
+        {{ mem.note }}
+      </div>
       <div v-if="mem.videos" class="videos">
         <div v-for="video in mem.videos" :key="video.mediaUrl">
           <video
@@ -33,10 +42,12 @@
     </div>
     <div class="controls">
       <a href="#" @click.prevent="$emit('delete', mem)">
-        <span class="material-icons md-18">&#xE872;</span>
+        <span class="material-icons">&#xE872;</span>
+        Delete
       </a>
-      <a href="#" @click.prevent="$emit('update', mem)">
-        <span class="material-icons md-18">&#xe863;</span>
+      <a href="#" @click.prevent="$emit('annotate', mem)">
+        <span class="material-icons">&#xe863;</span>
+        Annotate
       </a>
     </div>
   </div>
@@ -50,7 +61,7 @@
   padding: 0.5rem 1rem;
 
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 
   .title a {
     font-weight: 700;
@@ -62,18 +73,26 @@
   }
 
   .controls {
-    width: 2rem;
-    flex-grow: 0;
-    .material-icons {
-      color: rgba(0, 0, 0, 0.5);
-    }
+    font-size: 0.8rem;
+
     a {
+      color: rgb(200, 200, 200);
       text-decoration: none;
+      margin-right: 1rem;
+
+      .material-icons {
+        font-size: 1rem;
+        vertical-align: middle;
+      }
+    }
+
+    a:hover {
+      color: rgb(160, 160, 160);
     }
   }
 
   .date {
-    margin: 0.5rem 0;
+    padding: 0.5rem 0;
     font-size: 0.8rem;
     line-height: 1.1rem;
     color: rgb(220, 220, 220);
@@ -91,11 +110,28 @@
     }
   }
 
+  .description,
   .note {
     margin: 0.5rem 0;
+    padding: 0.5rem 0;
     font-size: 0.9rem;
     line-height: 1.1rem;
     max-width: 400px;
+  }
+
+  .note {
+    background-color: rgb(250, 250, 250);
+    border-bottom: 1px solid rgb(240, 240, 240);
+    padding: 1rem 0.5rem;
+    transition: padding 200ms 0.2s;
+  }
+
+  .note.nocontent {
+    padding: 0.2rem 0.5rem;
+  }
+
+  .note.nocontent:focus {
+    padding: 1rem 0.5rem;
   }
 }
 
@@ -154,6 +190,27 @@ export default class MemRow extends Vue {
 
     const date = new Date(this.mem.addedMs);
     return DateTime.fromJSDate(date).toFormat("yyyy-MM-dd hh:mm");
+  }
+
+  get shortDescription(): string {
+    if (!this.mem.description) {
+      return "";
+    }
+    if (this.mem.description.length > 300) {
+      return this.mem.description.substring(0, 300) + "...";
+    }
+    return this.mem.description;
+  }
+
+  noteDidChange(e: FocusEvent & EventTarget): void {
+    const target: HTMLElement = e.target as HTMLElement;
+    if (!target) {
+      return;
+    }
+    const noteValue = target.innerText;
+    if (noteValue != this.mem.note) {
+      this.$emit("note-changed", { mem: this.mem, note: noteValue });
+    }
   }
 }
 </script>
