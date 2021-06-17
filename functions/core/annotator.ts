@@ -8,7 +8,10 @@ import {
 const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
   const annotated: Mem = Object.assign({}, mem);
   const request: openGraphScraper.Options = {
-    url: url
+    url: url,
+    headers: {
+      "user-agent": "liquidx-mem.web.app/1.0"
+    }
   };
   return openGraphScraper(request)
     .then(data => {
