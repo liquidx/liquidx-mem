@@ -21,6 +21,10 @@
       </div>
 
       <div v-if="user" v-show="user">Signed in as {{ user.email }}</div>
+
+      <div v-if="user" class="functions">
+        <a href="/data">export/import json</a>
+      </div>
     </header>
     <main>
       <div class="add">
@@ -45,6 +49,10 @@
 
 <style lang="scss" scoped>
 @import "src/layout";
+
+.functions {
+  margin: 1rem 0;
+}
 
 .home {
   display: flex;
