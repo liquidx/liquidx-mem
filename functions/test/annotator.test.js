@@ -4,17 +4,17 @@ chai.should();
 const { annotateMem } = require("../dist/core/annotator");
 
 describe("annotator", () => {
-  // it("should get opengraph data", async () => {
-  //   const mem = {
-  //     url: "https://www.npmjs.com/package/open-graph-scraper"
-  //   };
+  it("should get opengraph images from instagram", async () => {
+    const mem = {
+      url: "https://www.instagram.com/tv/CQKi_K8hivn/?utm_medium=share_sheet"
+    };
 
-  //   const result = await annotateMem(mem);
-  //   result.should.have.property("title").equal("open-graph-scraper");
-  //   result.should.have
-  //     .property("description")
-  //     .equal("Node.js scraper module for Open Graph and Twitter Card info");
-  // });
+    const expected = {};
+
+    const result = await annotateMem(mem);
+    console.log(result);
+    result.should.have.property("photos").with.lengthOf(1);
+  });
 
   it("should get opengraph images", async () => {
     const mem = {
