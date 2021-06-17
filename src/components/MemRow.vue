@@ -1,5 +1,5 @@
 <template>
-  <div class="mem" :title="mem.id">
+  <div class="mem">
     <div class="contents">
       <div v-if="mem.url" class="title">
         <a :href="mem.url" target="_blank">
@@ -38,7 +38,7 @@
         </div>
       </div>
 
-      <div class="date">{{ prettyDate }}</div>
+      <div class="date" :title="mem.id">{{ prettyDate }}</div>
     </div>
     <div class="controls">
       <a href="#" @click.prevent="$emit('delete', mem)">
