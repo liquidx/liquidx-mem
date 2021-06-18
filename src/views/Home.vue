@@ -35,10 +35,22 @@
         </textarea>
         <input type="button" value="Add" @click="addNewMem" />
       </div>
-      <mem-row
-        v-for="mem in orderMems"
-        :key="mem.id"
-        :mem="mem"
+      <div class="tags">
+        <a class="tag" href="#" @click.prevent="filterBy('')">New</a>
+        <a class="tag" href="#" @click.prevent="filterBy('#art')">#art</a>
+        <a class="tag" href="#" @click.prevent="filterBy('#code')">#code</a>
+        <a class="tag" href="#" @click.prevent="filterBy('#work')">#work</a>
+        <a class="tag" href="#" @click.prevent="filterBy('#place')">#place</a>
+        <a class="tag" href="#" @click.prevent="filterBy('#podcast')"
+          >#podcast</a
+        >
+        <a class="tag" href="#" @click.prevent="filterBy('#hongkong')"
+          >#hongkong</a
+        >
+      </div>
+      <mem-list
+        :mems="mems"
+        @archive="archiveMem"
         @delete="deleteMem"
         @annotate="annotateMem"
         @note-changed="updateNoteForMem"
@@ -52,6 +64,15 @@
 
 .functions {
   margin: 1rem 0;
+}
+
+.tags {
+  margin: 1rem 1rem;
+
+  .tag {
+    margin-right: 0.5rem;
+    color: rgb(200, 200, 200);
+  }
 }
 
 .home {
@@ -132,17 +153,18 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import MemRow from "@/components/MemRow.vue";
-
-import orderBy from "lodash/orderBy";
+import { DateTime } from "luxon";
 import firebase from "firebase/app";
+
+import MemList from "@/components/MemList.vue";
+
 import { db } from "../firebase";
 import { Mem } from "../../functions/core/mems";
-import { parseText } from "../../functions/core/parser";
+import { parseText, extractTags } from "../../functions/core/parser";
 
 @Component({
   components: {
-    MemRow,
+    MemList,
   },
 })
 export default class Home extends Vue {
@@ -152,9 +174,14 @@ export default class Home extends Vue {
   // Vue data
   mems: Mem[] = [];
   rawInput = "";
+
+  // sign in.
   user: firebase.User | null = null;
   signInEmail = "";
   signInPassword = "";
+
+  // filters.
+  showTags: string[] = [];
 
   mounted(): void {
     // this.$firebase
@@ -162,17 +189,25 @@ export default class Home extends Vue {
     //   .setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
     this.$firebase.auth().onAuthStateChanged((user: firebase.User) => {
       this.user = user;
-      this.$bind("mems", this.memsCollection());
+      this.reloadMems();
       console.log("Signed in user:", this.user);
     });
   }
 
-  get signedIn(): boolean {
-    return !!this.user;
+  reloadMems(): void {
+    //this.$unbind("mems");
+    if (this.showTags.length) {
+      this.$bind(
+        "mems",
+        this.memsCollection().where("tags", "array-contains-any", this.showTags)
+      );
+    } else {
+      this.$bind("mems", this.memsCollection().where("new", "==", true));
+    }
   }
 
-  get orderMems(): Mem[] {
-    return orderBy(this.mems, ["addedMs"], ["desc"]);
+  get signedIn(): boolean {
+    return !!this.user;
   }
 
   signIn(): void {
@@ -197,10 +232,20 @@ export default class Home extends Vue {
     return db.collection("users").doc(this.user.uid).collection("mems");
   }
 
+  filterBy(tag: string): void {
+    if (tag) {
+      this.showTags = [tag];
+    } else {
+      this.showTags = [];
+    }
+    this.reloadMems();
+  }
+
   addNewMem(): void {
     const mem = parseText(this.rawInput);
     // TODO: Probably there's a better way to get milliseconds?
-    mem.addedMs = firebase.firestore.Timestamp.fromDate(new Date()).toMillis();
+    mem.new = true;
+    mem.addedMs = DateTime.utc().toMillis();
     this.memsCollection()
       .add(mem)
       .then(() => {
@@ -222,13 +267,21 @@ export default class Home extends Vue {
       .then((response) => console.log(response));
   }
 
+  archiveMem(mem: Mem): void {
+    this.memsCollection().doc(mem.id).update({ new: false });
+  }
+
   updateNoteForMem(changed: { mem: Mem; note: string }): void {
     //const updated = Object.assign({}, mem, {note: note, id: undefined});
+    const updated = {
+      note: changed.note,
+      tags: extractTags(changed.note),
+    };
     this.memsCollection()
       .doc(changed.mem.id)
-      .update({ note: changed.note })
+      .update(updated)
       .then(() => {
-        console.log("Updated mem", changed.mem.id, { note: changed.note });
+        console.log("Updated mem", changed.mem.id, updated);
       });
   }
 }

@@ -8,7 +8,8 @@
           <li><a href="#" @click.prevent="startImportData">Import Data from JSON</a> 
             <input type="file" id="input" @change="fileSelectionDidChange"  style="display:none">
             <a href="#" v-if="importMems.length" id="finishImport" @click.prevent="finishImport"> ... Import</a>
-            </li>
+          </li>
+          <li><a href="#" @click.prevent="markAllAsNew">Mark all mems as new</a></li>
         </ul>
       </p>
     </main>
@@ -115,6 +116,16 @@ export default class Home extends Vue {
         reader.readAsText(file);
       }
     }
+  }
+
+  async markAllAsNew(): Promise<void> {
+    for (const mem of this.mems) {
+      if (mem.id) {
+        mem.new = true;
+        await this.memsCollection().doc(mem.id).set(mem);
+      }
+    }
+    console.log("Done.", this.mems.length);
   }
 }
 </script>

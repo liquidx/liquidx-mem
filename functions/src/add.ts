@@ -1,5 +1,6 @@
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
+import { DateTime } from "luxon";
+
 import { parseText } from "../core/parser";
 import {
   userForSharedSecret,
@@ -40,7 +41,8 @@ export const add = functions
       return;
     }
 
-    mem.addedMs = admin.firestore.Timestamp.fromDate(new Date()).toMillis();
+    mem.new = true;
+    mem.addedMs = DateTime.utc().toMillis();
     functions.logger.debug("mem", mem);
 
     firestoreAdd(db, userId, mem)

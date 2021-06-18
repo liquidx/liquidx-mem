@@ -41,13 +41,21 @@
       <div class="date" :title="mem.id">{{ prettyDate }}</div>
     </div>
     <div class="controls">
-      <a href="#" @click.prevent="$emit('delete', mem)">
-        <span class="material-icons">&#xE872;</span>
-        Delete
+      <a v-if="mem.new" href="#" @click.prevent="$emit('archive', mem)">
+        <span class="material-icons">&#xe149;</span>
+        Archive
+      </a>
+      <a v-if="!mem.new" href="#" @click.prevent="$emit('unarchive', mem)">
+        <span class="material-icons">&#xe169;</span>
+        Unarchive
       </a>
       <a href="#" @click.prevent="$emit('annotate', mem)">
         <span class="material-icons">&#xe863;</span>
         Annotate
+      </a>
+      <a href="#" class="delete" @click.prevent="$emit('delete', mem)">
+        <span class="material-icons">&#xE872;</span>
+        Delete
       </a>
     </div>
   </div>
@@ -88,6 +96,10 @@
 
     a:hover {
       color: rgb(160, 160, 160);
+    }
+
+    a.delete:hover {
+      color: rgb(255, 160, 160);
     }
   }
 
