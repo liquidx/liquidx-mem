@@ -167,6 +167,8 @@ import { DateTime } from "luxon";
 export default class MemRow extends Vue {
   @Prop() private mem!: Mem;
 
+  maxChars = 1000;
+
   get prettyTitle(): string {
     if (!this.mem) {
       return "";
@@ -196,8 +198,8 @@ export default class MemRow extends Vue {
     if (!this.mem.description) {
       return "";
     }
-    if (this.mem.description.length > 300) {
-      return this.mem.description.substring(0, 300) + "...";
+    if (this.mem.description.length > this.maxChars) {
+      return this.mem.description.substring(0, this.maxChars) + "...";
     }
     return this.mem.description;
   }
