@@ -28,13 +28,16 @@
     </header>
     <section class="summary">
       <a class="tag" href="#" @click.prevent="filterBy('')">New</a>
-      <a class="tag" href="#" @click.prevent="filterBy('#art')">#art</a>
-      <a class="tag" href="#" @click.prevent="filterBy('#code')">#code</a>
-      <a class="tag" href="#" @click.prevent="filterBy('#work')">#work</a>
-      <a class="tag" href="#" @click.prevent="filterBy('#place')">#place</a>
-      <a class="tag" href="#" @click.prevent="filterBy('#podcast')">#podcast</a>
-      <a class="tag" href="#" @click.prevent="filterBy('#hongkong')"
-        >#hongkong</a
+      <a class="tag" href="#" @click.prevent="filterBy('*archived')"
+        >Archived</a
+      >
+      <a
+        v-for="tag in config.tags"
+        :key="tag"
+        class="tag"
+        href="#"
+        @click.prevent="filterBy('#' + tag)"
+        >#{{ tag }}</a
       >
     </section>
     <main>
@@ -191,7 +194,7 @@ import MemList from "@/components/MemList.vue";
 
 import { db } from "../firebase";
 import { Mem } from "../../functions/core/mems";
-import { parseText, extractTags } from "../../functions/core/parser";
+import { parseText, extractEntities } from "../../functions/core/parser";
 
 @Component({
   components: {
@@ -204,6 +207,7 @@ export default class Home extends Vue {
 
   // Vue data
   mems: Mem[] = [];
+  config: Record<string, any> = {};
   rawInput = "";
 
   // sign in.
@@ -213,6 +217,7 @@ export default class Home extends Vue {
 
   // filters.
   showTags: string[] = [];
+  showArchivedStatus = "new";
 
   mounted(): void {
     // this.$firebase
@@ -221,6 +226,7 @@ export default class Home extends Vue {
     this.$firebase.auth().onAuthStateChanged((user: firebase.User) => {
       this.user = user;
       this.reloadMems();
+      this.$bind("config", db.collection("users").doc(this.user.uid));
       console.log("Signed in user:", this.user);
     });
   }
@@ -232,6 +238,8 @@ export default class Home extends Vue {
         "mems",
         this.memsCollection().where("tags", "array-contains-any", this.showTags)
       );
+    } else if (this.showArchivedStatus == "archived") {
+      this.$bind("mems", this.memsCollection().where("new", "==", false));
     } else {
       this.$bind("mems", this.memsCollection().where("new", "==", true));
     }
@@ -264,10 +272,13 @@ export default class Home extends Vue {
   }
 
   filterBy(tag: string): void {
-    if (tag) {
+    if (tag && tag.startsWith("#")) {
       this.showTags = [tag];
+    } else if (tag && tag.startsWith("*")) {
+      this.showArchivedStatus = "archived";
     } else {
       this.showTags = [];
+      this.showArchivedStatus = "new";
     }
     this.reloadMems();
   }
@@ -303,10 +314,8 @@ export default class Home extends Vue {
   }
 
   updateNoteForMem(changed: { mem: Mem; note: string }): void {
-    const updated = {
-      note: changed.note,
-      tags: extractTags(changed.note),
-    };
+    const entities = extractEntities(changed.note);
+    const updated = Object.assign({ note: changed.note }, entities);
     this.memsCollection()
       .doc(changed.mem.id)
       .update(updated)

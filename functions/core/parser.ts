@@ -2,6 +2,7 @@ import { Mem } from "./mems";
 import urlRegex from "url-regex";
 
 const tagRegex = new RegExp("#\\w+", "g");
+const dateRegex = new RegExp("[0-9]{4}-[0-9]{2}-[0-9]{2}");
 
 export const extractTags = (text: string): string[] => {
   if (!text) {
@@ -20,6 +21,33 @@ export const extractTags = (text: string): string[] => {
   return tags;
 };
 
+export const extractDate = (text: string): string => {
+  if (!text) {
+    return "";
+  }
+
+  const dateMatch = text.match(dateRegex);
+  if (!dateMatch) {
+    return "";
+  }
+
+  return dateMatch[0];
+};
+
+export const extractEntities = (
+  note: string
+): { date?: string; tags?: string[] } => {
+  if (!note) {
+    return {};
+  }
+
+  const entities = {
+    tags: extractTags(note),
+    date: extractDate(note)
+  };
+  return entities;
+};
+
 export const parseText = (text: string): Mem => {
   const mem: Mem = {
     raw: text
@@ -31,10 +59,10 @@ export const parseText = (text: string): Mem => {
     const first = matches[0];
     mem.url = first.toString();
     mem.note = text.replace(urlRegex(), "").trim();
-    if (mem.note) {
-      mem.tags = extractTags(mem.note);
-    }
   }
 
+  if (mem.note) {
+    Object.assign(mem, extractEntities(mem.note));
+  }
   return mem;
 };

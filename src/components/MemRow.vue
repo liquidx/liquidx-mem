@@ -1,6 +1,14 @@
 <template>
   <div class="mem">
     <div class="contents">
+      <div
+        class="note"
+        :class="{ nocontent: !mem.note }"
+        contenteditable=""
+        @blur="noteDidChange"
+      >
+        {{ mem.note }}
+      </div>
       <div v-if="mem.url" class="title">
         <a :href="mem.url" target="_blank">
           <span class="title-text">{{ prettyTitle }}</span>
@@ -8,9 +16,6 @@
         <a href="#" class="title-edit" @click.prevent="startEdit">
           <span class="material-icons">&#xe3c9;</span>
         </a>
-      </div>
-      <div v-if="!mem.url">
-        {{ mem.raw }}
       </div>
       <div
         v-if="mem.description"
@@ -20,14 +25,7 @@
       >
         {{ shortDescription }}
       </div>
-      <div
-        class="note"
-        :class="{ nocontent: !mem.note }"
-        contenteditable=""
-        @blur="noteDidChange"
-      >
-        {{ mem.note }}
-      </div>
+
       <div v-if="mem.videos" class="videos">
         <div v-for="video in mem.videos" :key="video.mediaUrl">
           <video
@@ -86,6 +84,7 @@ $row-width: 400px;
 
   .title {
     max-width: $row-width;
+    padding: 0.5rem 0;
     a {
       font-weight: 700;
       text-decoration: none;
@@ -265,6 +264,7 @@ export default class MemRow extends Vue {
     const noteValue = target.innerText;
     if (noteValue != this.mem.note) {
       this.$emit("note-changed", { mem: this.mem, note: noteValue });
+      target.innerText = noteValue;
     }
   }
 

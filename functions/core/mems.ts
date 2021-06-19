@@ -32,7 +32,7 @@ export interface Mem {
   url?: string;
   note?: string;
   tags?: string[];
-  dateString?: string; // Not added date, but date described by the content. (yyyy-mm-dd format)
+  date?: string; // Not added date, but date described by the content. (yyyy-mm-dd format)
 
   // Open Graph or Tweet.
   title?: string;

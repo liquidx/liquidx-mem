@@ -1,5 +1,7 @@
-import twitterToken from "../credentials-twitter.json";
 import needle from "needle";
+import { DateTime } from "luxon";
+
+import twitterToken from "../credentials-twitter.json";
 import { Mem, MemVideo, MemPhoto } from "./mems";
 
 export const twitterStatusUrlRegex = new RegExp(
@@ -9,6 +11,7 @@ const twitterApiUserAgent = "liquidx-mem/1";
 
 interface Tweet {
   id: number;
+  created_at: string;
   text: string;
   user?: {
     screen_name?: string;
@@ -30,6 +33,7 @@ export const tweetVisibleText = (tweet: Tweet): Mem => {
   let title = "";
   let text = "";
   let html = "";
+  let date = "";
   const entities = [];
   const media = [];
   const photos: MemPhoto[] = [];
@@ -97,9 +101,13 @@ export const tweetVisibleText = (tweet: Tweet): Mem => {
   }
 
   title = `@${authorName} on twitter`;
+  date = DateTime.fromJSDate(new Date(tweet.created_at))
+    .toUTC()
+    .toFormat("yyyy-MM-dd");
 
   return {
     title: title,
+    date: date,
     description: text,
     descriptionHtml: html,
     twitterMedia: media,
