@@ -12,15 +12,11 @@ import { firebaseApp } from "./firebase-app";
 export const add = functions
   .region("us-central1") // Must use us-central1 if using firebase.json:rewrites. :sadge:
   .https.onRequest(async (request, response) => {
-    functions.logger.debug("request.original.url", request.originalUrl);
-    functions.logger.debug("request.body", request.body);
+    // functions.logger.debug("request.original.url", request.originalUrl);
+    // functions.logger.debug("request.body", request.body);
     const text = request.query.text || request.body.text || "";
+    const image = request.query.image || request.body.image || "";
     const secret = request.query.secret || request.body.secret || "";
-
-    if (!text) {
-      response.status(500).send("Error: 'text' parameter not found");
-      return;
-    }
 
     if (!secret) {
       response.status(500).send("Error: 'secret' parameter not found");
@@ -35,9 +31,29 @@ export const add = functions
       return;
     }
 
-    const mem = parseText(text.toString());
-    if (!mem) {
-      response.status(500).send("Error: Invalid data.");
+    let mem = null;
+    if (text) {
+      mem = parseText(text.toString());
+      if (!mem) {
+        response.status(500).send("error: Invalid text.");
+        return;
+      }
+    } else if (image) {
+      //const imageDataBuffer = Buffer.from(image, "base64");
+      const dateString = DateTime.utc().toFormat("yyyyMMddhhmmss");
+      const path = `users/${userId}/${dateString}`;
+      const file = firebaseApp()
+        .storage()
+        .bucket()
+        .file(path);
+
+      const writable = file.createWriteStream();
+      writable.write(image, "base64");
+      writable.end();
+
+      mem = { media: { path: path } };
+    } else {
+      response.status(500).send("Error: 'text' parameter not found");
       return;
     }
 

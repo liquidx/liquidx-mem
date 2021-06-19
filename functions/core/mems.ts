@@ -1,6 +1,3 @@
-import firebase from "firebase/app";
-import "firebase/firestore";
-
 export interface MemPhoto {
   mediaUrl?: string;
   size?: {
@@ -22,6 +19,14 @@ export interface MemVideo {
 export interface Mem {
   id?: string;
   raw?: string;
+
+  media?: {
+    path?: string;
+    url?: string;
+    type?: string;
+    width?: string;
+    height?: string;
+  };
 
   // If null or 0, this mem is archived.
   new?: boolean;

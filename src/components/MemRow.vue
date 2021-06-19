@@ -44,6 +44,10 @@
         </div>
       </div>
 
+      <div v-if="mem.media" class="photos">
+        <img :src="getMediaImageUrl" />
+      </div>
+
       <div class="date" :title="mem.id">{{ prettyDate }}</div>
     </div>
     <div class="controls">
@@ -214,12 +218,15 @@ $row-width: 400px;
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { Mem } from "../../functions/core/mems";
 import { DateTime } from "luxon";
+import firebase from "firebase/app";
+import "firebase/storage";
 
 @Component
 export default class MemRow extends Vue {
   @Prop() private mem!: Mem;
 
   maxChars = 1000;
+  cachedImageUrl = "";
 
   get prettyTitle(): string {
     if (!this.mem) {
@@ -254,6 +261,17 @@ export default class MemRow extends Vue {
       return this.mem.description.substring(0, this.maxChars) + "...";
     }
     return this.mem.description;
+  }
+
+  async getMediaImageUrl(): Promise<string> {
+    if (this.mem && this.mem.media && this.mem.media.path) {
+      const url = await firebase
+        .storage()
+        .ref(this.mem.media.path)
+        .getDownloadURL();
+      this.cachedImageUrl = url;
+    }
+    return this.cachedImageUrl;
   }
 
   noteDidChange(e: FocusEvent & EventTarget): void {
