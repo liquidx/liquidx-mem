@@ -59,6 +59,8 @@ export const parseText = (text: string): Mem => {
     const first = matches[0];
     mem.url = first.toString();
     mem.note = text.replace(urlRegex(), "").trim();
+  } else {
+    mem.note = text;
   }
 
   if (mem.note) {
