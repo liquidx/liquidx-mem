@@ -26,6 +26,17 @@
         <a href="/data">export/import json</a>
       </div>
     </header>
+    <section class="summary">
+      <a class="tag" href="#" @click.prevent="filterBy('')">New</a>
+      <a class="tag" href="#" @click.prevent="filterBy('#art')">#art</a>
+      <a class="tag" href="#" @click.prevent="filterBy('#code')">#code</a>
+      <a class="tag" href="#" @click.prevent="filterBy('#work')">#work</a>
+      <a class="tag" href="#" @click.prevent="filterBy('#place')">#place</a>
+      <a class="tag" href="#" @click.prevent="filterBy('#podcast')">#podcast</a>
+      <a class="tag" href="#" @click.prevent="filterBy('#hongkong')"
+        >#hongkong</a
+      >
+    </section>
     <main>
       <div class="add">
         <textarea
@@ -35,25 +46,15 @@
         </textarea>
         <input type="button" value="Add" @click="addNewMem" />
       </div>
-      <div class="tags">
-        <a class="tag" href="#" @click.prevent="filterBy('')">New</a>
-        <a class="tag" href="#" @click.prevent="filterBy('#art')">#art</a>
-        <a class="tag" href="#" @click.prevent="filterBy('#code')">#code</a>
-        <a class="tag" href="#" @click.prevent="filterBy('#work')">#work</a>
-        <a class="tag" href="#" @click.prevent="filterBy('#place')">#place</a>
-        <a class="tag" href="#" @click.prevent="filterBy('#podcast')"
-          >#podcast</a
-        >
-        <a class="tag" href="#" @click.prevent="filterBy('#hongkong')"
-          >#hongkong</a
-        >
-      </div>
+
       <mem-list
         :mems="mems"
         @archive="archiveMem"
         @delete="deleteMem"
         @annotate="annotateMem"
         @note-changed="updateNoteForMem"
+        @title-changed="updateTitleForMem"
+        @description-changed="updateDescriptionForMem"
       />
     </main>
   </div>
@@ -61,18 +62,57 @@
 
 <style lang="scss" scoped>
 @import "src/layout";
+@import "src/colors";
 
 .functions {
   margin: 1rem 0;
 }
 
-.tags {
-  margin: 1rem 1rem;
+header {
+  flex-grow: 0;
+  width: 200px;
+  min-width: 200px;
+  max-height: 100vh;
+  font-size: 0.9rem;
 
-  .tag {
-    margin-right: 0.5rem;
-    color: rgb(200, 200, 200);
+  padding: 5rem 1rem 1rem 2rem;
+
+  display: flex;
+  flex-direction: column;
+
+  h1 {
+    font-size: 1.2rem;
+    a {
+      text-decoration: none;
+    }
   }
+
+  .signin-button {
+    color: white;
+    background: black;
+  }
+}
+
+section.summary {
+  display: block;
+  flex-grow: 0;
+
+  width: 200px;
+  min-width: 200px;
+  max-height: 100vh;
+
+  padding: 5rem 1rem 1rem 1rem;
+
+  a.tag {
+    display: block;
+    margin-right: 0.5rem;
+    color: $color-grey;
+  }
+}
+
+main {
+  flex-grow: 1;
+  padding: 2rem 1rem;
 }
 
 .home {
@@ -80,33 +120,6 @@
   flex-direction: row;
   min-height: 100vh;
   width: 100vw;
-
-  header {
-    flex-grow: 0;
-    width: 150px;
-    min-width: 150px;
-    margin-top: 50px;
-    max-height: 100vh;
-
-    display: flex;
-    flex-direction: column;
-
-    h1 {
-      font-size: 1.2rem;
-      a {
-        text-decoration: none;
-      }
-    }
-
-    .signin-button {
-      color: white;
-      background: black;
-    }
-  }
-
-  main {
-    flex-grow: 1;
-  }
 }
 
 .add {
@@ -134,19 +147,37 @@
   .home {
     flex-direction: column;
     width: 100vw;
-    header {
-      margin-top: 0;
-      padding: 1rem 2rem;
-      min-width: 100vw;
-      width: 100vw;
-    }
-    main {
-      max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  header {
+    margin-top: 0;
+    padding: 1rem 2rem;
+    min-width: 100vw;
+    max-width: 100vw;
+    width: 100vw;
+  }
+
+  section.summary {
+    min-width: 100vw;
+    max-width: 100vw;
+    width: 100vw;
+
+    padding: 1rem 2rem;
+
+    a.tag {
+      display: inline-block;
     }
   }
 
+  main {
+    padding: 1rem 1rem;
+    max-width: 100vw;
+  }
+
   .add {
-    width: 80vw;
+    padding: 0 1rem;
+    width: 100%;
   }
 }
 </style>
@@ -272,10 +303,33 @@ export default class Home extends Vue {
   }
 
   updateNoteForMem(changed: { mem: Mem; note: string }): void {
-    //const updated = Object.assign({}, mem, {note: note, id: undefined});
     const updated = {
       note: changed.note,
       tags: extractTags(changed.note),
+    };
+    this.memsCollection()
+      .doc(changed.mem.id)
+      .update(updated)
+      .then(() => {
+        console.log("Updated mem", changed.mem.id, updated);
+      });
+  }
+
+  updateTitleForMem(changed: { mem: Mem; title: string }): void {
+    const updated = {
+      title: changed.title,
+    };
+    this.memsCollection()
+      .doc(changed.mem.id)
+      .update(updated)
+      .then(() => {
+        console.log("Updated mem", changed.mem.id, updated);
+      });
+  }
+
+  updateDescriptionForMem(changed: { mem: Mem; description: string }): void {
+    const updated = {
+      description: changed.description,
     };
     this.memsCollection()
       .doc(changed.mem.id)

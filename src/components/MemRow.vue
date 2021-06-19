@@ -3,13 +3,21 @@
     <div class="contents">
       <div v-if="mem.url" class="title">
         <a :href="mem.url" target="_blank">
-          {{ prettyTitle }}
+          <span class="title-text">{{ prettyTitle }}</span>
+        </a>
+        <a href="#" class="title-edit" @click.prevent="startEdit">
+          <span class="material-icons">&#xe3c9;</span>
         </a>
       </div>
       <div v-if="!mem.url">
         {{ mem.raw }}
       </div>
-      <div v-if="mem.description" class="description">
+      <div
+        v-if="mem.description"
+        class="description"
+        contenteditable
+        @blur="descriptionDidChange"
+      >
         {{ shortDescription }}
       </div>
       <div
@@ -50,7 +58,7 @@
         Unarchive
       </a>
       <a href="#" @click.prevent="$emit('annotate', mem)">
-        <span class="material-icons">&#xe863;</span>
+        <span class="material-icons">&#xf071;</span>
         Annotate
       </a>
       <a href="#" class="delete" @click.prevent="$emit('delete', mem)">
@@ -63,17 +71,45 @@
 
 <style lang="scss" scoped>
 @import "src/layout";
+@import "src/colors";
+
+$highlight-border-width: 2px;
+$row-width: 400px;
 
 .mem {
+  border-left: $highlight-border-width solid rgba(0, 0, 0, 0);
   margin: 0.5rem 0;
   padding: 0.5rem 1rem;
 
   display: flex;
   flex-direction: column;
 
-  .title a {
-    font-weight: 700;
-    text-decoration: none;
+  .title {
+    max-width: $row-width;
+    a {
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    a.title-edit {
+      display: none;
+      color: $color-light-grey;
+
+      .material-icons {
+        padding: 0 0.5rem;
+        font-size: 1rem;
+        vertical-align: top;
+      }
+    }
+    a.title-edit:hover {
+      color: $color-grey;
+    }
+  }
+
+  .title:hover {
+    a.title-edit {
+      display: inline;
+    }
   }
 
   .contents {
@@ -84,7 +120,7 @@
     font-size: 0.8rem;
 
     a {
-      color: rgb(200, 200, 200);
+      color: $color-light-grey;
       text-decoration: none;
       margin-right: 1rem;
 
@@ -95,7 +131,7 @@
     }
 
     a:hover {
-      color: rgb(160, 160, 160);
+      color: $color-grey;
     }
 
     a.delete:hover {
@@ -107,18 +143,18 @@
     padding: 0.5rem 0;
     font-size: 0.8rem;
     line-height: 1.1rem;
-    color: rgb(220, 220, 220);
+    color: $color-very-light-grey;
   }
 
   .videos {
     .video-player {
-      max-width: 400px;
+      max-width: $row-width;
     }
   }
 
   .photos {
     img {
-      max-width: 400px;
+      max-width: $row-width;
     }
   }
 
@@ -128,23 +164,28 @@
     padding: 0.5rem 0;
     font-size: 0.9rem;
     line-height: 1.1rem;
-    max-width: 400px;
+    max-width: $row-width;
   }
 
   .note {
-    background-color: rgb(250, 250, 250);
-    border-bottom: 1px solid rgb(240, 240, 240);
-    padding: 1rem 0.5rem;
+    background-color: $color-extremely-light-grey;
+    border-left: 3px solid $color-medium-grey;
+    padding: 1rem 1rem;
     transition: padding 200ms 0.2s;
   }
 
   .note.nocontent {
-    padding: 0.2rem 0.5rem;
+    padding: 0.2rem 1rem;
   }
 
   .note.nocontent:focus {
     padding: 1rem 0.5rem;
   }
+}
+
+.mem:hover {
+  border-left: $highlight-border-width solid $color-very-light-grey;
+  //background-color: $color-extremely-light-grey;
 }
 
 @media (max-width: $layout-mobile-width) {
@@ -224,6 +265,45 @@ export default class MemRow extends Vue {
     const noteValue = target.innerText;
     if (noteValue != this.mem.note) {
       this.$emit("note-changed", { mem: this.mem, note: noteValue });
+    }
+  }
+
+  descriptionDidChange(e: FocusEvent & EventTarget): void {
+    const target: HTMLElement = e.target as HTMLElement;
+    if (!target) {
+      return;
+    }
+    const descriptionValue = target.innerText;
+    if (descriptionValue != this.mem.description) {
+      this.$emit("description-changed", {
+        mem: this.mem,
+        description: descriptionValue,
+      });
+    }
+  }
+
+  startEdit(): void {
+    const titleEl = this.$el.querySelector(".title-text") as HTMLElement;
+    if (titleEl) {
+      const linkEl = titleEl.parentElement as HTMLElement;
+      if (!linkEl) {
+        return;
+      }
+      const linkUrl = linkEl.getAttribute("href");
+      linkEl.removeAttribute("href");
+
+      titleEl.setAttribute("contenteditable", "");
+      titleEl.focus();
+      titleEl.onblur = () => {
+        this.$emit("title-changed", {
+          mem: this.mem,
+          title: titleEl.innerText,
+        });
+        titleEl.removeAttribute("contenteditable");
+        if (linkUrl) {
+          linkEl.setAttribute("href", linkUrl);
+        }
+      };
     }
   }
 }
