@@ -26,16 +26,13 @@ export interface Mem {
   // If null or 0, this mem is archived.
   new?: boolean;
 
-  // Deprecated because it's freaking useless.
-  added?: firebase.firestore.Timestamp;
-
-  // Export
   addedMs?: number;
 
   // Derived
   url?: string;
   note?: string;
   tags?: string[];
+  dateString?: string; // Not added date, but date described by the content. (yyyy-mm-dd format)
 
   // Open Graph or Tweet.
   title?: string;
@@ -56,26 +53,10 @@ export interface Mem {
 
 export const memFromJson = (json: Mem) => {
   const mem = Object.assign({}, json);
-
-  if (json.added) {
-    const ms = json.added.seconds * 1000;
-    const timestamp = new firebase.firestore.Timestamp(
-      json.added.seconds,
-      json.added.nanoseconds
-    );
-    console.log(timestamp);
-    delete mem.added;
-    mem.addedMs = ms;
-  }
-
   return mem;
 };
 
 export const memToJson = (mem: Mem) => {
   const json = Object.assign({}, mem);
-  if (mem.added) {
-    json.addedMs = mem.added.toMillis();
-    delete json.added;
-  }
   return json;
 };
