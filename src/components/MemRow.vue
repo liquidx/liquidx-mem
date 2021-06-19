@@ -45,7 +45,7 @@
       </div>
 
       <div v-if="mem.media" class="photos">
-        <img :src="getMediaImageUrl" />
+        <img :src="mediaImageUrl" />
       </div>
 
       <div class="date" :title="mem.id">{{ prettyDate }}</div>
@@ -215,7 +215,7 @@ $row-width: 400px;
 </style>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { Mem } from "../../functions/core/mems";
 import { DateTime } from "luxon";
 import firebase from "firebase/app";
@@ -226,7 +226,15 @@ export default class MemRow extends Vue {
   @Prop() private mem!: Mem;
 
   maxChars = 1000;
-  cachedImageUrl = "";
+  mediaImageUrl = "";
+
+  @Watch("mem") onMemChanged(val: Mem, oldVal: Mem) {
+    this.getMediaImageUrl();
+  }
+
+  mounted() {
+    this.getMediaImageUrl();
+  }
 
   get prettyTitle(): string {
     if (!this.mem) {
@@ -265,13 +273,15 @@ export default class MemRow extends Vue {
 
   async getMediaImageUrl(): Promise<string> {
     if (this.mem && this.mem.media && this.mem.media.path) {
+      console.log("Getting url", this.mem.media.path);
       const url = await firebase
         .storage()
         .ref(this.mem.media.path)
         .getDownloadURL();
-      this.cachedImageUrl = url;
+      console.log("Got url", this.mem.media.path);
+      this.mediaImageUrl = url;
     }
-    return this.cachedImageUrl;
+    return this.mediaImageUrl;
   }
 
   noteDidChange(e: FocusEvent & EventTarget): void {
