@@ -32,12 +32,12 @@
         >Archived</a
       >
       <a
-        v-for="tag in config.tags"
+        v-for="tag in allTags"
         :key="tag"
         class="tag"
         href="#"
-        @click.prevent="filterBy('#' + tag)"
-        >#{{ tag }}</a
+        @click.prevent="filterBy(tag.tag)"
+        >{{ tag.tag }} ({{tag.count}})</a
       >
     </section>
     <main>
@@ -188,6 +188,8 @@ main {
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
 import { DateTime } from "luxon";
+import toPairs from "lodash/toPairs";
+import orderBy from "lodash/orderBy";
 import firebase from "firebase/app";
 
 import MemList from "@/components/MemList.vue";
@@ -206,6 +208,7 @@ export default class Home extends Vue {
   $firebase: any; // firebase.app.App
 
   // Vue data
+  allMems: Mem[] = [];
   mems: Mem[] = [];
   config: Record<string, any> = {};
   rawInput = "";
@@ -243,6 +246,8 @@ export default class Home extends Vue {
     } else {
       this.$bind("mems", this.memsCollection().where("new", "==", true));
     }
+
+    this.$bind("allMems", this.memsCollection());
   }
 
   get signedIn(): boolean {
@@ -269,6 +274,24 @@ export default class Home extends Vue {
       return db.collection("users").doc("1").collection("mems");
     }
     return db.collection("users").doc(this.user.uid).collection("mems");
+  }
+
+  // computed proper
+  get allTags(): Array<Record<string, any>> {
+    console.log("getAllTags");
+    let tags: Record<string, number> = {};
+    this.allMems.forEach((mem) => {
+      if (mem.tags) {
+        for (const tag of mem.tags) {
+          tags[tag] = tags[tag] ? tags[tag] + 1 : 1;
+        }
+      }
+    });
+
+    return orderBy(toPairs(tags), [1], ['desc']).map(o => ({
+      tag: o[0],
+      count: o[1]
+    }));
   }
 
   filterBy(tag: string): void {
