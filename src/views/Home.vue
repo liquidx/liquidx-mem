@@ -33,7 +33,7 @@
       >
       <a
         v-for="tag in allTags"
-        :key="tag"
+        :key="tag.tag"
         class="tag"
         href="#"
         @click.prevent="filterBy(tag.tag)"
