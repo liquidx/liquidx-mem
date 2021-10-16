@@ -1,3 +1,9 @@
+/**
+ * Annotator methods for Tweets.
+ * 
+ * Deliberately using v1.1 API because v2 API doesn't return URLs for GIFs and Videos.
+ */
+
 import needle from "needle";
 import { DateTime } from "luxon";
 
@@ -9,10 +15,13 @@ export const twitterStatusUrlRegex = new RegExp(
 );
 const twitterApiUserAgent = "liquidx-mem/1";
 
-interface Tweet {
+interface ShowTweetResponse {
   id: number;
   created_at: string;
-  text: string;
+  // Returned if tweet_mode=extended
+  full_text?: string;
+  // Returned if using regular v1.1 API
+  text?: string;
   user?: {
     screen_name?: string;
     url?: string;
@@ -27,9 +36,18 @@ interface Tweet {
   };
 }
 
-export const tweetVisibleText = (tweet: Tweet): Mem => {
+
+const tweetVisibleText = (tweet: ShowTweetResponse): Mem => {
   const authorName = tweet.user ? tweet.user.screen_name : "unknown";
   const authorUrl = tweet.user ? tweet.user.url : undefined;
+  let originalText = "";
+  if (tweet.full_text) {
+    originalText = tweet.full_text;
+  } else if (tweet.text) {
+    originalText = tweet.text;
+  }
+
+
   let title = "";
   let text = "";
   let html = "";
@@ -48,8 +66,8 @@ export const tweetVisibleText = (tweet: Tweet): Mem => {
     }
 
     if (tweet.extended_entities && tweet.extended_entities.media) {
+      //console.log('media:', tweet.extended_entities.media);
       for (const media of tweet.extended_entities.media) {
-        // console.dir(media);
         // if (media.video_info) {
         //   console.dir(media.video_info);
         // }
@@ -57,14 +75,16 @@ export const tweetVisibleText = (tweet: Tweet): Mem => {
       }
     }
 
+
     // sort replacements.
     entities.sort((a, b) => {
       return a.indices[0] - b.indices[0];
     });
+
     let index = 0;
     for (const entity of entities) {
-      text += tweet.text.substring(index, entity.indices[0]);
-      html += tweet.text.substring(index, entity.indices[0]);
+      text += originalText.substring(index, entity.indices[0]);
+      html += originalText.substring(index, entity.indices[0]);
       if (entity.media_url_https) {
         media.push(entity);
         const mediaType = entity.type || "";
@@ -93,11 +113,11 @@ export const tweetVisibleText = (tweet: Tweet): Mem => {
       }
       index = entity.indices[1];
     }
-    text += tweet.text.substring(index, tweet.text.length);
-    html += tweet.text.substring(index, tweet.text.length);
+    text += originalText.substring(index, originalText.length);
+    html += originalText.substring(index, originalText.length);
   } else {
-    text = tweet.text;
-    html = tweet.text;
+    text = originalText;
+    html = originalText;
   }
 
   title = `@${authorName} on twitter`;
@@ -118,27 +138,54 @@ export const tweetVisibleText = (tweet: Tweet): Mem => {
   };
 };
 
-export const annotateWithTwitterApi = (mem: Mem, url: string): Promise<Mem> => {
-  const match = url.match(twitterStatusUrlRegex);
-  if (match) {
-    let annotated: Mem = Object.assign({}, mem);
-    const endpointURL = "https://api.twitter.com/1.1/statuses/show.json";
+export const twitterApiRequest = (version: number, tweetId: string): { url: string, params: Record<string, unknown>, headers: Record<string, string> } => {
+  if (version == 1) {
+    const url = "https://api.twitter.com/1.1/statuses/show.json";
     const params = {
-      id: match[1],
-      include_entities: "true"
+      id: tweetId,
+      include_entities: "true",
+      // Undocumented parameter to access tweets with 280 chars.
+      // https://twittercommunity.com/t/missing-media-property-in-entities/70388/4
+      // attribute text -> full_text
+      tweet_mode: "extended"
     };
     const headers = {
       "User-Agent": twitterApiUserAgent,
       authorization: `Bearer ${twitterToken.bearerToken}`
     };
+    return { url, params, headers }
+  } else {
+    // Currently ignored. API v2 does not return URLs for video and GIF entities.
+    const url = `https://api.twitter.com/2/tweets/${tweetId}`
+    const params = {
+      expansions: 'attachments.media_keys,author_id',
+      'tweet.fields': 'entities,source,text,created_at',
+      'media.fields': 'width,height,type,duration_ms,preview_image_url,url',
+      'user.fields': 'id,name'
+    }
+    const headers = {
+      "User-Agent": twitterApiUserAgent,
+      //authorization: `Bearer ${twitterV2Token.BEARER_TOKEN}`
+    }
+    return { url, params, headers }
+  }
+}
 
-    return needle("get", endpointURL, params, { headers })
+export const annotateWithTwitterApi = (mem: Mem, url: string): Promise<Mem> => {
+  const match = url.match(twitterStatusUrlRegex);
+  const version = 1;
+  if (match) {
+    let annotated: Mem = Object.assign({}, mem);
+    const { url, params, headers } = twitterApiRequest(version, match[1])
+
+    return needle("get", url, params, { headers })
       .then(response => {
-        if (response && response.body && response.body.text) {
-          const contents = tweetVisibleText(response.body as Tweet);
+        // Check this is a valid JSON response and has the atttribute 'text' or 'full_text'
+        if (response && response.body && (response.body.text || response.body.full_text)) {
+          const contents = tweetVisibleText(response.body as ShowTweetResponse);
           annotated = Object.assign(annotated, contents);
         } else {
-          console.log(response.body);
+          console.log('Error. Invalid response:', response.body);
         }
         return annotated;
       })

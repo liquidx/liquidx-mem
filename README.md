@@ -74,4 +74,13 @@ Instructions to set up for yourself is still work in progress, but the basics ar
 }
 ```
 
-Sorry
+# Unit Testing
+
+`functions/test`
+
+```
+# Run all tests
+npx mocha --reporter spec
+# Run all twitter tests
+npm run build && npx mocha --grep twitter 
+```

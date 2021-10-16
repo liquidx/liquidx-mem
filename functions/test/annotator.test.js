@@ -12,7 +12,6 @@ describe("annotator", () => {
     const expected = {};
 
     const result = await annotateMem(mem);
-    console.log(result);
     result.should.have.property("photos").with.lengthOf(1);
   });
 
@@ -35,7 +34,6 @@ describe("annotator", () => {
     };
 
     const result = await annotateMem(mem);
-    console.log(result.photos);
     result.should.have.property("title").equal(expected.title);
     result.should.have.property("description").equal(expected.description);
     result.should.have.property("photos").with.lengthOf(1);
@@ -65,7 +63,14 @@ describe("annotator", () => {
       url: "https://twitter.com/ggsimm/status/1390017555612512257"
     };
     const result = await annotateMem(mem);
-    console.log(result);
     result.should.have.property("videos").with.lengthOf(1);
+  });
+
+  it("should get twitter entities for long tweets", async () => {
+    const mem = {
+      url: "https://twitter.com/aemkei/status/1447297123440119824?s=12"
+    };
+    const result = await annotateMem(mem);
+    result.should.have.property("twitterMedia").with.lengthOf(1);
   });
 });
