@@ -73,4 +73,12 @@ describe("annotator", () => {
     const result = await annotateMem(mem);
     result.should.have.property("twitterMedia").with.lengthOf(1);
   });
+
+  it("should get url in tweet", async() => {
+    const mem = {
+      url: "https://twitter.com/karenklcheung/status/1448862196503482378?s=12"
+    };
+    const result = await annotateMem(mem);
+    result.should.have.property("links").with.lengthOf(1);
+  });
 });

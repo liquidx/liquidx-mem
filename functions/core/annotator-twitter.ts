@@ -8,7 +8,7 @@ import needle from "needle";
 import { DateTime } from "luxon";
 
 import twitterToken from "../credentials-twitter.json";
-import { Mem, MemVideo, MemPhoto } from "./mems";
+import { Mem, MemVideo, MemPhoto, MemLink } from "./mems";
 
 export const twitterStatusUrlRegex = new RegExp(
   "https://twitter.com/.*/status/([0-9]+)"
@@ -56,6 +56,7 @@ const tweetVisibleText = (tweet: ShowTweetResponse): Mem => {
   const media = [];
   const photos: MemPhoto[] = [];
   const videos: MemVideo[] = [];
+  const links: MemLink[] = [];
 
   if (tweet.entities) {
     if (tweet.entities.urls) {
@@ -110,6 +111,10 @@ const tweetVisibleText = (tweet: ShowTweetResponse): Mem => {
       } else if (entity.url) {
         text += `${entity.display_url} `;
         html += `<a href="${entity.expanded_url}">${entity.display_url}</a> `;
+        links.push({
+          url: entity.url,
+          description: entity.display_url
+        })
       }
       index = entity.indices[1];
     }
@@ -133,6 +138,7 @@ const tweetVisibleText = (tweet: ShowTweetResponse): Mem => {
     twitterMedia: media,
     photos: photos,
     videos: videos,
+    links: links,
     authorName: authorName,
     authorUrl: authorUrl
   };

@@ -16,6 +16,11 @@ export interface MemVideo {
   };
 }
 
+export interface MemLink  {
+  url: string;
+  description?: string;
+}
+
 export interface Mem {
   id?: string;
   raw?: string;
@@ -54,6 +59,7 @@ export interface Mem {
   twitterMedia?: any;
   photos?: MemPhoto[];
   videos?: MemVideo[];
+  links?: MemLink[];
 }
 
 export const memFromJson = (json: Mem) => {
