@@ -61,7 +61,7 @@ const tweetVisibleText = (tweet: ShowTweetResponse): Mem => {
   if (tweet.entities) {
     if (tweet.entities.urls) {
       for (const url of tweet.entities.urls) {
-        console.dir(url);
+        //console.dir(url);
         entities.push(url);
       }
     }
