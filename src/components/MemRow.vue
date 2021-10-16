@@ -48,6 +48,12 @@
         <img :src="mediaImageUrl" />
       </div>
 
+      <div v-if="mem.links" class="links">
+        <div v-for="link in mem.links" :key="link.url">
+          <a :href="link.url" target="_blank">{{link.url}}</a>
+        </div>
+      </div>
+
       <div class="date" :title="mem.id">{{ prettyDate }}</div>
     </div>
     <div class="controls">

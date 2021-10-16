@@ -327,7 +327,9 @@ export default class Home extends Vue {
       return;
     }
 
-    fetch(`/api/annotate?user=${this.user.uid}&mem=${mem.id}`)
+    // TODO: make this work for dev too.
+    const url = `/api/annotate?user=${this.user.uid}&mem=${mem.id}`;
+    fetch(url)
       .then((response) => response.text())
       .then((response) => console.log(response));
   }
