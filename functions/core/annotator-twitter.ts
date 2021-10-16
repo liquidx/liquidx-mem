@@ -61,7 +61,7 @@ const tweetVisibleText = (tweet: ShowTweetResponse): Mem => {
   if (tweet.entities) {
     if (tweet.entities.urls) {
       for (const url of tweet.entities.urls) {
-        //console.dir(url);
+        console.dir(url);
         entities.push(url);
       }
     }
@@ -107,12 +107,13 @@ const tweetVisibleText = (tweet: ShowTweetResponse): Mem => {
           }
         }
 
-        // no-op for text - remove media from the tweet.
+        
       } else if (entity.url) {
+        // Parse links as MemLink objects.
         text += `${entity.display_url} `;
         html += `<a href="${entity.expanded_url}">${entity.display_url}</a> `;
         links.push({
-          url: entity.url,
+          url: entity.expanded_url,
           description: entity.display_url
         })
       }
