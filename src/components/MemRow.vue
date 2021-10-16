@@ -50,7 +50,10 @@
 
       <div v-if="mem.links" class="links">
         <div v-for="link in mem.links" :key="link.url">
-          <a :href="link.url" target="_blank">{{link.url}}</a>
+          <a :href="link.url" target="_blank">
+            <span v-if="link.description">{{link.description}}</span>
+            <span v-else>{{link.url}}</span>
+          </a>
         </div>
       </div>
 
@@ -165,6 +168,17 @@ $row-width: 400px;
     img {
       max-width: $row-width;
     }
+  }
+
+  .links {
+    a {
+      color: $color-grey;
+      font-size: 0.9rem;
+    }
+
+    border: 1px solid $color-light-grey;
+    padding: 0.5rem;
+    max-width: $row-width;
   }
 
   .description,
