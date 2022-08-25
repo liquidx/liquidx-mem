@@ -15,52 +15,78 @@
   </div>
 </template>
 
-<style lang="scss" scoped>
-.mem-row {
-  margin-bottom: 2rem;
-}
-</style>
-
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-import orderBy from "lodash/orderBy";
+  import orderBy from 'lodash/orderBy'
+  import { defineComponent } from 'vue'
+  import MemRow from '@/components/MemRow.vue'
+  import { Mem } from '../../functions/core/mems'
+  import type { PropType } from 'vue'
 
-import MemRow from "@/components/MemRow.vue";
-import { Mem } from "../../functions/core/mems";
-
-@Component({
-  components: {
-    MemRow,
-  },
-})
-export default class Home extends Vue {
-  @Prop() private mems!: Mem[];
-
-  get orderedMems(): Mem[] {
-    return orderBy(this.mems, ["addedMs"], ["desc"]);
-  }
-
-  archiveMem(mem: Mem): void {
-    this.$emit("archive", mem);
-  }
-
-  deleteMem(mem: Mem): void {
-    this.$emit("delete", mem);
-  }
-
-  annotateMem(mem: Mem): void {
-    this.$emit("annotate", mem);
-  }
-
-  updateNoteForMem(changed: { mem: Mem; note: string }): void {
-    this.$emit("note-changed", changed);
-  }
-
-  updateTitleForMem(changed: { mem: Mem; title: string }): void {
-    this.$emit("title-changed", changed);
-  }
-  updateDescriptionForMem(changed: { mem: Mem; description: string }): void {
-    this.$emit("description-changed", changed);
-  }
-}
+  export default defineComponent({
+    components: {
+      MemRow,
+    },
+    emits: {
+      archive(mem: Mem) {
+        return true
+      },
+      delete(mem: Mem) {
+        return true
+      },
+      annotate(mem: Mem) {
+        return true
+      },
+      noteChanged(mem: Mem, note: string) {
+        return true
+      },
+      descriptionChanged(mem: Mem, description: string) {
+        return true
+      },
+      titleChanged(mem: Mem, title: string) {
+        return true
+      },
+    },
+    props: {
+      mems: {
+        type: Array as PropType<Mem[]>,
+        required: true,
+      },
+    },
+    data() {
+      return {
+        count: 1,
+      }
+    },
+    computed: {
+      orderedMems() {
+        return orderBy(this.mems, ['addedMs'], ['desc'])
+      },
+    },
+    methods: {
+      archiveMem(mem: Mem) {
+        this.$emit('archive', mem)
+      },
+      deleteMem(mem: Mem) {
+        this.$emit('delete', mem)
+      },
+      annotateMem(mem: Mem) {
+        this.$emit('annotate', mem)
+      },
+      updateNoteForMem(mem: Mem, note: string) {
+        this.$emit('noteChanged', mem, note)
+      },
+      updateDescriptionForMem(mem: Mem, description: string) {
+        this.$emit('descriptionChanged', mem, description)
+      },
+      updateTitleForMem(mem: Mem, title: string) {
+        this.$emit('titleChanged', mem, title)
+      },
+    },
+  })
 </script>
+
+<style lang="scss" scoped>
+  .mem-row {
+    margin-bottom: 2rem;
+  }
+</style>
