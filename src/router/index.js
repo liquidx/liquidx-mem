@@ -1,12 +1,9 @@
-import Vue from "vue";
-import VueRouter, { RouteConfig } from "vue-router";
+import { createRouter, createWebHistory } from 'vue-router';
 import Home from "../views/Home.vue";
 import DataPage from "../views/DataPage.vue";
 import About from "../views/About.vue";
 
-Vue.use(VueRouter);
-
-const routes: Array<RouteConfig> = [
+const routes = [
   {
     path: "/",
     name: "Home",
@@ -24,9 +21,9 @@ const routes: Array<RouteConfig> = [
   }
 ];
 
-const router = new VueRouter({
-  mode: "history",
+const router = createRouter({
+  history: createWebHistory(),
   routes
-});
+})
 
 export default router;

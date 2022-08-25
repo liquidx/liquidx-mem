@@ -16,13 +16,11 @@
         Save mems from an iPhone by using this
         <a
           href="https://www.icloud.com/shortcuts/780e5199083447e1ac5257131a995369"
-          >Add to Mem Shortcut</a
-        >
+        >Add to Mem Shortcut</a>
         or images using this
         <a
           href="https://www.icloud.com/shortcuts/780e5199083447e1ac5257131a995369"
-          >Add Photo to Mem Shortcut</a
-        >
+        >Add Photo to Mem Shortcut</a>
       </p>
       <p>
         Save mems from an Android device by using HTTP Shortcuts app and

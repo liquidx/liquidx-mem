@@ -12,5 +12,13 @@ export const db = firebaseApp.firestore();
 const { Timestamp, GeoPoint } = firebase.firestore;
 export { Timestamp, GeoPoint };
 
+export const unwrapDocs = (docs): Array<firebase.firestore.DocumentData> => {
+  let unwrapped: Array<firebase.firestore.DocumentData> = [];
+  docs.forEach(doc => {
+    unwrapped.push(doc.data());
+  })
+  return unwrapped
+}
+
 // if using Firebase JS SDK < 5.8.0
 // db.settings({ timestampsInSnapshots: true });
