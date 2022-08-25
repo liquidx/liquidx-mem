@@ -89,6 +89,7 @@
         mems: [],
         showTags: [],
         showArchivedStatus: 'new',
+        unsubscribeListener: null,
       }
     },
 
@@ -114,18 +115,33 @@
       },
     },
 
+    willUnmount() {
+      this.unbindMems()
+    },
+
     mounted() {
       // this.$firebase
       //   .auth()
       //   .setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
       this.$firebase.auth().onAuthStateChanged(user => {
         this.user = user
+        this.bindMems()
         this.reloadMems()
 
         console.log('Signed in user:', this.user)
       })
     },
     methods: {
+      bindMems() {
+        this.unsubscribeListener = this.memsCollection().onSnapshot(
+          snapshot => {
+            this.reloadMems()
+          },
+        )
+      },
+      unbindMems() {
+        this.unsubscribeListener()
+      },
       async reloadMems() {
         if (this.showTags.length) {
           this.mems = await this.memsCollection()
