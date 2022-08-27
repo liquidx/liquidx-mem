@@ -4,7 +4,7 @@
       <div
         class="note"
         :class="{ nocontent: !mem.note }"
-        contenteditable=""
+        contenteditable="true"
         @blur="noteDidChange"
       >
         {{ mem.note }}
@@ -20,7 +20,7 @@
       <div
         v-if="mem.description"
         class="description"
-        contenteditable
+        contenteditable="true"
         @blur="descriptionDidChange"
       >
         {{ shortDescription }}
@@ -212,7 +212,7 @@
           const linkUrl = linkEl.getAttribute('href')
           linkEl.removeAttribute('href')
 
-          titleEl.setAttribute('contenteditable', '')
+          titleEl.setAttribute('contenteditable', 'true')
           titleEl.focus()
           titleEl.onblur = () => {
             this.$emit('title-changed', {
