@@ -1,13 +1,4 @@
-// Temporary only when using compat
-
-// declare module 'vue' {
-//   import { CompatVue } from 'vue'
-//   const Vue: CompatVue
-//   export default Vue
-//   export * from '@vue/runtime-dom'
-//   const { configureCompat } = Vue
-//   export { configureCompat }
-// }
+import firebase from "firebase/app";
 
 /// <reference types="vite/client" />
 
@@ -15,4 +6,10 @@ declare module '*.vue' {
   import type { DefineComponent } from 'vue'
   const component: DefineComponent<{}, {}, any>
   export default component
+}
+
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    $firebase: typeof firebase.app.App
+  }
 }
