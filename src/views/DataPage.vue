@@ -46,9 +46,10 @@
 
 <script lang="ts">
   import firebase from "firebase/app";
-  import { db } from "../firebase";
-  import { Mem, memFromJson } from "../../functions/core/mems";
   import { defineComponent } from 'vue'
+
+  import { Mem, memFromJson } from "../../functions/core/mems";
+  import { db, unwrapDocs } from '../firebase'
 
   export default defineComponent({
 
@@ -66,8 +67,7 @@
       //   .setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
       this.$firebase.auth().onAuthStateChanged((user: firebase.User) => {
         this.user = user;
-        this.$bind("mems", this.memsCollection());
-
+        this.loadMems();
         console.log("Signed in user:", this.user.uid);
       });
     },
@@ -79,6 +79,12 @@
     },
 
     methods: {
+
+      async loadMems() {
+        this.mems = await this.memsCollection()
+          .get()
+          .then(docs => unwrapDocs(docs))
+      },
 
       memsCollection() {
         if (!this.user) {

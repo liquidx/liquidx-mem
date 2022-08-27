@@ -92,7 +92,7 @@
         mems: [] as Mem[],
         showTags: [] as string[],
         showArchivedStatus: 'new',
-        unsubscribeListener: null as Unsubscribe | null,
+        unsubscribeListener: null as (() => void) | null,
       }
     },
 
@@ -143,7 +143,9 @@
         )
       },
       unbindMems() {
-        this.unsubscribeListener()
+        if (this.unsubscribeListener) {
+          this.unsubscribeListener()
+        }
       },
       async reloadMems() {
         if (this.showTags.length) {

@@ -74,6 +74,12 @@ Instructions to set up for yourself is still work in progress, but the basics ar
 }
 ```
 
+# Editor
+
+## Visual Studio Code
+
+When using Visual Studio Code, install Volar and Typescript for Volar extensions.
+
 # Unit Testing
 
 `functions/test`
