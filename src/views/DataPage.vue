@@ -54,17 +54,17 @@
 
     data() {
       return {
-        mems: [],
+        mems: [] as Mem[],
         downloadUrl: "",
-        importMems: [],
-        user: null
+        importMems: [] as Mem[],
+        user: null as firebase.User | null,
       }
     },
     mounted() {
       // this.$firebase
       //   .auth()
       //   .setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
-      this.$firebase.auth().onAuthStateChanged((user) => {
+      this.$firebase.auth().onAuthStateChanged((user: firebase.User) => {
         this.user = user;
         this.$bind("mems", this.memsCollection());
 
@@ -87,7 +87,7 @@
         return db.collection("users").doc(this.user.uid).collection("mems");
       },
 
-      download(url) {
+      download(url: string) {
         const a = document.createElement("a");
         a.style.display = "none";
         a.href = url;
@@ -106,17 +106,16 @@
       },
 
       startImportData() {
-        const selectorElement = document.querySelector(
-          "#input"
-        );
-        if (selectorElement) {
-          selectorElement.click();
+        const el = document.querySelector("#input");
+        if (el) {
+          const inputElement = el as HTMLInputElement;
+          inputElement.click();
         }
       },
 
       async finishImport() {
         console.log(this.importMems);
-        for (const mem of this.importMems) {
+        for (const mem  of this.importMems) {
           if (mem.id) {
             await this.memsCollection().doc(mem.id).set(mem);
           } else {
@@ -126,18 +125,17 @@
       },
 
       fileSelectionDidChange() {
-        const selectorElement = document.querySelector(
-          "#input"
-        );
-        if (selectorElement) {
-          const fileList = selectorElement.files;
+        const el = document.querySelector( "#input");
+        if (el) {
+          const fileSelectElement = el as HTMLInputElement;
+          const fileList = fileSelectElement.files;
           if (fileList && fileList.length > 0) {
             const file = fileList[0];
             const reader = new FileReader();
             reader.onload = () => {
               if (reader.result) {
                 this.importMems = JSON.parse(reader.result.toString()).map(
-                  (o) => memFromJson(o)
+                  (o: Mem) => memFromJson(o)
                 );
                 console.log(this.importMems);
               }

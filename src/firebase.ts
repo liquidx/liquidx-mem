@@ -12,10 +12,10 @@ export const db = firebaseApp.firestore();
 const { Timestamp, GeoPoint } = firebase.firestore;
 export { Timestamp, GeoPoint };
 
-export const unwrapDocs = (docs): Array<any> => {
-  let unwrapped: Array<any> = [];
+export const unwrapDocs = (docs: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>): Array<firebase.firestore.DocumentData> => {
+  let unwrapped: Array<firebase.firestore.DocumentData> = [];
   docs.forEach(snapshot => {
-    let doc = snapshot.data()
+    let doc: firebase.firestore.DocumentData = snapshot.data()
     doc.id = snapshot.id
 
     unwrapped.push(doc);

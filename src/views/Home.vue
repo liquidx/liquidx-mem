@@ -67,12 +67,15 @@
   import toPairs from 'lodash/toPairs'
   import orderBy from 'lodash/orderBy'
   import { defineComponent } from 'vue'
+  import firebase from 'firebase/app'
 
   import MemList from '@/components/MemList.vue'
 
   import { db, unwrapDocs } from '../firebase'
   import { Mem } from '../../functions/core/mems'
   import { parseText, extractEntities } from '../../functions/core/parser'
+
+  type TagIndex = { [field: string]: number }
 
   export default defineComponent({
     components: {
@@ -81,15 +84,15 @@
 
     data() {
       return {
-        user: null,
+        user: null as firebase.User | null,
         signInEmail: '',
         signInPassword: '',
         rawInput: '',
-        allMems: [],
-        mems: [],
-        showTags: [],
+        allMems: [] as Mem[],
+        mems: [] as Mem[],
+        showTags: [] as string[],
         showArchivedStatus: 'new',
-        unsubscribeListener: null,
+        unsubscribeListener: null as Unsubscribe | null,
       }
     },
 
@@ -97,10 +100,10 @@
       signedIn() {
         return this.user !== null
       },
-      allTags() {
+      allTags(): { tag: string; count: number }[] {
         console.log('getAllTags')
-        const tags = {}
-        this.allMems.forEach(mem => {
+        const tags: TagIndex = {}
+        this.allMems.forEach((mem: Mem) => {
           if (mem.tags) {
             for (const tag of mem.tags) {
               tags[tag] = tags[tag] ? tags[tag] + 1 : 1
@@ -123,7 +126,7 @@
       // this.$firebase
       //   .auth()
       //   .setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
-      this.$firebase.auth().onAuthStateChanged(user => {
+      this.$firebase.auth().onAuthStateChanged((user: firebase.User) => {
         this.user = user
         this.bindMems()
         this.reloadMems()
@@ -168,11 +171,11 @@
         this.$firebase
           .auth()
           .signInWithEmailAndPassword(this.signInEmail, this.signInPassword)
-          .then(userCredential => {
+          .then((userCredential: firebase.auth.UserCredential) => {
             console.log('signed in', userCredential)
             this.user = userCredential.user
           })
-          .catch(error => {
+          .catch((error: { code: any; message: any }) => {
             const errorCode = error.code
             const errorMessage = error.message
             console.log(errorCode, errorMessage)
@@ -188,7 +191,7 @@
 
       // computed proper
 
-      filterBy(tag) {
+      filterBy(tag: string) {
         if (tag && tag.startsWith('#')) {
           this.showTags = [tag]
         } else if (tag && tag.startsWith('*')) {
@@ -212,11 +215,11 @@
           })
       },
 
-      deleteMem(mem) {
+      deleteMem(mem: Mem) {
         this.memsCollection().doc(mem.id).delete()
       },
 
-      annotateMem(mem) {
+      annotateMem(mem: Mem) {
         if (!this.user || !this.user.uid) {
           return
         }
@@ -228,11 +231,11 @@
           .then(response => console.log(response))
       },
 
-      archiveMem(mem) {
+      archiveMem(mem: Mem) {
         this.memsCollection().doc(mem.id).update({ new: false })
       },
 
-      updateNoteForMem(changed) {
+      updateNoteForMem(changed: { mem: Mem; note: string }) {
         const entities = extractEntities(changed.note)
         const updated = Object.assign({ note: changed.note }, entities)
         this.memsCollection()
@@ -243,7 +246,7 @@
           })
       },
 
-      updateTitleForMem(changed) {
+      updateTitleForMem(changed: { mem: Mem; title: string }) {
         const updated = {
           title: changed.title,
         }
@@ -255,7 +258,7 @@
           })
       },
 
-      updateDescriptionForMem(changed) {
+      updateDescriptionForMem(changed: { mem: Mem; description: string }) {
         const updated = {
           description: changed.description,
         }
