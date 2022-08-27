@@ -105,25 +105,25 @@
     },
 
     emits: {
-      archive(mem) {
+      archive(mem: Mem) {
         return true
       },
-      unarchive(mem) {
+      unarchive(mem: Mem) {
         return true
       },
-      annotate(mem) {
+      annotate(mem: Mem) {
         return true
       },
-      delete(mem) {
+      delete(mem: Mem) {
         return true
       },
-      noteChanged(mem, note) {
+      noteChanged(mem: Mem, note: string) {
         return true
       },
-      descriptionChanged(mem, description) {
+      descriptionChanged(mem: Mem, description: string) {
         return true
       },
-      titleChanged(mem, title) {
+      titleChanged(mem: Mem, title: string) {
         return true
       },
     },
@@ -177,8 +177,8 @@
     },
 
     methods: {
-      noteDidChange(e) {
-        const target = e.target
+      noteDidChange(e: FocusEvent): void {
+        const target: HTMLElement = e.target as HTMLElement
         if (!target) {
           return
         }
@@ -188,8 +188,8 @@
           target.innerText = noteValue
         }
       },
-      descriptionDidChange(e) {
-        const target = e.target
+      descriptionDidChange(e: FocusEvent): void {
+        const target: HTMLElement = e.target as HTMLElement
         if (!target) {
           return
         }
