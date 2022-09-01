@@ -41,13 +41,7 @@
       >
     </section>
     <main>
-      <div class="add">
-        <textarea
-          v-model="rawInput"
-          placeholder="Enter text, urls, #tags here."
-        />
-        <input type="button" value="Add" @click="addNewMem" />
-      </div>
+      <mem-add :user="user"></mem-add>
 
       <mem-list
         :mems="mems"
@@ -69,7 +63,8 @@
   import { defineComponent } from 'vue'
   import firebase from 'firebase/app'
 
-  import MemList from '@/components/MemList.vue'
+  import MemList from '../components/MemList.vue'
+  import MemAdd from '../components/MemAdd.vue'
 
   import { db, unwrapDocs } from '../firebase'
   import { Mem } from '../../functions/core/mems'
@@ -80,6 +75,7 @@
   export default defineComponent({
     components: {
       MemList,
+      MemAdd,
     },
 
     data() {
@@ -87,7 +83,6 @@
         user: null as firebase.User | null,
         signInEmail: '',
         signInPassword: '',
-        rawInput: '',
         allMems: [] as Mem[],
         mems: [] as Mem[],
         showTags: [] as string[],
@@ -203,18 +198,6 @@
           this.showArchivedStatus = 'new'
         }
         this.reloadMems()
-      },
-
-      addNewMem() {
-        const mem = parseText(this.rawInput)
-        // TODO: Probably there's a better way to get milliseconds?
-        mem.new = true
-        mem.addedMs = DateTime.utc().toMillis()
-        this.memsCollection()
-          .add(mem)
-          .then(() => {
-            this.rawInput = ''
-          })
       },
 
       deleteMem(mem: Mem) {
