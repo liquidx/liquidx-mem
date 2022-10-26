@@ -52,12 +52,15 @@
         @title-changed="updateTitleForMem"
         @description-changed="updateDescriptionForMem"
       />
+      <div class="pager">
+        <a href="#" @click.prevent="prevPage">Prev</a>
+        <a href="#" @click.prevent="nextPage">Next</a>
+      </div>
     </main>
   </div>
 </template>
 
 <script lang="ts">
-  import { DateTime } from 'luxon'
   import toPairs from 'lodash/toPairs'
   import orderBy from 'lodash/orderBy'
   import { defineComponent } from 'vue'
@@ -88,6 +91,8 @@
         showTags: [] as string[],
         showArchivedStatus: 'new',
         unsubscribeListener: null as (() => void) | null,
+        nextQuery: undefined as firebase.firestore.Query | undefined,
+        pageSize: 30,
       }
     },
 
@@ -142,21 +147,54 @@
           this.unsubscribeListener()
         }
       },
+      nextCursor(
+        subQuery: firebase.firestore.Query,
+        docs: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>[],
+      ): firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>[] {
+        let q = subQuery
+        if (docs.size > 0) {
+          this.nextQuery = q.startAt(docs.docs[docs.size - 1])
+        } else {
+          this.nextQuery = null
+        }
+        return docs
+      },
       async reloadMems() {
         if (this.showTags.length) {
-          this.mems = await this.memsCollection()
+          let q = this.memsCollection()
             .where('tags', 'array-contains-any', this.showTags)
+            .orderBy('addedMs', 'desc')
+          if (this.nextQuery) {
+            q = this.nextQuery
+          }
+          this.mems = await q
+            .limit(this.pageSize)
             .get()
+            .then(docs => this.nextCursor(q, docs))
             .then(docs => unwrapDocs(docs))
         } else if (this.showArchivedStatus == 'archived') {
-          this.mems = await this.memsCollection()
+          let q = this.memsCollection()
             .where('new', '==', false)
+            .orderBy('addedMs', 'desc')
+          if (this.nextQuery) {
+            q = this.nextQuery
+          }
+          this.mems = await q
+            .limit(this.pageSize)
             .get()
+            .then(docs => this.nextCursor(q, docs))
             .then(docs => unwrapDocs(docs))
         } else {
-          this.mems = await this.memsCollection()
+          let q = this.memsCollection()
             .where('new', '==', true)
+            .orderBy('addedMs', 'desc')
+          if (this.nextQuery) {
+            q = this.nextQuery
+          }
+          this.mems = await q
+            .limit(this.pageSize)
             .get()
+            .then(docs => this.nextCursor(q, docs))
             .then(docs => unwrapDocs(docs))
         }
         this.allMems = await this.memsCollection()
@@ -187,6 +225,17 @@
       },
 
       // computed proper
+
+      prevPage() {
+        this.nextQuery = null
+        this.reloadMems()
+      },
+
+      nextPage() {
+        this.reloadMems()
+        // TODO: animate
+        window.scrollTo(0, 0)
+      },
 
       filterBy(tag: string) {
         if (tag && tag.startsWith('#')) {
@@ -339,6 +388,14 @@
     textarea {
       height: 4rem;
     }
+  }
+
+  .pager {
+    width: 400px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 1rem 0;
   }
 
   @media (max-width: $layout-mobile-width) {
