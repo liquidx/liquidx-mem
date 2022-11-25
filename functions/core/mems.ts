@@ -1,5 +1,6 @@
 export interface MemPhoto {
   mediaUrl?: string;
+  cachedMediaPath?: string;
   size?: {
     w: number;
     h: number;
@@ -8,6 +9,7 @@ export interface MemPhoto {
 
 export interface MemVideo {
   mediaUrl?: string;
+  cachedMediaPath?: string;
   posterUrl?: string;
   contentType?: string;
   size?: {
@@ -16,7 +18,7 @@ export interface MemVideo {
   };
 }
 
-export interface MemLink  {
+export interface MemLink {
   url: string;
   description?: string;
 }
