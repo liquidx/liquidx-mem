@@ -155,7 +155,7 @@
         if (docs.size > 0) {
           this.nextQuery = q.startAt(docs.docs[docs.size - 1])
         } else {
-          this.nextQuery = null
+          this.nextQuery = undefined
         }
         return docs
       },
@@ -170,7 +170,6 @@
           this.mems = await q
             .limit(this.pageSize)
             .get()
-            .then(docs => this.nextCursor(q, docs))
             .then(docs => unwrapDocs(docs))
         } else if (this.showArchivedStatus == 'archived') {
           let q = this.memsCollection()
@@ -182,7 +181,6 @@
           this.mems = await q
             .limit(this.pageSize)
             .get()
-            .then(docs => this.nextCursor(q, docs))
             .then(docs => unwrapDocs(docs))
         } else {
           let q = this.memsCollection()
@@ -194,7 +192,6 @@
           this.mems = await q
             .limit(this.pageSize)
             .get()
-            .then(docs => this.nextCursor(q, docs))
             .then(docs => unwrapDocs(docs))
         }
         this.allMems = await this.memsCollection()
@@ -227,7 +224,7 @@
       // computed proper
 
       prevPage() {
-        this.nextQuery = null
+        this.nextQuery = undefined
         this.reloadMems()
       },
 
