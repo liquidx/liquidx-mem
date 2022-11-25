@@ -1,26 +1,26 @@
 <template>
-<div>
-  <textarea></textarea>
-</div>
+  <div>
+    <mem-add :user="user"></mem-add>
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+  import { defineComponent } from 'vue'
 
-defineComponent({
-  data() {
-    return {
-      text: '',
-    }
-  },
- 
-  onMounted() {
-    this.text = 'Hello World'
-  },
-  methods: {
-    onChange() {
-      console.log(this.text)
-    }
-  },
-})
+  defineComponent({
+    data() {
+      return {
+        text: '',
+      }
+    },
+
+    onMounted() {
+      this.text = 'Hello World'
+    },
+    methods: {
+      onChange() {
+        console.log(this.text)
+      },
+    },
+  })
 </script>
