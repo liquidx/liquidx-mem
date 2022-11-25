@@ -13,10 +13,12 @@
   },
   "dependencies": {
     "@vue/compat": "^3.2.37",
+    "axios": "^1.1.3",
     "core-js": "^3.25.0",
     "firebase": "^8.6.7",
     "liquidx-base": "github:liquidx/liquidx-base",
     "luxon": "^3.0.1",
+    "md5": "^2.3.0",
     "url-regex": "^5.0.0",
     "vue": "^3.2.37",
     "vue-router": "^4.1.4"
