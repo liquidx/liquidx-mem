@@ -5,13 +5,6 @@ import { resolve } from 'path';
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
   plugins: [vue({
-    template: {
-      compilerOptions: {
-        compatConfig: {
-          MODE: 2
-        }
-      }
-    }
   })],
   server: {
     host: '127.0.0.1',
