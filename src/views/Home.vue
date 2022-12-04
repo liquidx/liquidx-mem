@@ -1,7 +1,7 @@
 <template>
-  <div class="home">
-    <header>
-      <h1><a href="/">#mem</a></h1>
+  <div class="flex flex-col w-full overflow-x-hidden md:flex-row">
+    <header class="mt-0 p-2 w-screen md:min-h-screen md:w-64">
+      <h1 class="text-md font-bold text-gray-800"><a href="/">#mem</a></h1>
 
       <div v-show="!user" class="signin">
         <input
@@ -17,30 +17,40 @@
           class="password"
           name="password"
         />
-        <button class="signin-button" @click="signIn">Sign In</button>
+        <button class="bg-gray-800 text-gray-300" @click="signIn">
+          Sign In
+        </button>
       </div>
 
       <div v-if="user" v-show="user">Signed in as {{ user.email }}</div>
 
-      <div v-if="user" class="functions">
+      <div v-if="user" class="">
         <a href="/data">export/import json</a>
       </div>
     </header>
-    <section class="summary">
-      <a class="tag" href="#" @click.prevent="filterBy('')">New</a>
-      <a class="tag" href="#" @click.prevent="filterBy('*archived')"
+    <section class="w-screen p-2 md:w-64 text-gray-500 flex flex-row flex-wrap">
+      <a
+        class="block p-0.5 whitespace-nowrap"
+        href="#"
+        @click.prevent="filterBy('')"
+        >New</a
+      >
+      <a
+        class="block py-0.5 whitespace-nowrap"
+        href="#"
+        @click.prevent="filterBy('*archived')"
         >Archived</a
       >
       <a
         v-for="tag in allTags"
         :key="tag.tag"
-        class="tag"
+        class="block p-0.5 whitespace-nowrap"
         href="#"
         @click.prevent="filterBy(tag.tag)"
         >{{ tag.tag }} ({{ tag.count }})</a
       >
     </section>
-    <main>
+    <main class="p-2 max-w-screen flex-grow">
       <mem-add :user="user"></mem-add>
 
       <mem-list
@@ -52,7 +62,7 @@
         @title-changed="updateTitleForMem"
         @description-changed="updateDescriptionForMem"
       />
-      <div class="pager">
+      <div class="w-full flex flex-row justify-between m-1">
         <a href="#" @click.prevent="prevPage">Prev</a>
         <a href="#" @click.prevent="nextPage">Next</a>
       </div>
@@ -146,13 +156,13 @@
           this.unsubscribeListener()
         }
       },
-     
+
       async reloadMems() {
         if (this.showTags.length) {
           let q = this.memsCollection()
             .where('tags', 'array-contains-any', this.showTags)
             .orderBy('addedMs', 'desc')
-        
+
           this.mems = await q
             .limit(this.pageSize)
             .get()
@@ -161,7 +171,7 @@
           let q = this.memsCollection()
             .where('new', '==', false)
             .orderBy('addedMs', 'desc')
-         
+
           this.mems = await q
             .limit(this.pageSize)
             .get()
@@ -170,7 +180,7 @@
           let q = this.memsCollection()
             .where('new', '==', true)
             .orderBy('addedMs', 'desc')
-        
+
           this.mems = await q
             .limit(this.pageSize)
             .get()
@@ -284,133 +294,3 @@
     },
   })
 </script>
-
-<style lang="scss" scoped>
-  @import 'src/layout';
-  @import 'src/colors';
-
-  .functions {
-    margin: 1rem 0;
-  }
-
-  header {
-    flex-grow: 0;
-    width: 200px;
-    min-width: 200px;
-    max-height: 100vh;
-    font-size: 0.9rem;
-
-    padding: 5rem 1rem 1rem 2rem;
-
-    display: flex;
-    flex-direction: column;
-
-    h1 {
-      font-size: 1.2rem;
-      a {
-        text-decoration: none;
-      }
-    }
-
-    .signin-button {
-      color: white;
-      background: black;
-    }
-  }
-
-  section.summary {
-    display: block;
-    flex-grow: 0;
-
-    width: 200px;
-    min-width: 200px;
-    max-height: 100vh;
-
-    padding: 5rem 1rem 1rem 1rem;
-
-    a.tag {
-      display: block;
-      margin-right: 0.5rem;
-      color: $color-grey;
-    }
-  }
-
-  main {
-    flex-grow: 1;
-    padding: 2rem 1rem;
-  }
-
-  .home {
-    display: flex;
-    flex-direction: row;
-    min-height: 100vh;
-    width: 100vw;
-  }
-
-  .add {
-    display: flex;
-    flex-direction: column;
-    width: 400px;
-    padding: 1rem 1rem;
-    margin: 1rem 0;
-
-    input,
-    textarea {
-      font-family: inherit;
-      padding: 0.5rem 0.5rem;
-      margin: 0.2rem 0;
-      border-radius: 10px;
-      border: 1px solid rgb(240, 240, 240);
-    }
-
-    textarea {
-      height: 4rem;
-    }
-  }
-
-  .pager {
-    width: 400px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    margin: 1rem 0;
-  }
-
-  @media (max-width: $layout-mobile-width) {
-    .home {
-      flex-direction: column;
-      width: 100vw;
-      overflow-x: hidden;
-    }
-
-    header {
-      margin-top: 0;
-      padding: 1rem 2rem;
-      min-width: 100vw;
-      max-width: 100vw;
-      width: 100vw;
-    }
-
-    section.summary {
-      min-width: 100vw;
-      max-width: 100vw;
-      width: 100vw;
-
-      padding: 1rem 2rem;
-
-      a.tag {
-        display: inline-block;
-      }
-    }
-
-    main {
-      padding: 1rem 1rem;
-      max-width: 100vw;
-    }
-
-    .add {
-      padding: 0 1rem;
-      width: 100%;
-    }
-  }
-</style>

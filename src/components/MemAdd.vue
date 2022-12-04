@@ -1,45 +1,13 @@
 <template>
-  <div class="add">
+  <div class="flex flex-col w-full md:w-64 py-1 px-0 md:px-1 m-1">
     <textarea
       v-model="state.rawInput"
       placeholder="Enter text, urls, #tags here."
+      class="p-0.5 m-0.5 rounded-md border-gray-800 h-16"
     />
     <input type="button" value="Add" @click="addNewMem" />
   </div>
 </template>
-
-<style lang="scss" scoped>
-  @import 'src/layout';
-  @import 'src/colors';
-
-  .add {
-    display: flex;
-    flex-direction: column;
-    width: 400px;
-    padding: 1rem 1rem;
-    margin: 1rem 0;
-
-    input,
-    textarea {
-      font-family: inherit;
-      padding: 0.5rem 0.5rem;
-      margin: 0.2rem 0;
-      border-radius: 10px;
-      border: 1px solid rgb(240, 240, 240);
-    }
-
-    textarea {
-      height: 4rem;
-    }
-  }
-
-  @media (max-width: $layout-mobile-width) {
-    .add {
-      padding: 0 1rem;
-      width: 100%;
-    }
-  }
-</style>
 
 <script lang="ts" setup>
   import { DateTime } from 'luxon'
