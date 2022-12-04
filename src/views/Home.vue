@@ -91,7 +91,6 @@
         showTags: [] as string[],
         showArchivedStatus: 'new',
         unsubscribeListener: null as (() => void) | null,
-        nextQuery: undefined as firebase.firestore.Query | undefined,
         pageSize: 30,
       }
     },
@@ -147,26 +146,13 @@
           this.unsubscribeListener()
         }
       },
-      nextCursor(
-        subQuery: firebase.firestore.Query,
-        docs: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>[],
-      ): firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>[] {
-        let q = subQuery
-        if (docs.size > 0) {
-          this.nextQuery = q.startAt(docs.docs[docs.size - 1])
-        } else {
-          this.nextQuery = undefined
-        }
-        return docs
-      },
+     
       async reloadMems() {
         if (this.showTags.length) {
           let q = this.memsCollection()
             .where('tags', 'array-contains-any', this.showTags)
             .orderBy('addedMs', 'desc')
-          if (this.nextQuery) {
-            q = this.nextQuery
-          }
+        
           this.mems = await q
             .limit(this.pageSize)
             .get()
@@ -175,9 +161,7 @@
           let q = this.memsCollection()
             .where('new', '==', false)
             .orderBy('addedMs', 'desc')
-          if (this.nextQuery) {
-            q = this.nextQuery
-          }
+         
           this.mems = await q
             .limit(this.pageSize)
             .get()
@@ -186,9 +170,7 @@
           let q = this.memsCollection()
             .where('new', '==', true)
             .orderBy('addedMs', 'desc')
-          if (this.nextQuery) {
-            q = this.nextQuery
-          }
+        
           this.mems = await q
             .limit(this.pageSize)
             .get()
@@ -224,7 +206,6 @@
       // computed proper
 
       prevPage() {
-        this.nextQuery = undefined
         this.reloadMems()
       },
 
