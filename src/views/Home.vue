@@ -37,16 +37,30 @@
 
 <script lang="ts">
   import { defineComponent } from 'vue'
-  import firebase from 'firebase/app'
+
+  // Types
+  import { User } from 'firebase/auth'
+  import {
+    CollectionReference,
+    DocumentData,
+    getFirestore,
+    onSnapshot,
+  } from 'firebase/firestore'
 
   import MemAuth from '../components/MemAuth.vue'
   import MemList from '../components/MemList.vue'
   import MemAdd from '../components/MemAdd.vue'
   import MemTagList from '../components/MemTagList.vue'
 
-  import { db, unwrapDocs } from '../firebase'
   import { Mem } from '../../functions/core/mems'
   import * as memModifiers from '../lib/mem-data-modifiers'
+  import {
+    queryForAllMems,
+    queryForNewMems,
+    queryForArchivedMems,
+    queryForTaggedMems,
+  } from '../lib/mem-data-queries'
+  import { getUserMemCollection } from '../lib/mem-data-collection'
 
   export default defineComponent({
     components: {
@@ -58,7 +72,7 @@
 
     data() {
       return {
-        user: null as firebase.User | null,
+        user: null as User | null,
         allMems: [] as Mem[],
         mems: [] as Mem[],
         showTags: [] as string[],
@@ -72,6 +86,12 @@
       signedIn() {
         return this.user !== null
       },
+      userMemCollection(): CollectionReference<DocumentData> | null {
+        if (this.user) {
+          return getUserMemCollection(getFirestore(this.$firebase), this.user)
+        }
+        return null
+      },
     },
 
     willUnmount() {
@@ -79,7 +99,7 @@
     },
 
     methods: {
-      didSignIn(user: firebase.User) {
+      didSignIn(user: User) {
         this.user = user
         this.bindMems()
         this.reloadMems()
@@ -92,11 +112,12 @@
       },
 
       bindMems() {
-        this.unsubscribeListener = this.memsCollection().onSnapshot(
-          snapshot => {
+        let collection = this.userMemCollection
+        if (collection) {
+          this.unsubscribeListener = onSnapshot(collection, () => {
             this.reloadMems()
-          },
-        )
+          })
+        }
       },
       unbindMems() {
         if (this.unsubscribeListener) {
@@ -105,46 +126,33 @@
       },
 
       async reloadMems() {
+        if (!this.userMemCollection) {
+          this.allMems = []
+          this.mems = []
+          return
+        }
+
         if (this.showTags.length) {
-          let q = this.memsCollection()
-            .where('tags', 'array-contains-any', this.showTags)
-            .orderBy('addedMs', 'desc')
-
-          this.mems = await q
-            .limit(this.pageSize)
-            .get()
-            .then(docs => unwrapDocs(docs))
+          this.mems = await queryForTaggedMems(
+            this.userMemCollection,
+            this.showTags,
+            'any',
+            this.pageSize,
+          )
         } else if (this.showArchivedStatus == 'archived') {
-          let q = this.memsCollection()
-            .where('new', '==', false)
-            .orderBy('addedMs', 'desc')
-
-          this.mems = await q
-            .limit(this.pageSize)
-            .get()
-            .then(docs => unwrapDocs(docs))
+          this.mems = await queryForArchivedMems(
+            this.userMemCollection,
+            this.pageSize,
+          )
         } else {
-          let q = this.memsCollection()
-            .where('new', '==', true)
-            .orderBy('addedMs', 'desc')
-
-          this.mems = await q
-            .limit(this.pageSize)
-            .get()
-            .then(docs => unwrapDocs(docs))
+          this.mems = await queryForNewMems(
+            this.userMemCollection,
+            this.pageSize,
+          )
         }
 
         // Get all the mems.
-        this.allMems = await this.memsCollection()
-          .get()
-          .then(docs => unwrapDocs(docs))
-      },
-
-      memsCollection() {
-        if (!this.user) {
-          return db.collection('users').doc('1').collection('mems')
-        }
-        return db.collection('users').doc(this.user.uid).collection('mems')
+        this.allMems = await queryForAllMems(this.userMemCollection)
       },
 
       // computed proper
@@ -181,30 +189,45 @@
       },
 
       deleteMem(mem: Mem): boolean {
-        memModifiers.deleteMem(mem, this.memsCollection())
+        if (!this.userMemCollection) {
+          return false
+        }
+        memModifiers.deleteMem(mem, this.userMemCollection)
         return true
       },
 
       archiveMem(mem: Mem): boolean {
-        memModifiers.archiveMem(mem, this.memsCollection())
+        if (!this.userMemCollection) {
+          return false
+        }
+        memModifiers.archiveMem(mem, this.userMemCollection)
         return true
       },
 
       updateNoteForMem(mem: Mem, note: string): boolean {
-        memModifiers.updateNoteForMem(mem, note, this.memsCollection())
+        if (!this.userMemCollection) {
+          return false
+        }
+        memModifiers.updateNoteForMem(mem, note, this.userMemCollection)
         return true
       },
 
       updateTitleForMem(mem: Mem, title: string): boolean {
-        memModifiers.updateTitleForMem(mem, title, this.memsCollection())
+        if (!this.userMemCollection) {
+          return false
+        }
+        memModifiers.updateTitleForMem(mem, title, this.userMemCollection)
         return true
       },
 
       updateDescriptionForMem(mem: Mem, description: string): boolean {
+        if (!this.userMemCollection) {
+          return false
+        }
         memModifiers.updateDescriptionForMem(
           mem,
           description,
-          this.memsCollection(),
+          this.userMemCollection,
         )
         return true
       },

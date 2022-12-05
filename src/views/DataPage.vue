@@ -32,12 +32,12 @@
               @click.prevent="finishImport"
             > ... Import</a>
           </li>
-          <li>
+          <!-- <li>
             <a
               href="#"
               @click.prevent="markAllAsNew"
             >Mark all mems as new</a>
-          </li>
+          </li> -->
         </ul>
       </p>
     </main>
@@ -45,11 +45,15 @@
 </template>
 
 <script lang="ts">
-  import firebase from "firebase/app";
+  import { getUserMemCollection } from '@/lib/mem-data-collection';
+import { addMem } from '@/lib/mem-data-modifiers';
+import { queryForAllMems } from '@/lib/mem-data-queries';
+import { onAuthStateChanged, User, getAuth } from 'firebase/auth';
+
   import { defineComponent } from 'vue'
 
   import { Mem, memFromJson } from "../../functions/core/mems";
-  import { db, unwrapDocs } from '../firebase'
+  import { db } from '../firebase'
 
   export default defineComponent({
 
@@ -58,18 +62,23 @@
         mems: [] as Mem[],
         downloadUrl: "",
         importMems: [] as Mem[],
-        user: null as firebase.User | null,
+        user: null as User | null,
       }
     },
     mounted() {
       // this.$firebase
       //   .auth()
       //   .setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
-      this.$firebase.auth().onAuthStateChanged((user: firebase.User) => {
-        this.user = user;
-        this.loadMems();
-        console.log("Signed in user:", this.user.uid);
+      const auth = getAuth(this.$firebase);
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          this.user = user;
+          this.loadMems();
+        } else {
+          this.user = null;
+        }
       });
+     
     },
 
     computed: {
@@ -81,16 +90,10 @@
     methods: {
 
       async loadMems() {
-        this.mems = await this.memsCollection()
-          .get()
-          .then(docs => unwrapDocs(docs))
-      },
-
-      memsCollection() {
-        if (!this.user) {
-          return db.collection("users").doc("1").collection("mems");
+        if (this.user) {
+          const collection = getUserMemCollection(db, this.user);
+          this.mems = await queryForAllMems(collection);
         }
-        return db.collection("users").doc(this.user.uid).collection("mems");
       },
 
       download(url: string) {
@@ -121,11 +124,13 @@
 
       async finishImport() {
         console.log(this.importMems);
-        for (const mem  of this.importMems) {
+        if (!this.user) {
+          return;
+        }
+        for (const mem of this.importMems) {
           if (mem.id) {
-            await this.memsCollection().doc(mem.id).set(mem);
-          } else {
-            await this.memsCollection().add(mem);
+            const collection = getUserMemCollection(db, this.user);
+            await addMem(mem, collection);
           }
         }
       },
@@ -151,15 +156,15 @@
         }
       },
 
-      async markAllAsNew() {
-        for (const mem of this.mems) {
-          if (mem.id) {
-            mem.new = true;
-            await this.memsCollection().doc(mem.id).set(mem);
-          }
-        }
-        console.log("Done.", this.mems.length);
-      }
+      // async markAllAsNew() {
+      //   for (const mem of this.mems) {
+      //     if (mem.id) {
+      //       mem.new = true;
+      //       await this.memsCollection().doc(mem.id).set(mem);
+      //     }
+      //   }
+      //   console.log("Done.", this.mems.length);
+      // }
     }
   });
 </script>

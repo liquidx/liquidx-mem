@@ -1,11 +1,16 @@
 import firebase from 'firebase/app'
 import { Mem } from '../../functions/core/mems'
 import { extractEntities } from '../../functions/core/parser'
+import { CollectionReference, DocumentData, doc, setDoc, addDoc, updateDoc, deleteDoc, DocumentReference } from 'firebase/firestore'
+
+export function addMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<DocumentReference<DocumentData>> {
+  return addDoc(collection, mem)
+}
 
 export function deleteMem(
   mem: Mem,
-  collection: firebase.firestore.CollectionReference<firebase.firestore.DocumentData>): Promise<void> {
-  return collection.doc(mem.id).delete()
+  collection: CollectionReference<DocumentData>): Promise<void> {
+  return deleteDoc(doc(collection, mem.id))
 }
 
 export function annotateMem(mem: Mem, uid: string): void {
@@ -17,49 +22,42 @@ export function annotateMem(mem: Mem, uid: string): void {
 
 export function archiveMem(
   mem: Mem,
-  collection: firebase.firestore.CollectionReference<firebase.firestore.DocumentData>): Promise<void> {
-  return collection.doc(mem.id).update({ new: false })
+  collection: CollectionReference<DocumentData>): Promise<void> {
+  return updateDoc(doc(collection, mem.id), { new: false })
 }
 
 export function updateNoteForMem(
   mem: Mem,
   note: string,
-  collection: firebase.firestore.CollectionReference<firebase.firestore.DocumentData>): Promise<void> {
+  collection: CollectionReference<DocumentData>): Promise<void> {
   const entities = extractEntities(note)
   const updated = Object.assign({ note: note }, entities)
-  return collection
-    .doc(mem.id)
-    .update(updated)
-    .then(() => {
-      console.log('Updated mem', mem.id, updated)
-    })
+  return updateDoc(doc(collection, mem.id), updated).then(() => {
+    console.log('Updated mem', mem.id, updated)
+
+  })
 }
 
 export function updateTitleForMem(
   mem: Mem,
   title: string,
-  collection: firebase.firestore.CollectionReference<firebase.firestore.DocumentData>): Promise<void> {
+  collection: CollectionReference<DocumentData>): Promise<void> {
   const updated = {
     title: title,
   }
-  return collection
-    .doc(mem.id)
-    .update(updated)
-    .then(() => {
-      console.log('Updated mem', mem.id, updated)
-    })
+  return updateDoc(doc(collection, mem.id), updated).then(() => {
+    console.log('Updated mem', mem.id, updated)
+  })
+
 }
 
 export function updateDescriptionForMem(
   mem: Mem, description: string,
-  collection: firebase.firestore.CollectionReference<firebase.firestore.DocumentData>): Promise<void> {
+  collection: CollectionReference<DocumentData>): Promise<void> {
   const updated = {
     description: description,
   }
-  return collection
-    .doc(mem.id)
-    .update(updated)
-    .then(() => {
-      console.log('Updated mem', mem.id, updated)
-    })
+  return updateDoc(doc(collection, mem.id), updated).then(() => {
+    console.log('Updated mem', mem.id, updated)
+  })
 }
