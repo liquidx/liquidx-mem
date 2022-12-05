@@ -1,18 +1,7 @@
 <template>
-  <div class="p-4 flex flex-col w-full overflow-x-hidden md:flex-row">
-    <header class="mt-0 p-2 w-screen md:min-h-screen md:w-48">
-      <h1 class="text-md py-2 font-bold text-gray-800"><a href="/">#mem</a></h1>
-
-      <mem-auth @did-sign-in="didSignIn" @did-sign-out="didSignOut"></mem-auth>
-
-      <div class="py-2" v-if="user" v-show="user">
-        <ul>
-          <li><a class="underline" href="/data">export/import json</a></li>
-        </ul>
-      </div>
-    </header>
+  <div class="flex flex-col w-full overflow-x-hidden md:flex-row">
     <section>
-      <mem-tag-list :mems="allMems" @tag-selected="selectTag"></mem-tag-list>
+      <mem-tag-list :mems="allMems"></mem-tag-list>
     </section>
 
     <main class="p-2 max-w-screen flex-grow md:max-w-xl">
@@ -47,7 +36,6 @@
     onSnapshot,
   } from 'firebase/firestore'
 
-  import MemAuth from '../components/MemAuth.vue'
   import MemList from '../components/MemList.vue'
   import MemAdd from '../components/MemAdd.vue'
   import MemTagList from '../components/MemTagList.vue'
@@ -65,17 +53,21 @@
   export default defineComponent({
     components: {
       MemTagList,
-      MemAuth,
       MemList,
       MemAdd,
     },
 
+    props: {
+      user: {
+        type: Object as () => User | null,
+        default: null,
+      },
+    },
+
     data() {
       return {
-        user: null as User | null,
         allMems: [] as Mem[],
         mems: [] as Mem[],
-        showTags: [] as string[],
         showArchivedStatus: 'new',
         unsubscribeListener: null as (() => void) | null,
         pageSize: 30,
@@ -84,11 +76,18 @@
 
     watch: {
       $route(to, from) {
-        if (to.path.startsWith('/tag')) {
-          this.reloadMems()
-        }
+        this.reloadMems()
 
         // react to route changes...
+      },
+
+      user() {
+        if (this.user) {
+          this.bindMems()
+        } else {
+          this.unbindMems()
+        }
+        this.reloadMems()
       },
     },
 
@@ -104,23 +103,17 @@
       },
     },
 
+    onMount() {
+      if (this.user) {
+        this.reloadMems()
+      }
+    },
+
     willUnmount() {
       this.unbindMems()
     },
 
     methods: {
-      didSignIn(user: User) {
-        this.user = user
-        this.bindMems()
-        this.reloadMems()
-      },
-
-      didSignOut() {
-        this.user = null
-        this.unbindMems()
-        this.reloadMems()
-      },
-
       bindMems() {
         let collection = this.userMemCollection
         if (collection) {
@@ -158,7 +151,11 @@
           }
         }
 
-        console.log('filterTags', filterTags)
+        if (this.$route && this.$route.path.startsWith('/archive')) {
+          this.showArchivedStatus = 'archived'
+        } else {
+          this.showArchivedStatus = 'new'
+        }
 
         if (filterTags.length) {
           this.mems = await queryForTaggedMems(
@@ -167,7 +164,6 @@
             filterStrategy,
             this.pageSize,
           )
-          console.log('tag search', this.mems)
         } else if (this.showArchivedStatus == 'archived') {
           this.mems = await queryForArchivedMems(
             this.userMemCollection,
@@ -194,23 +190,6 @@
         this.reloadMems()
         // TODO: animate
         window.scrollTo(0, 0)
-      },
-
-      selectTag(tag: string) {
-        if (tag && tag.startsWith('#')) {
-          let tagValue = tag.slice(1)
-          this.$router.push({ path: `/tag/${tagValue}` })
-        }
-
-        // if (tag && tag.startsWith('#')) {
-        //   this.showTags = [tag]
-        // } else if (tag && tag.startsWith('*')) {
-        //   this.showArchivedStatus = 'archived'
-        // } else {
-        //   this.showTags = []
-        //   this.showArchivedStatus = 'new'
-        // }
-        // this.reloadMems()
       },
 
       annotateMem(mem: Mem): boolean {

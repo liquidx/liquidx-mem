@@ -3,32 +3,43 @@ import Home from "../views/Home.vue";
 import DataPage from "../views/DataPage.vue";
 import About from "../views/About.vue";
 import Single from '../views/Single.vue';
+import Prefs from '../views/Prefs.vue';
 
 const routes = [
   {
     path: "/",
-    name: "Home",
+    name: "home",
     component: Home
   },
   {
     path: "/tag/:tags",
-    name: "TagList",
+    name: "tag",
+    component: Home
+  },
+  {
+    path: "/archive",
+    name: "archive",
     component: Home
   },
   {
     path: "/mem/:id",
-    name: "SingleMem",
+    name: "mem",
     component: Single
   },
   {
     path: "/about",
-    name: "About",
+    name: "about",
     component: About
   },
   {
     path: "/data",
-    name: "DataPage",
+    name: "data",
     component: DataPage
+  },
+  {
+    path: "/prefs",
+    name: "prefs",
+    component: Prefs
   }
 ];
 

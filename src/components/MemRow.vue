@@ -16,13 +16,12 @@
         <a :href="mem.url" target="_blank" class="font-bold">
           <span class="title-text">{{ prettyTitle }}</span>
         </a>
-        <a
-          href="#"
+        <button
           class="text-gray-500 hover:text-gray-800"
           @click.prevent="startEdit"
         >
           <span class="material-icons mx-2 text-sm">&#xe3c9;</span>
-        </a>
+        </button>
       </div>
       <div
         v-if="mem.description"
@@ -69,40 +68,36 @@
       </div>
     </div>
     <div class="text-gray-400 flex flex-row flex-nowrap gap-1">
-      <a
+      <button
         v-if="mem.new"
         class="pr-2 py-1 hover:text-gray-500"
-        href="#"
         @click.prevent="$emit('archive', mem)"
       >
         <span class="material-icons text-sm align-middle">&#xe149;</span>
         Archive
-      </a>
-      <a
+      </button>
+      <button
         v-if="!mem.new"
         class="pr-2 py-1 hover:text-gray-500"
-        href="#"
         @click.prevent="$emit('unarchive', mem)"
       >
         <span class="material-icons text-sm align-middle">&#xe169;</span>
         Unarchive
-      </a>
-      <a
-        href="#"
+      </button>
+      <button
         class="pr-2 py-1 hover:text-gray-500"
         @click.prevent="$emit('annotate', mem)"
       >
         <span class="material-icons text-sm align-middle">&#xf071;</span>
         Annotate
-      </a>
-      <a
-        href="#"
+      </button>
+      <button
         class="pr-2 py-1 hover:text-red-400"
         @click.prevent="$emit('delete', mem)"
       >
         <span class="material-icons text-sm align-middle">&#xE872;</span>
         Delete
-      </a>
+      </button>
     </div>
   </div>
 </template>
