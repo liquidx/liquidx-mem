@@ -1,5 +1,5 @@
 import { Mem } from "./mems";
-import urlRegex from "url-regex";
+import * as urlRegex from "url-regex-safe";
 
 const tagRegex = new RegExp("#\\w+", "g");
 const dateRegex = new RegExp("[0-9]{4}-[0-9]{2}-[0-9]{2}");

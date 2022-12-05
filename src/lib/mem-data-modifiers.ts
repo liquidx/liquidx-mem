@@ -1,7 +1,6 @@
-import firebase from 'firebase/app'
 import { Mem } from '../../functions/core/mems'
 import { extractEntities } from '../../functions/core/parser'
-import { CollectionReference, DocumentData, doc, setDoc, addDoc, updateDoc, deleteDoc, DocumentReference } from 'firebase/firestore'
+import { CollectionReference, DocumentData, doc, addDoc, updateDoc, deleteDoc, DocumentReference } from 'firebase/firestore'
 
 export function addMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<DocumentReference<DocumentData>> {
   return addDoc(collection, mem)
@@ -57,6 +56,8 @@ export function updateDescriptionForMem(
   const updated = {
     description: description,
   }
+  console.log('updateDescriptionForMem', mem);
+
   return updateDoc(doc(collection, mem.id), updated).then(() => {
     console.log('Updated mem', mem.id, updated)
   })

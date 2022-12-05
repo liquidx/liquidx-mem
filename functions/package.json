@@ -24,7 +24,8 @@
     "make-fetch-happen": "^9.0.2",
     "needle": "^2.6.0",
     "open-graph-scraper": "^4.9.0",
-    "url-regex": "^5.0.0"
+    "re2": "^1.17.8",
+    "url-regex-safe": "^3.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.10",
