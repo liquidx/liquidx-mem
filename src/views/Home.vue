@@ -103,13 +103,13 @@
       },
     },
 
-    onMount() {
+    mounted() {
       if (this.user) {
         this.reloadMems()
       }
     },
 
-    willUnmount() {
+    beforeUnmount() {
       this.unbindMems()
     },
 
