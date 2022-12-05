@@ -65,7 +65,7 @@
       </ul>
 
       <div class="my-2 text-gray-400" :title="mem.id">
-        {{ prettyDate }}
+        <router-link :to="'/mem/' + mem.id">{{ prettyDate }}</router-link>
       </div>
     </div>
     <div class="text-gray-400 flex flex-row flex-nowrap gap-1">

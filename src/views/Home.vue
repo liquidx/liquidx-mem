@@ -82,6 +82,16 @@
       }
     },
 
+    watch: {
+      $route(to, from) {
+        if (to.path.startsWith('/tag')) {
+          this.reloadMems()
+        }
+
+        // react to route changes...
+      },
+    },
+
     computed: {
       signedIn() {
         return this.user !== null
@@ -132,13 +142,32 @@
           return
         }
 
-        if (this.showTags.length) {
+        let filterTags = [] as string[]
+        let filterStrategy = 'any'
+        if (
+          this.$route &&
+          this.$route.params.tags &&
+          typeof this.$route.params.tags === 'string'
+        ) {
+          let tags = this.$route.params.tags
+          if (tags.includes('+')) {
+            filterStrategy = 'all'
+            filterTags = tags.split('+').map(t => `#${t}`)
+          } else {
+            filterTags = tags.split('|').map(t => `#${t}`)
+          }
+        }
+
+        console.log('filterTags', filterTags)
+
+        if (filterTags.length) {
           this.mems = await queryForTaggedMems(
             this.userMemCollection,
-            this.showTags,
-            'any',
+            filterTags,
+            filterStrategy,
             this.pageSize,
           )
+          console.log('tag search', this.mems)
         } else if (this.showArchivedStatus == 'archived') {
           this.mems = await queryForArchivedMems(
             this.userMemCollection,
@@ -169,14 +198,19 @@
 
       selectTag(tag: string) {
         if (tag && tag.startsWith('#')) {
-          this.showTags = [tag]
-        } else if (tag && tag.startsWith('*')) {
-          this.showArchivedStatus = 'archived'
-        } else {
-          this.showTags = []
-          this.showArchivedStatus = 'new'
+          let tagValue = tag.slice(1)
+          this.$router.push({ path: `/tag/${tagValue}` })
         }
-        this.reloadMems()
+
+        // if (tag && tag.startsWith('#')) {
+        //   this.showTags = [tag]
+        // } else if (tag && tag.startsWith('*')) {
+        //   this.showArchivedStatus = 'archived'
+        // } else {
+        //   this.showTags = []
+        //   this.showArchivedStatus = 'new'
+        // }
+        // this.reloadMems()
       },
 
       annotateMem(mem: Mem): boolean {
