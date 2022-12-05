@@ -19,6 +19,8 @@
   import { reactive, defineProps } from 'vue'
   import { parseText } from '../../functions/core/parser'
   import { db } from '../firebase'
+  import firebase from 'firebase/app'
+  import type { PropType } from 'vue'
 
   const state = reactive({
     rawInput: '' as string,
@@ -26,7 +28,7 @@
 
   const props = defineProps({
     user: {
-      type: Object,
+      type: Object as PropType<firebase.User | null>,
       required: true,
     },
   })

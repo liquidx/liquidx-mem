@@ -209,7 +209,7 @@
         }
         const noteValue = target.innerText
         if (noteValue != this.mem.note) {
-          this.$emit('noteChanged', { mem: this.mem, note: noteValue })
+          this.$emit('noteChanged', this.mem, noteValue)
           target.innerText = noteValue
         }
       },
