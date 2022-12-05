@@ -2,26 +2,23 @@
   <section
     class="w-screen p-2 md:w-48 text-gray-500 flex flex-row flex-wrap md:flex-col justify-start"
   >
-    <a
-      class="block p-0.5 whitespace-nowrap"
-      href="#"
-      @click.prevent="selectTag('')"
-      >New</a
+    <router-link to="/" class="block p-0.5 whitespace-nowrap hover:underline"
+      >New
+    </router-link>
+    <router-link
+      to="/archive"
+      class="block p-0.5 whitespace-nowrap hover:underline"
     >
-    <a
-      class="block py-0.5 whitespace-nowrap"
-      href="#"
-      @click.prevent="selectTag('*archived')"
-      >Archived</a
-    >
-    <a
-      v-for="tag in allTags"
-      :key="tag.tag"
-      class="block p-0.5 whitespace-nowrap"
-      href="#"
-      @click.prevent="selectTag(tag.tag)"
-      >{{ tag.tag }} ({{ tag.count }})</a
-    >
+      Archive
+    </router-link>
+    <span v-for="tag in allTags" :key="tag.tag">
+      <router-link
+        :to="'/tag/' + tag.tag.slice(1)"
+        class="block p-0.5 whitespace-nowrap hover:underline"
+      >
+        {{ tag.tag }} ({{ tag.count }})
+      </router-link>
+    </span>
   </section>
 </template>
 
