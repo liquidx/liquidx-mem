@@ -1,7 +1,7 @@
 <template>
   <div class="py-2">
     <div v-if="user">
-      Signed in as {{ user.email }}.
+      Hi, {{ user.email }}.
       <button class="underline text-color-500" @click="signOut">
         Sign out
       </button>
@@ -10,14 +10,14 @@
       <input
         v-model="signInEmail"
         type="email"
-        class="my-1 p-1 border-gray-200"
+        class="my-1 p-1 border border-gray-200"
         name="email"
         placeholder="email"
       />
       <input
         v-model="signInPassword"
         type="password"
-        class="my-1 p-1 border-gray-200"
+        class="my-1 p-1 border border-gray-200"
         name="password"
       />
       <button
