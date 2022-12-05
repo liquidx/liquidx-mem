@@ -1,12 +1,8 @@
-import openGraphScraper from "open-graph-scraper";
-
 export const ogBlockList: Record<string, Array<string>> = {
   ogUrl: ["https://www.instagram.com/accounts/login/"]
 };
 
-export const isResultBlocked = (
-  result: openGraphScraper.OpenGraphProperties
-): boolean => {
+export const isResultBlocked = (result: any): boolean => {
   if (!result) {
     return false;
   }

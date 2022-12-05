@@ -10,5 +10,5 @@ export const firestoreAdd = (
     .collection("users")
     .doc(userId)
     .collection("mems")
-    .add(mem);
+    .add(mem as { [x: string]: any; });
 };

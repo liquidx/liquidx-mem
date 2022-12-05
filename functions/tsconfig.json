@@ -11,8 +11,5 @@
     "target": "es2020"
   },
   "compileOnSave": true,
-  "include": [
-    "src",
-    "core"
-  ]
+  "include": ["src", "core"]
 }

@@ -1,5 +1,6 @@
 import { Mem } from "./mems";
-import * as urlRegex from "url-regex-safe";
+//import * as urlRegex from "url-regex-safe";
+import urlRegexSafe from 'url-regex-safe'
 
 const tagRegex = new RegExp("#\\w+", "g");
 const dateRegex = new RegExp("[0-9]{4}-[0-9]{2}-[0-9]{2}");
@@ -53,12 +54,12 @@ export const parseText = (text: string): Mem => {
     raw: text
   };
 
-  const matches = text.match(urlRegex());
+  const matches = text.match(urlRegexSafe());
   // TODO: deal with multiple matches.
   if (matches && matches.length > 0) {
     const first = matches[0];
     mem.url = first.toString();
-    mem.note = text.replace(urlRegex(), "").trim();
+    mem.note = text.replace(urlRegexSafe(), "").trim();
   } else {
     mem.note = text;
   }

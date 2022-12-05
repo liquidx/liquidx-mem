@@ -12,7 +12,7 @@ export const annotateOnCreate = functions.firestore
     return annotateMem(value).then(result => {
       functions.logger.debug("annotated result", result);
       delete result.id;
-      snap.ref.update(result);
+      snap.ref.update(result as { [x: string]: any; });
     });
   });
 
@@ -31,7 +31,7 @@ export const annotate = functions
           return annotateMem(value).then(result => {
             functions.logger.debug("annotated result", result);
             delete result.id;
-            snap.ref.update(result);
+            snap.ref.update(result as { [x: string]: any; });
             response.send("OK");
           });
         })
