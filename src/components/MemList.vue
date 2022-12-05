@@ -4,7 +4,7 @@
       v-for="mem in orderedMems"
       :key="mem.id"
       :mem="mem"
-      class="mem-row"
+      class="mb-2"
       @archive="archiveMem"
       @delete="deleteMem"
       @annotate="annotateMem"
@@ -84,9 +84,3 @@
     },
   })
 </script>
-
-<style lang="scss" scoped>
-  .mem-row {
-    margin-bottom: 2rem;
-  }
-</style>
