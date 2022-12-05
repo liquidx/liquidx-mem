@@ -3,31 +3,10 @@
     <header class="mt-0 p-2 w-screen md:min-h-screen md:w-48">
       <h1 class="text-md py-2 font-bold text-gray-800"><a href="/">#mem</a></h1>
 
-      <div v-show="!user" class="py-2">
-        <input
-          v-model="signInEmail"
-          type="email"
-          class="my-1 p-1 border-gray-200"
-          name="email"
-          placeholder="email"
-        />
-        <input
-          v-model="signInPassword"
-          type="password"
-          class="my-1 p-1 border-gray-200"
-          name="password"
-        />
-        <button
-          class="px-2 py-1 my-1 text-xs bg-gray-800 text-gray-300 hover:bg-gray-600"
-          @click="signIn"
-        >
-          Sign In
-        </button>
-      </div>
+      <MemAuth @did-sign-in="didSignIn" @did-sign-out="didSignOut"></MemAuth>
 
       <div class="py-2" v-if="user" v-show="user">
         <ul>
-          <li>Signed in as {{ user.email }}</li>
           <li><a class="underline" href="/data">export/import json</a></li>
         </ul>
       </div>
@@ -82,6 +61,7 @@
   import { defineComponent } from 'vue'
   import firebase from 'firebase/app'
 
+  import MemAuth from '../components/MemAuth.vue'
   import MemList from '../components/MemList.vue'
   import MemAdd from '../components/MemAdd.vue'
 
@@ -93,6 +73,7 @@
 
   export default defineComponent({
     components: {
+      MemAuth,
       MemList,
       MemAdd,
     },
@@ -100,8 +81,6 @@
     data() {
       return {
         user: null as firebase.User | null,
-        signInEmail: '',
-        signInPassword: '',
         allMems: [] as Mem[],
         mems: [] as Mem[],
         showTags: [] as string[],
@@ -137,19 +116,19 @@
       this.unbindMems()
     },
 
-    mounted() {
-      // this.$firebase
-      //   .auth()
-      //   .setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
-      this.$firebase.auth().onAuthStateChanged((user: firebase.User) => {
+    methods: {
+      didSignIn(user: firebase.User) {
         this.user = user
         this.bindMems()
         this.reloadMems()
+      },
 
-        console.log('Signed in user:', this.user)
-      })
-    },
-    methods: {
+      didSignOut() {
+        this.user = null
+        this.unbindMems()
+        this.reloadMems()
+      },
+
       bindMems() {
         this.unsubscribeListener = this.memsCollection().onSnapshot(
           snapshot => {
@@ -195,21 +174,6 @@
         this.allMems = await this.memsCollection()
           .get()
           .then(docs => unwrapDocs(docs))
-      },
-
-      signIn() {
-        this.$firebase
-          .auth()
-          .signInWithEmailAndPassword(this.signInEmail, this.signInPassword)
-          .then((userCredential: firebase.auth.UserCredential) => {
-            console.log('signed in', userCredential)
-            this.user = userCredential.user
-          })
-          .catch((error: { code: any; message: any }) => {
-            const errorCode = error.code
-            const errorMessage = error.message
-            console.log(errorCode, errorMessage)
-          })
       },
 
       memsCollection() {
