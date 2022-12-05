@@ -1,34 +1,40 @@
 <template>
-  <div class="flex flex-col w-full overflow-x-hidden md:flex-row">
-    <header class="mt-0 p-2 w-screen md:min-h-screen md:w-64">
-      <h1 class="text-md font-bold text-gray-800"><a href="/">#mem</a></h1>
+  <div class="p-4 flex flex-col w-full overflow-x-hidden md:flex-row">
+    <header class="mt-0 p-2 w-screen md:min-h-screen md:w-48">
+      <h1 class="text-md py-2 font-bold text-gray-800"><a href="/">#mem</a></h1>
 
-      <div v-show="!user" class="signin">
+      <div v-show="!user" class="py-2">
         <input
           v-model="signInEmail"
           type="email"
-          class="email"
+          class="my-1 p-1 border-gray-200"
           name="email"
           placeholder="email"
         />
         <input
           v-model="signInPassword"
           type="password"
-          class="password"
+          class="my-1 p-1 border-gray-200"
           name="password"
         />
-        <button class="bg-gray-800 text-gray-300" @click="signIn">
+        <button
+          class="px-2 py-1 my-1 text-xs bg-gray-800 text-gray-300 hover:bg-gray-600"
+          @click="signIn"
+        >
           Sign In
         </button>
       </div>
 
-      <div v-if="user" v-show="user">Signed in as {{ user.email }}</div>
-
-      <div v-if="user" class="">
-        <a href="/data">export/import json</a>
+      <div class="py-2" v-if="user" v-show="user">
+        <ul>
+          <li>Signed in as {{ user.email }}</li>
+          <li><a class="underline" href="/data">export/import json</a></li>
+        </ul>
       </div>
     </header>
-    <section class="w-screen p-2 md:w-64 text-gray-500 flex flex-row flex-wrap">
+    <section
+      class="w-screen p-2 md:w-48 text-gray-500 flex flex-row flex-wrap md:flex-col justify-start"
+    >
       <a
         class="block p-0.5 whitespace-nowrap"
         href="#"
@@ -50,7 +56,7 @@
         >{{ tag.tag }} ({{ tag.count }})</a
       >
     </section>
-    <main class="p-2 max-w-screen flex-grow">
+    <main class="p-2 max-w-screen flex-grow md:max-w-xl">
       <mem-add :user="user"></mem-add>
 
       <mem-list

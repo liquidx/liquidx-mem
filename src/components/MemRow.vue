@@ -1,5 +1,7 @@
 <template>
-  <div class="mem flex flex-col border-l-2 m-0.5 p-1 hover:border-l-red-800">
+  <div
+    class="mem flex flex-col border-l-2 m-0.5 py-2 px-6 hover:border-l-gray-800"
+  >
     <div class="grow">
       <div
         class="p-2 bg-gray-50 border border-gray-200 min-h-[1rem]"
@@ -24,7 +26,7 @@
       </div>
       <div
         v-if="mem.description"
-        class="p-0.5 text-gray-400"
+        class="my-2 text-gray-400"
         contenteditable="true"
         @blur="descriptionDidChange"
       >
@@ -35,7 +37,7 @@
         <div v-for="video in mem.videos" :key="video.mediaUrl">
           <video
             :src="video.mediaUrl"
-            class="mx-4"
+            class="my-4"
             :poster="video.posterUrl"
             playsinline
             controls
@@ -45,7 +47,7 @@
       </div>
       <div v-if="mem.photos" class="photos">
         <div v-for="photo in mem.photos" :key="photo.mediaUrl">
-          <img :src="photo.mediaUrl" class="mx-4" />
+          <img :src="photo.mediaUrl" class="my-4" />
         </div>
       </div>
 
@@ -53,35 +55,49 @@
         <img :src="mediaImageUrl" />
       </div>
 
-      <div v-if="mem.links" class="border-1 border-gray-500 p-0.5">
-        <div v-for="link in mem.links" :key="link.url">
+      <ul v-if="mem.links" class="border-1 border-gray-500 my-2">
+        <li v-for="link in mem.links" :key="link.url">
           <a :href="link.url" target="_blank" class="text-gray-500">
             <span v-if="link.description">{{ link.description }}</span>
             <span v-else>{{ link.url }}</span>
           </a>
-        </div>
-      </div>
+        </li>
+      </ul>
 
-      <div class="p-0.5 text-gray-400" :title="mem.id">
+      <div class="my-2 text-gray-400" :title="mem.id">
         {{ prettyDate }}
       </div>
     </div>
-    <div class="mx-4 text-gray-400">
-      <a v-if="mem.new" href="#" @click.prevent="$emit('archive', mem)">
+    <div class="text-gray-400 flex flex-row flex-nowrap gap-1">
+      <a
+        v-if="mem.new"
+        class="pr-2 py-1 hover:text-gray-500"
+        href="#"
+        @click.prevent="$emit('archive', mem)"
+      >
         <span class="material-icons text-sm align-middle">&#xe149;</span>
         Archive
       </a>
-      <a v-if="!mem.new" href="#" @click.prevent="$emit('unarchive', mem)">
+      <a
+        v-if="!mem.new"
+        class="pr-2 py-1 hover:text-gray-500"
+        href="#"
+        @click.prevent="$emit('unarchive', mem)"
+      >
         <span class="material-icons text-sm align-middle">&#xe169;</span>
         Unarchive
       </a>
-      <a href="#" @click.prevent="$emit('annotate', mem)">
+      <a
+        href="#"
+        class="pr-2 py-1 hover:text-gray-500"
+        @click.prevent="$emit('annotate', mem)"
+      >
         <span class="material-icons text-sm align-middle">&#xf071;</span>
         Annotate
       </a>
       <a
         href="#"
-        class="hover:text-red-400"
+        class="pr-2 py-1 hover:text-red-400"
         @click.prevent="$emit('delete', mem)"
       >
         <span class="material-icons text-sm align-middle">&#xE872;</span>

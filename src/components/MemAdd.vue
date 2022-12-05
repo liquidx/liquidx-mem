@@ -1,11 +1,16 @@
 <template>
-  <div class="flex flex-col w-full md:w-64 py-1 px-0 md:px-1 m-1">
+  <div class="flex flex-col w-full py-1 px-0 md:px-1 m-1">
     <textarea
       v-model="state.rawInput"
       placeholder="Enter text, urls, #tags here."
-      class="p-0.5 m-0.5 rounded-md border-gray-800 h-16"
+      class="p-2 m-0.5 rounded-md border border-gray-200 w-full h-16"
     />
-    <input type="button" value="Add" @click="addNewMem" />
+    <input
+      type="button"
+      class="bg-gray-200 hover:bg-gray-300 active:bg-gray-400 m-1 p-2 text-gray-700"
+      value="Add"
+      @click="addNewMem"
+    />
   </div>
 </template>
 
