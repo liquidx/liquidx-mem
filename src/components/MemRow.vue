@@ -220,10 +220,7 @@
         }
         const descriptionValue = target.innerText
         if (descriptionValue != this.mem.description) {
-          this.$emit('descriptionChanged', {
-            mem: this.mem,
-            description: descriptionValue,
-          })
+          this.$emit('descriptionChanged', this.mem, descriptionValue)
         }
       },
 
@@ -240,10 +237,7 @@
           titleEl.setAttribute('contenteditable', 'true')
           titleEl.focus()
           titleEl.onblur = () => {
-            this.$emit('title-changed', {
-              mem: this.mem,
-              title: titleEl.innerText,
-            })
+            this.$emit('title-changed', this.mem, titleEl.innerText)
             titleEl.removeAttribute('contenteditable')
             if (linkUrl) {
               linkEl.setAttribute('href', linkUrl)
