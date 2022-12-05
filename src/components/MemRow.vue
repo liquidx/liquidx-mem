@@ -1,25 +1,30 @@
 <template>
-  <div class="mem">
-    <div class="contents">
+  <div class="mem flex flex-col border-l-2 m-0.5 p-1 hover:border-l-red-800">
+    <div class="grow">
       <div
-        class="note"
+        class="p-2 bg-gray-50 border border-gray-200 min-h-[1rem]"
         :class="{ nocontent: !mem.note }"
         contenteditable="true"
         @blur="noteDidChange"
       >
         {{ mem.note }}
       </div>
-      <div v-if="mem.url" class="title">
-        <a :href="mem.url" target="_blank">
+
+      <div v-if="mem.url" class="text-lg px-1 py-1">
+        <a :href="mem.url" target="_blank" class="font-bold">
           <span class="title-text">{{ prettyTitle }}</span>
         </a>
-        <a href="#" class="title-edit" @click.prevent="startEdit">
-          <span class="material-icons">&#xe3c9;</span>
+        <a
+          href="#"
+          class="text-gray-500 hover:text-gray-800"
+          @click.prevent="startEdit"
+        >
+          <span class="material-icons mx-2 text-sm">&#xe3c9;</span>
         </a>
       </div>
       <div
         v-if="mem.description"
-        class="description"
+        class="p-0.5 text-gray-400"
         contenteditable="true"
         @blur="descriptionDidChange"
       >
@@ -30,7 +35,7 @@
         <div v-for="video in mem.videos" :key="video.mediaUrl">
           <video
             :src="video.mediaUrl"
-            class="video-player"
+            class="mx-4"
             :poster="video.posterUrl"
             playsinline
             controls
@@ -40,7 +45,7 @@
       </div>
       <div v-if="mem.photos" class="photos">
         <div v-for="photo in mem.photos" :key="photo.mediaUrl">
-          <img :src="photo.mediaUrl" />
+          <img :src="photo.mediaUrl" class="mx-4" />
         </div>
       </div>
 
@@ -48,34 +53,38 @@
         <img :src="mediaImageUrl" />
       </div>
 
-      <div v-if="mem.links" class="links">
+      <div v-if="mem.links" class="border-1 border-gray-500 p-0.5">
         <div v-for="link in mem.links" :key="link.url">
-          <a :href="link.url" target="_blank">
+          <a :href="link.url" target="_blank" class="text-gray-500">
             <span v-if="link.description">{{ link.description }}</span>
             <span v-else>{{ link.url }}</span>
           </a>
         </div>
       </div>
 
-      <div class="date" :title="mem.id">
+      <div class="p-0.5 text-gray-400" :title="mem.id">
         {{ prettyDate }}
       </div>
     </div>
-    <div class="controls">
+    <div class="mx-4 text-gray-400">
       <a v-if="mem.new" href="#" @click.prevent="$emit('archive', mem)">
-        <span class="material-icons">&#xe149;</span>
+        <span class="material-icons text-sm align-middle">&#xe149;</span>
         Archive
       </a>
       <a v-if="!mem.new" href="#" @click.prevent="$emit('unarchive', mem)">
-        <span class="material-icons">&#xe169;</span>
+        <span class="material-icons text-sm align-middle">&#xe169;</span>
         Unarchive
       </a>
       <a href="#" @click.prevent="$emit('annotate', mem)">
-        <span class="material-icons">&#xf071;</span>
+        <span class="material-icons text-sm align-middle">&#xf071;</span>
         Annotate
       </a>
-      <a href="#" class="delete" @click.prevent="$emit('delete', mem)">
-        <span class="material-icons">&#xE872;</span>
+      <a
+        href="#"
+        class="hover:text-red-400"
+        @click.prevent="$emit('delete', mem)"
+      >
+        <span class="material-icons text-sm align-middle">&#xE872;</span>
         Delete
       </a>
     </div>
@@ -241,157 +250,3 @@
     },
   })
 </script>
-
-<style lang="scss" scoped>
-  @import 'src/layout';
-  @import 'src/colors';
-
-  $highlight-border-width: 2px;
-  $row-width: 400px;
-
-  .mem {
-    border-left: $highlight-border-width solid rgba(0, 0, 0, 0);
-    margin: 0.5rem 0;
-    padding: 0.5rem 1rem;
-
-    display: flex;
-    flex-direction: column;
-
-    .title {
-      max-width: $row-width;
-      padding: 0.5rem 0;
-      a {
-        font-weight: 700;
-        text-decoration: none;
-      }
-
-      a.title-edit {
-        display: none;
-        color: $color-light-grey;
-
-        .material-icons {
-          padding: 0 0.5rem;
-          font-size: 1rem;
-          vertical-align: top;
-        }
-      }
-      a.title-edit:hover {
-        color: $color-grey;
-      }
-    }
-
-    .title:hover {
-      a.title-edit {
-        display: inline;
-      }
-    }
-
-    .contents {
-      flex-grow: 1;
-    }
-
-    .controls {
-      font-size: 0.8rem;
-
-      a {
-        color: $color-light-grey;
-        text-decoration: none;
-        margin-right: 1rem;
-
-        .material-icons {
-          font-size: 1rem;
-          vertical-align: middle;
-        }
-      }
-
-      a:hover {
-        color: $color-grey;
-      }
-
-      a.delete:hover {
-        color: rgb(255, 160, 160);
-      }
-    }
-
-    .date {
-      padding: 0.5rem 0;
-      font-size: 0.8rem;
-      line-height: 1.1rem;
-      color: $color-very-light-grey;
-    }
-
-    .videos {
-      .video-player {
-        max-width: $row-width;
-      }
-    }
-
-    .photos {
-      img {
-        max-width: $row-width;
-      }
-    }
-
-    .links {
-      a {
-        color: $color-grey;
-        font-size: 0.9rem;
-      }
-
-      border: 1px solid $color-light-grey;
-      padding: 0.5rem;
-      max-width: $row-width;
-    }
-
-    .description,
-    .note {
-      margin: 0.5rem 0;
-      padding: 0.5rem 0;
-      font-size: 0.9rem;
-      line-height: 1.1rem;
-      max-width: $row-width;
-    }
-
-    .note {
-      background-color: $color-extremely-light-grey;
-      border-left: 3px solid $color-medium-grey;
-      padding: 1rem 1rem;
-      transition: padding 200ms 0.2s;
-    }
-
-    .note.nocontent {
-      padding: 0.2rem 1rem;
-    }
-
-    .note.nocontent:focus {
-      padding: 1rem 0.5rem;
-    }
-  }
-
-  .mem:hover {
-    border-left: $highlight-border-width solid $color-very-light-grey;
-    //background-color: $color-extremely-light-grey;
-  }
-
-  @media (max-width: $layout-mobile-width) {
-    .mem {
-      flex-direction: column;
-
-      .controls {
-        width: 80vw;
-      }
-
-      .photos {
-        img {
-          max-width: 80vw;
-        }
-      }
-
-      .videos {
-        .video-player {
-          max-width: 80vw;
-        }
-      }
-    }
-  }
-</style>
