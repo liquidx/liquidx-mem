@@ -1,15 +1,17 @@
 <template>
   <div>
-    <mem-add :user="user"></mem-add>
+    <mem-add></mem-add>
   </div>
 </template>
 
 <script lang="ts">
   import { defineComponent } from 'vue'
+  import { User } from 'firebase/auth'
 
   defineComponent({
     data() {
       return {
+        user: null as User | null,
         text: '',
       }
     },

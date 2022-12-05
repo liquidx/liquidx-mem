@@ -110,8 +110,8 @@
 <script lang="ts">
   import { Mem } from '../../functions/core/mems'
   import { DateTime } from 'luxon'
-  import firebase from 'firebase/app'
-  import 'firebase/storage'
+  import { getStorage, ref, getDownloadURL } from 'firebase/storage'
+
   import { defineComponent } from 'vue'
 
   export default defineComponent({
@@ -254,10 +254,9 @@
       async getMediaImageUrl() {
         if (this.mem && this.mem.media && this.mem.media.path) {
           console.log('Getting url', this.mem.media.path)
-          const url = await firebase
-            .storage()
-            .ref(this.mem.media.path)
-            .getDownloadURL()
+          const storage = getStorage(this.$firebase)
+          const storageRef = ref(storage, this.mem.media.path)
+          const url = await getDownloadURL(storageRef)
           console.log('Got url', this.mem.media.path)
           this.mediaImageUrl = url
         }

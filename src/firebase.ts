@@ -1,21 +1,23 @@
-import firebase from "firebase/app";
-import "firebase/firestore";
-import "firebase/auth";
+import { initializeApp } from 'firebase/app'
+import { getFirestore, QuerySnapshot, DocumentData } from 'firebase/firestore'
+import 'firebase/compat/auth'
+import 'firebase/compat/firestore'
+
 import firebaseConfig from '../credentials-firebase-web.json';
 
 // Get a Firestore instance
-export const firebaseApp = firebase.initializeApp(firebaseConfig);
-export const db = firebaseApp.firestore();
+export const firebaseApp = initializeApp(firebaseConfig);
+export const db = getFirestore(firebaseApp)
 
 // Export types that exists in Firestore
 // This is not always necessary, but it's used in other examples
-const { Timestamp, GeoPoint } = firebase.firestore;
-export { Timestamp, GeoPoint };
+// const { Timestamp, GeoPoint } = firebase.firestore;
+// export { Timestamp, GeoPoint };
 
-export const unwrapDocs = (docs: firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>): Array<firebase.firestore.DocumentData> => {
-  let unwrapped: Array<firebase.firestore.DocumentData> = [];
+export const unwrapDocs = (docs: QuerySnapshot<DocumentData>): Array<DocumentData> => {
+  let unwrapped: Array<DocumentData> = [];
   docs.forEach(snapshot => {
-    let doc: firebase.firestore.DocumentData = snapshot.data()
+    let doc: DocumentData = snapshot.data()
     doc.id = snapshot.id
 
     unwrapped.push(doc);

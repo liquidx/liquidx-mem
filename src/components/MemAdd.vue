@@ -18,8 +18,11 @@
   import { DateTime } from 'luxon'
   import { reactive, defineProps } from 'vue'
   import { parseText } from '../../functions/core/parser'
+  import { User } from 'firebase/auth'
   import { db } from '../firebase'
-  import firebase from 'firebase/app'
+  import { Mem } from '../../functions/core/mems'
+  import { getUserMemCollection } from '@/lib/mem-data-collection'
+  import { addMem } from '@/lib/mem-data-modifiers'
   import type { PropType } from 'vue'
 
   const state = reactive({
@@ -28,29 +31,24 @@
 
   const props = defineProps({
     user: {
-      type: Object as PropType<firebase.User | null>,
+      type: Object as PropType<User | null>,
       required: true,
     },
   })
 
-  const memsCollection = () => {
-    let uid = '1'
-    if (props.user) {
-      uid = props.user.uid
+  const addNewMem = () => {
+    if (!props.user) {
+      return
     }
 
-    return db.collection('users').doc(uid).collection('mems')
-  }
-
-  const addNewMem = () => {
     const mem = parseText(state.rawInput)
     // TODO: Probably there's a better way to get milliseconds?
     mem.new = true
     mem.addedMs = DateTime.utc().toMillis()
-    memsCollection()
-      .add(mem)
-      .then(() => {
-        state.rawInput = ''
-      })
+
+    let collection = getUserMemCollection(db, props.user)
+    addMem(mem, collection).then(() => {
+      state.rawInput = ''
+    })
   }
 </script>

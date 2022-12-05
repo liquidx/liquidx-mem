@@ -2,7 +2,7 @@
   <div class="py-2">
     <div v-if="user">
       Hi, {{ user.email }}.
-      <button class="underline text-color-500" @click="signOut">
+      <button class="underline text-color-500" @click="signOutDidClick">
         Sign out
       </button>
     </div>
@@ -32,12 +32,19 @@
 
 <script lang="ts">
   import { defineComponent } from 'vue'
-  import firebase from 'firebase/app'
+  import {
+    User,
+    UserCredential,
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut,
+  } from 'firebase/auth'
 
   export default defineComponent({
     data() {
       return {
-        user: null as firebase.User | null,
+        user: null as User | null,
         signInEmail: '',
         signInPassword: '',
 
@@ -46,7 +53,7 @@
     },
 
     emits: {
-      didSignIn(user: firebase.User) {
+      didSignIn(user: User) {
         return true
       },
       didSignOut() {
@@ -58,7 +65,8 @@
       // this.$firebase
       //   .auth()
       //   .setPersistence(this.$firebase.auth.Auth.Persistence.LOCAL);
-      this.$firebase.auth().onAuthStateChanged((user: firebase.User) => {
+      const auth = getAuth(this.$firebase)
+      onAuthStateChanged(auth, (user: User | null) => {
         this.user = user
         this.$emit('didSignIn', user)
         console.log('Signed in user:', this.user)
@@ -67,10 +75,9 @@
 
     methods: {
       signIn() {
-        this.$firebase
-          .auth()
-          .signInWithEmailAndPassword(this.signInEmail, this.signInPassword)
-          .then((userCredential: firebase.auth.UserCredential) => {
+        const auth = getAuth(this.$firebase)
+        signInWithEmailAndPassword(auth, this.signInEmail, this.signInPassword)
+          .then((userCredential: UserCredential) => {
             console.log('signed in', userCredential)
             this.user = userCredential.user
             this.$emit('didSignIn', this.user)
@@ -82,15 +89,13 @@
           })
       },
 
-      signOut() {
-        this.$firebase
-          .auth()
-          .signOut()
-          .then(() => {
-            console.log('signed out')
-            this.user = null
-            this.$emit('didSignOut')
-          })
+      signOutDidClick() {
+        const auth = getAuth(this.$firebase)
+        signOut(auth).then(() => {
+          console.log('signed out')
+          this.user = null
+          this.$emit('didSignOut')
+        })
       },
     },
   })
