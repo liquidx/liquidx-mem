@@ -4,7 +4,7 @@
       v-for="mem in orderedMems"
       :key="mem.id"
       :mem="mem"
-      class="mb-2"
+      class="mb-6"
       @archive="archiveMem"
       @delete="deleteMem"
       @annotate="annotateMem"
