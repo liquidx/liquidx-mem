@@ -3,7 +3,7 @@
     <header class="mt-0 p-2 w-screen md:min-h-screen md:w-48">
       <h1 class="text-md py-2 font-bold text-gray-800"><a href="/">#mem</a></h1>
 
-      <MemAuth @did-sign-in="didSignIn" @did-sign-out="didSignOut"></MemAuth>
+      <mem-auth @did-sign-in="didSignIn" @did-sign-out="didSignOut"></mem-auth>
 
       <div class="py-2" v-if="user" v-show="user">
         <ul>
@@ -11,30 +11,10 @@
         </ul>
       </div>
     </header>
-    <section
-      class="w-screen p-2 md:w-48 text-gray-500 flex flex-row flex-wrap md:flex-col justify-start"
-    >
-      <a
-        class="block p-0.5 whitespace-nowrap"
-        href="#"
-        @click.prevent="filterBy('')"
-        >New</a
-      >
-      <a
-        class="block py-0.5 whitespace-nowrap"
-        href="#"
-        @click.prevent="filterBy('*archived')"
-        >Archived</a
-      >
-      <a
-        v-for="tag in allTags"
-        :key="tag.tag"
-        class="block p-0.5 whitespace-nowrap"
-        href="#"
-        @click.prevent="filterBy(tag.tag)"
-        >{{ tag.tag }} ({{ tag.count }})</a
-      >
+    <section>
+      <mem-tag-list :mems="allMems" @tag-selected="selectTag"></mem-tag-list>
     </section>
+
     <main class="p-2 max-w-screen flex-grow md:max-w-xl">
       <mem-add :user="user"></mem-add>
 
@@ -56,23 +36,21 @@
 </template>
 
 <script lang="ts">
-  import toPairs from 'lodash/toPairs'
-  import orderBy from 'lodash/orderBy'
   import { defineComponent } from 'vue'
   import firebase from 'firebase/app'
 
   import MemAuth from '../components/MemAuth.vue'
   import MemList from '../components/MemList.vue'
   import MemAdd from '../components/MemAdd.vue'
+  import MemTagList from '../components/MemTagList.vue'
 
   import { db, unwrapDocs } from '../firebase'
   import { Mem } from '../../functions/core/mems'
-  import { parseText, extractEntities } from '../../functions/core/parser'
-
-  type TagIndex = { [field: string]: number }
+  import * as memModifiers from '../lib/mem-data-modifiers'
 
   export default defineComponent({
     components: {
+      MemTagList,
       MemAuth,
       MemList,
       MemAdd,
@@ -93,22 +71,6 @@
     computed: {
       signedIn() {
         return this.user !== null
-      },
-      allTags(): { tag: string; count: number }[] {
-        console.log('getAllTags')
-        const tags: TagIndex = {}
-        this.allMems.forEach((mem: Mem) => {
-          if (mem.tags) {
-            for (const tag of mem.tags) {
-              tags[tag] = tags[tag] ? tags[tag] + 1 : 1
-            }
-          }
-        })
-
-        return orderBy(toPairs(tags), [1], ['desc']).map(o => ({
-          tag: o[0],
-          count: o[1],
-        }))
       },
     },
 
@@ -171,6 +133,8 @@
             .get()
             .then(docs => unwrapDocs(docs))
         }
+
+        // Get all the mems.
         this.allMems = await this.memsCollection()
           .get()
           .then(docs => unwrapDocs(docs))
@@ -195,7 +159,7 @@
         window.scrollTo(0, 0)
       },
 
-      filterBy(tag: string) {
+      selectTag(tag: string) {
         if (tag && tag.startsWith('#')) {
           this.showTags = [tag]
         } else if (tag && tag.startsWith('*')) {
@@ -207,59 +171,42 @@
         this.reloadMems()
       },
 
-      deleteMem(mem: Mem) {
-        this.memsCollection().doc(mem.id).delete()
-      },
-
-      annotateMem(mem: Mem) {
+      annotateMem(mem: Mem): boolean {
         if (!this.user || !this.user.uid) {
-          return
+          return false
         }
 
-        // TODO: make this work for dev too.
-        const url = `/api/annotate?user=${this.user.uid}&mem=${mem.id}`
-        fetch(url)
-          .then(response => response.text())
-          .then(response => console.log(response))
+        memModifiers.annotateMem(mem, this.user.uid)
+        return true
       },
 
-      archiveMem(mem: Mem) {
-        this.memsCollection().doc(mem.id).update({ new: false })
+      deleteMem(mem: Mem): boolean {
+        memModifiers.deleteMem(mem, this.memsCollection())
+        return true
       },
 
-      updateNoteForMem(changed: { mem: Mem; note: string }) {
-        const entities = extractEntities(changed.note)
-        const updated = Object.assign({ note: changed.note }, entities)
-        this.memsCollection()
-          .doc(changed.mem.id)
-          .update(updated)
-          .then(() => {
-            console.log('Updated mem', changed.mem.id, updated)
-          })
+      archiveMem(mem: Mem): boolean {
+        memModifiers.archiveMem(mem, this.memsCollection())
+        return true
       },
 
-      updateTitleForMem(changed: { mem: Mem; title: string }) {
-        const updated = {
-          title: changed.title,
-        }
-        this.memsCollection()
-          .doc(changed.mem.id)
-          .update(updated)
-          .then(() => {
-            console.log('Updated mem', changed.mem.id, updated)
-          })
+      updateNoteForMem(mem: Mem, note: string): boolean {
+        memModifiers.updateNoteForMem(mem, note, this.memsCollection())
+        return true
       },
 
-      updateDescriptionForMem(changed: { mem: Mem; description: string }) {
-        const updated = {
-          description: changed.description,
-        }
-        this.memsCollection()
-          .doc(changed.mem.id)
-          .update(updated)
-          .then(() => {
-            console.log('Updated mem', changed.mem.id, updated)
-          })
+      updateTitleForMem(mem: Mem, title: string): boolean {
+        memModifiers.updateTitleForMem(mem, title, this.memsCollection())
+        return true
+      },
+
+      updateDescriptionForMem(mem: Mem, description: string): boolean {
+        memModifiers.updateDescriptionForMem(
+          mem,
+          description,
+          this.memsCollection(),
+        )
+        return true
       },
     },
   })

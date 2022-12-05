@@ -27,22 +27,22 @@
       MemRow,
     },
     emits: {
-      archive(mem: Mem) {
+      archive(mem: Mem): boolean {
         return true
       },
-      delete(mem: Mem) {
+      delete(mem: Mem): boolean {
         return true
       },
-      annotate(mem: Mem) {
+      annotate(mem: Mem): boolean {
         return true
       },
-      noteChanged(mem: Mem, note: string) {
+      noteChanged(mem: Mem, note: string): boolean {
         return true
       },
-      descriptionChanged(mem: Mem, description: string) {
+      descriptionChanged(mem: Mem, description: string): boolean {
         return true
       },
-      titleChanged(mem: Mem, title: string) {
+      titleChanged(mem: Mem, title: string): boolean {
         return true
       },
     },
