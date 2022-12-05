@@ -16,7 +16,7 @@
       }
     },
 
-    onMounted() {
+    mounted() {
       this.text = 'Hello World'
     },
     methods: {

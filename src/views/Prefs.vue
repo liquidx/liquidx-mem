@@ -48,7 +48,8 @@
         this.getSecret()
       },
     },
-    onMount() {
+    mounted() {
+      console.log('Mounted')
       if (this.user) {
         this.getSecret()
       }
