@@ -20,21 +20,37 @@ const writeToCloudStorage = async (bucket: Bucket, storagePath: string, contents
 };
 
 export const mirrorMedia = async (mem: Mem, bucket: Bucket, outputPath: string): Promise<Mem> => {
+  let requests = []
+
   if (mem.photos) {
     for (let photo of mem.photos) {
       if (photo.mediaUrl) {
         let destinationFilename = md5(photo.mediaUrl);
-        let destinationPath = `${outputPath}/${destinationFilename}.jpg`;
+        let destinationSubpath = new URL(photo.mediaUrl).host.replace(/\./g, '_');
+        let destinationPath = `${outputPath}/${destinationSubpath}/${destinationFilename}.jpg`;
 
         const response = await axios.get(photo.mediaUrl, {
           responseType: 'arraybuffer'
         });
-        writeToCloudStorage(bucket, destinationPath, response.data)
+        let request = writeToCloudStorage(bucket, destinationPath, response.data)
+          .then((response) => {
+            photo.cachedMediaPath = destinationPath
+            return photo
+          })
+          .catch(err => {
+            console.log(err)
+            return null;
+          })
+        requests.push(request)
       }
     }
   }
 
-  return new Promise(resolve => {
-    resolve(mem);
-  });
+  if (requests.length) {
+    return Promise.all(requests).then(() => {
+      return mem;
+    })
+  } else {
+    return mem;
+  }
 };
