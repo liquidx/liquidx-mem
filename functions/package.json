@@ -11,10 +11,11 @@
     "test": "npm run build && npx mocha --reporter spec"
   },
   "engines": {
-    "node": "18"
+    "node": "16"
   },
   "main": "dist/src/index.js",
   "dependencies": {
+    "axios": "^1.2.1",
     "cors": "^2.8.5",
     "firebase": "^9.14.0",
     "firebase-admin": "^11.3.0",
