@@ -1,8 +1,4 @@
 import * as functions from "firebase-functions";
-import {
-  userForSharedSecret,
-  USER_NOT_FOUND
-} from "../core/firestore-user-secrets";
 import { Mem } from "../core/mems";
 import { mirrorMedia } from "../core/mirror";
 import { firebaseApp } from "./firebase-app";
@@ -25,7 +21,7 @@ export const mirror = functions
         .then(snap => {
           const mem: Mem = Object.assign({}, snap.data())
           return mirrorMedia(mem, bucket, `users/${userId}/media`).then(updatedMem => {
-            snap.ref.update(updatedMem);
+            snap.ref.update(updatedMem as { [x: string]: any; });
             response.send("OK");
 
           })
