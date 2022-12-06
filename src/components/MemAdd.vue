@@ -20,10 +20,8 @@
   import { parseText } from '../../functions/core/parser'
   import { User } from 'firebase/auth'
   import { db } from '../firebase'
-  import { Mem } from '../../functions/core/mems'
   import { getUserMemCollection } from '@/lib/mem-data-collection'
   import { addMem } from '@/lib/mem-data-modifiers'
-  import type { PropType } from 'vue'
 
   const state = reactive({
     rawInput: '' as string,
@@ -31,8 +29,8 @@
 
   const props = defineProps({
     user: {
-      type: Object as PropType<User | null>,
-      required: true,
+      type: Object as () => User | null,
+      default: null,
     },
   })
 
