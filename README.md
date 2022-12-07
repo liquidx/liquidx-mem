@@ -74,6 +74,42 @@ Instructions to set up for yourself is still work in progress, but the basics ar
 }
 ```
 
+# Development
+
+## Frontend
+
+Frontend is written in Vue 3 with Typescript and Vite.
+
+```
+npm run dev
+```
+
+## Backend
+
+Backend is using Firebase Functions and Firebase Firestore.
+
+```
+cd functions
+npm run dev
+
+# To run local cloud functions emulator
+npm run server
+
+# To run certain test commands locally
+node tool.cjs
+```
+
+# Deployment
+
+```
+npm run build
+npm run deploy
+
+# Deploy Cloud Functions
+cd functions
+npm run deploy
+```
+
 # Editor
 
 ## Visual Studio Code
@@ -88,5 +124,17 @@ When using Visual Studio Code, install Volar and Typescript for Volar extensions
 # Run all tests
 npx mocha --reporter spec
 # Run all twitter tests
-npm run build && npx mocha --grep twitter 
+npm run build && npx mocha --grep twitter
+```
+
+# Administration
+
+Admin tool exists in `function/tool.mjs`
+
+```
+cd functions
+# Gets all the mems
+node tool.cjs get-all
+# Mirrors any media that are on the mems to our own cloud storage
+node tools.cjs mirror-all
 ```
