@@ -9,6 +9,7 @@ import { mirrorMedia } from './dist/core/mirror.js'
 const DEFAULT_USER = 'BB8zGVrCbrQ2QryHyiZNaUZJjQ93'
 const BUCKET_NAME = 'liquidx-mem.appspot.com'
 
+
 const main = async () => {
   const firebaseAdminCreds = JSON.parse(fs.readFileSync("./credentials-firebase-adminsdk.json", "utf8"));
   const firebaseApp = initializeApp({ credential: cert(firebaseAdminCreds) });
@@ -16,24 +17,53 @@ const main = async () => {
   const storage = getStorage(firebaseApp);
   const bucket = storage.bucket(BUCKET_NAME)
 
-  program.command('mirror <memId>').action(async (memId) => {
-    const userId = DEFAULT_USER
-    const docResult = await firestore.collection("users").doc(userId).collection("mems").doc(memId).get()
-    const mem = Object.assign(docResult.data(), { id: docResult.id })
-    const outputPath = `users/${userId}/media`
+  program.command('mirror <memId>')
+    .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
+    .action(async (memId, options) => {
+      const userId = options.userId
+      const outputPath = `users/${userId}/media`
+      const docResult = await firestore.collection("users").doc(userId).collection("mems").doc(memId).get()
+      const mem = Object.assign(docResult.data(), { id: docResult.id })
 
-    mirrorMedia(mem, bucket, outputPath).then(result => {
-      console.log(result)
+      return mirrorMedia(mem, bucket, outputPath).then(mem => {
+        const writable = Object.assign({}, mem)
+        delete writable.id
+        return firestore.collection("users").doc(userId).collection("mems").doc(mem.id).set(writable)
+      })
+    });
+
+  program.command("mirror-all")
+    .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
+    .action(async (options) => {
+      const userId = options.userId
+      const docsResult = await firestore.collection("users").doc(userId).collection("mems").get()
+      const mems = docsResult.docs.map(doc => Object.assign(doc.data(), { id: doc.id }))
+      for (let mem of mems) {
+        if (mem.photos) {
+          // Check if any of the photos are already mirrored
+          const uncachedPhotos = mem.photos.filter(photo => !photo.cachedMediaPath)
+          if (uncachedPhotos.length > 0) {
+            console.log(`- ${mem.id} ${mem.url}`)
+            await mirrorMedia(mem, bucket, `users/${userId}/media`).then(mem => {
+              const writable = Object.assign({}, mem)
+              delete writable.id
+              return firestore.collection("users").doc(userId).collection("mems").doc(mem.id).set(writable)
+            })
+              .then(result => {
+                console.log(`  - updated ${mem.id}`)
+              })
+          } else {
+            console.log(`- skipping ${mem.id}`)
+          }
+        }
+      }
     })
-  });
-
 
   // Add a command in commander
   program.command("get-all").action(async () => {
     const userId = DEFAULT_USER
     const docsResult = await firestore.collection("users").doc(userId).collection("mems").get()
     const mems = docsResult.docs.map(doc => Object.assign(doc.data(), { id: doc.id }))
-    const outputPath = `users/${userId}/media`
     for (let mem of mems) {
       console.log(`- ${mem.id}`)
       console.log(`  - url: ${mem.url}`)
@@ -48,8 +78,6 @@ const main = async () => {
           console.log(`   - video: ${video.mediaUrl}`)
         }
       }
-
-
     }
   })
 
