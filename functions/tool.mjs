@@ -33,23 +33,25 @@ const main = async () => {
     });
 
   program.command("mirror-all")
+    .option('--only-video', 'Only mirror mems with videos', false)
     .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
     .action(async (options) => {
       const userId = options.userId
       const docsResult = await firestore.collection("users").doc(userId).collection("mems").get()
       const mems = docsResult.docs.map(doc => Object.assign(doc.data(), { id: doc.id }))
       for (let mem of mems) {
-        if (mem.photos) {
+        if (mem.photos || mem.videos) {
           // Check if any of the photos are already mirrored
-          const uncachedPhotos = mem.photos.filter(photo => !photo.cachedMediaPath)
-          if (uncachedPhotos.length > 0) {
+          const uncachedPhotos = mem.photos ? mem.photos.filter(photo => !photo.cachedMediaPath) : []
+          const uncachedVideos = mem.videos ? mem.videos.filter(video => !video.cachedMediaPath) : []
+          if (uncachedPhotos.length > 0 || uncachedVideos.length > 0) {
             console.log(`- ${mem.id} ${mem.url}`)
             await mirrorMedia(mem, bucket, `users/${userId}/media`).then(mem => {
               const writable = Object.assign({}, mem)
               delete writable.id
               return firestore.collection("users").doc(userId).collection("mems").doc(mem.id).set(writable)
             })
-              .then(result => {
+              .then(() => {
                 console.log(`  - updated ${mem.id}`)
               })
           } else {
