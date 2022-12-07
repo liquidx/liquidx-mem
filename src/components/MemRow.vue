@@ -32,21 +32,27 @@
         {{ shortDescription }}
       </div>
 
-      <div v-if="mem.videos" class="videos">
-        <div v-for="video in mem.videos" :key="video.mediaUrl">
+      <div v-if="displayVideos" class="videos">
+        <div v-for="video in displayVideos" :key="video.url">
           <video
-            :src="video.mediaUrl"
+            :src="video.url"
+            :alt="video.status"
+            :title="video.status"
             class="my-4"
-            :poster="video.posterUrl"
             playsinline
             controls
             loop
           />
         </div>
       </div>
-      <div v-if="mem.photos" class="photos">
-        <div v-for="photo in mem.photos" :key="photo.mediaUrl">
-          <img :src="photo.mediaUrl" class="my-4" />
+      <div v-if="displayPhotos" class="photos">
+        <div v-for="photo in displayPhotos" :key="photo.url">
+          <img
+            :src="photo.url"
+            :alt="photo.status"
+            :title="photo.status"
+            class="my-4"
+          />
         </div>
       </div>
 
@@ -109,6 +115,12 @@
 
   import { defineComponent } from 'vue'
 
+  type MediaUrl = {
+    url: string
+    posterUrl?: string
+    status?: string
+  }
+
   export default defineComponent({
     props: {
       mem: {
@@ -121,6 +133,8 @@
       return {
         maxChars: 1000,
         mediaImageUrl: '',
+        displayPhotos: [] as MediaUrl[],
+        displayVideos: [] as MediaUrl[],
       }
     },
 
@@ -152,6 +166,7 @@
       mem: {
         handler(mem) {
           this.getMediaImageUrl()
+          this.getMediaUrls()
         },
         deep: true,
       },
@@ -250,6 +265,44 @@
           this.mediaImageUrl = url
         }
         return this.mediaImageUrl
+      },
+      async getMediaUrls() {
+        if (this.mem && this.mem.photos) {
+          const displayPhotos = []
+          const storage = getStorage(this.$firebase)
+          for (let photo of this.mem.photos) {
+            if (photo.cachedMediaPath) {
+              const storageRef = ref(storage, photo.cachedMediaPath)
+              const url = await getDownloadURL(storageRef)
+              displayPhotos.push({ url: url, status: 'cached' })
+            } else {
+              displayPhotos.push({ url: photo.mediaUrl, status: 'live' })
+            }
+          }
+          this.displayPhotos = displayPhotos
+        }
+        if (this.mem && this.mem.videos) {
+          const displayVideos = []
+          const storage = getStorage(this.$firebase)
+          for (let video of this.mem.videos) {
+            if (video.cachedMediaPath) {
+              const storageRef = ref(storage, video.cachedMediaPath)
+              const url = await getDownloadURL(storageRef)
+              displayVideos.push({
+                url: url,
+                posterUrl: video.posterUrl,
+                status: 'cached',
+              })
+            } else {
+              displayVideos.push({
+                url: video.mediaUrl,
+                posterUrl: video.posterUrl,
+                status: 'live',
+              })
+            }
+          }
+          this.displayVideos = displayVideos
+        }
       },
     },
   })
