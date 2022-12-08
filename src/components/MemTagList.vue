@@ -16,7 +16,7 @@
         :to="'/tag/' + tag.tag.slice(1)"
         class="block p-0.5 whitespace-nowrap hover:underline"
       >
-        {{ tag.tag }} ({{ tag.count }})
+        {{ tag.label }} ({{ tag.count }})
       </router-link>
     </span>
   </section>
@@ -31,6 +31,7 @@
   import type { PropType } from 'vue'
 
   type TagIndex = { [field: string]: number }
+  type TagListItem = { tag: string; label: string; count: number }
 
   export default defineComponent({
     props: {
@@ -43,7 +44,7 @@
       'tag-selected': (tag: string) => true,
     },
     computed: {
-      allTags(): { tag: string; count: number }[] {
+      allTags(): TagListItem[] {
         //console.log('getAllTags:', this.mems)
         const tags: TagIndex = {}
         this.mems.forEach((mem: Mem) => {
@@ -54,15 +55,66 @@
           }
         })
 
-        return orderBy(toPairs(tags), [1], ['desc']).map(o => ({
-          tag: o[0],
-          count: o[1],
-        }))
+        return orderBy(toPairs(tags), [1], ['desc']).map(
+          o =>
+            ({
+              tag: o[0],
+              label: this.labelForTag(o[0]),
+              count: o[1],
+            } as TagListItem),
+        )
       },
     },
     methods: {
       selectTag(tag: string) {
         this.$emit('tag-selected', tag)
+      },
+      labelForTag(tag: string) {
+        if (!tag) {
+          return tag
+        }
+        switch (tag) {
+          case '#art':
+            return `🎨 ${tag}`
+          case '#code':
+            return `👨‍💻 ${tag}`
+          case '#map':
+            return `🗺️ ${tag}`
+          case '#photo':
+            return `📷 ${tag}`
+          case '#japan':
+            return `🇯🇵 ${tag}`
+          case '#hongkong':
+            return `🇭🇰 ${tag}`
+          case '#house':
+            return `🏠 ${tag}`
+          case '#look':
+          case '#read':
+          case '#watch':
+            return `👀 ${tag}`
+          case '#want':
+            return `🤩 ${tag}`
+          case '#3d':
+            return `📦 ${tag}`
+          case '#ml':
+          case '#generativeml':
+          case '#generated':
+          case '#mlapps':
+          case '#dreambooth':
+          case '#nerf':
+          case '#cloudml':
+          case '#stablediffusion':
+          case '#dalle':
+          case '#midjourney':
+          case '#llm':
+          case '#colab':
+            return `🧠 ${tag}`
+          case '#f1':
+            return `🏎️ ${tag}`
+
+          default:
+            return tag
+        }
       },
     },
   })
