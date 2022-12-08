@@ -222,6 +222,7 @@
 
     mounted() {
       this.getMediaImageUrl()
+      this.getMediaUrls()
     },
 
     methods: {
