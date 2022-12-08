@@ -23,6 +23,7 @@
           <span class="material-icons mx-2 text-sm">&#xe3c9;</span>
         </button>
       </div>
+
       <div
         v-if="mem.description"
         class="my-2 text-gray-400"
@@ -30,6 +31,15 @@
         @blur="descriptionDidChange"
       >
         {{ shortDescription }}
+      </div>
+      <div v-else>
+        <div
+          class="my-2 text-gray-400"
+          contenteditable="true"
+          @blur="descriptionDidChange"
+        >
+          No description
+        </div>
       </div>
 
       <div v-if="displayVideos" class="videos">
@@ -70,7 +80,10 @@
       </ul>
 
       <div class="my-2 text-gray-400" :title="mem.id">
-        <router-link :to="'/mem/' + mem.id">{{ prettyDate }}</router-link>
+        <div>{{ prettyDate }}</div>
+        <div class="text-gray-200">
+          <router-link :to="'/mem/' + mem.id">{{ mem.id }}</router-link>
+        </div>
       </div>
     </div>
     <div class="text-gray-400 flex flex-row flex-nowrap gap-1">
@@ -260,9 +273,13 @@
           console.log('Getting url', this.mem.media.path)
           const storage = getStorage(this.$firebase)
           const storageRef = ref(storage, this.mem.media.path)
-          const url = await getDownloadURL(storageRef)
-          console.log('Got url', this.mem.media.path)
-          this.mediaImageUrl = url
+          try {
+            const url = await getDownloadURL(storageRef)
+            console.log('Got url', this.mem.media.path)
+            this.mediaImageUrl = url
+          } catch (e) {
+            // Silent fail
+          }
         }
         return this.mediaImageUrl
       },
@@ -273,8 +290,13 @@
           for (let photo of this.mem.photos) {
             if (photo.cachedMediaPath) {
               const storageRef = ref(storage, photo.cachedMediaPath)
-              const url = await getDownloadURL(storageRef)
-              displayPhotos.push({ url: url, status: 'cached' })
+              try {
+                const url = await getDownloadURL(storageRef)
+                displayPhotos.push({ url: url, status: 'cached' })
+              } catch (e) {
+                // Silent fail
+                console.log('Error getting cached image', e)
+              }
             } else {
               displayPhotos.push({ url: photo.mediaUrl, status: 'live' })
             }
@@ -287,12 +309,16 @@
           for (let video of this.mem.videos) {
             if (video.cachedMediaPath) {
               const storageRef = ref(storage, video.cachedMediaPath)
-              const url = await getDownloadURL(storageRef)
-              displayVideos.push({
-                url: url,
-                posterUrl: video.posterUrl,
-                status: 'cached',
-              })
+              try {
+                const url = await getDownloadURL(storageRef)
+                displayVideos.push({
+                  url: url,
+                  posterUrl: video.posterUrl,
+                  status: 'cached',
+                })
+              } catch (e) {
+                console.log('Error getting cached video', e)
+              }
             } else {
               displayVideos.push({
                 url: video.mediaUrl,
