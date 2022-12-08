@@ -81,6 +81,7 @@ const getBestStreamUrl = async (streamUrl: string) => {
 // Downloads and writes a video stream to cloud storage.
 const writeVideoStreamToCloudStorage = async (bucket: Bucket, storagePath: string, streamUrl: any) => {
   let bestStreamUrl = await getBestStreamUrl(streamUrl);
+  console.log(` -- best stream ${bestStreamUrl}`)
 
   return new Promise((resolve, reject) => {
     let inputStream = m3u8stream(bestStreamUrl);

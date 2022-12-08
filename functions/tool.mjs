@@ -5,7 +5,7 @@ import fs from 'fs';
 import { program } from 'commander';
 
 import { mirrorMedia } from './dist/core/mirror.js'
-
+import { annotateMem } from './dist/core/annotator.js'
 const DEFAULT_USER = 'BB8zGVrCbrQ2QryHyiZNaUZJjQ93'
 const BUCKET_NAME = 'liquidx-mem.appspot.com'
 
@@ -16,6 +16,24 @@ const main = async () => {
   const firestore = getFirestore(firebaseApp);
   const storage = getStorage(firebaseApp);
   const bucket = storage.bucket(BUCKET_NAME)
+
+  program.command('annotate <memId>')
+    .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
+    .action(async (memId, options) => {
+      const userId = options.userId
+      const docResult = await firestore.collection("users").doc(userId).collection("mems").doc(memId).get()
+      const mem = Object.assign(docResult.data(), { id: docResult.id })
+
+      return annotateMem(mem).then(mem => {
+        const writable = Object.assign({}, mem)
+        // writable.description = mem.description.slice(0, -5)
+        // writable.descriptionHtml = mem.descriptionHtml.slice(0, -5)
+        delete writable.id
+        console.log(writable)
+
+        return firestore.collection("users").doc(userId).collection("mems").doc(mem.id).set(writable)
+      })
+    });
 
   program.command('mirror <memId>')
     .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
