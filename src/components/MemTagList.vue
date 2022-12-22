@@ -11,10 +11,21 @@
     >
       Archive
     </router-link>
+    <span v-for="view in views" :key="view">
+      <router-link
+        :to="pathForView(view)"
+        class="block p-0.5 whitespace-nowrap hover:underline"
+        :class="isCurrent(view) ? 'font-bold' : ''"
+
+      >
+        {{ view }}
+      </router-link>
+    </span>
     <span v-for="tag in allTags" :key="tag.tag">
       <router-link
         :to="'/tag/' + tag.tag.slice(1)"
         class="block p-0.5 whitespace-nowrap hover:underline"
+        :class="isCurrent(tag.tag) ? 'font-bold' : ''"
       >
         {{ tag.label }} ({{ tag.count }})
       </router-link>
@@ -35,10 +46,18 @@
 
   export default defineComponent({
     props: {
+      currentView: {
+        type: String as PropType<string>,
+        default: '',
+      },
       mems: {
         type: Array as PropType<Mem[]>,
         default: [] as Mem[],
       },
+      views: {
+        type: Array as PropType<string[]>,
+        default: [] as string[],
+      }
     },
     emits: {
       'tag-selected': (tag: string) => true,
@@ -66,6 +85,14 @@
       },
     },
     methods: {
+
+      isCurrent(expression: string) {
+        return this.currentView === expression.replaceAll('#', '')
+      },
+      pathForView(view: string) {
+        let hashesRemoved = view.replaceAll('#', '')
+        return `/tag/${hashesRemoved}/`
+      },
       selectTag(tag: string) {
         this.$emit('tag-selected', tag)
       },

@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col w-full overflow-x-hidden md:flex-row">
     <section>
-      <mem-tag-list :mems="allMems"></mem-tag-list>
+      <mem-tag-list :mems="allMems" :views="savedViews" :currentView="currentView"></mem-tag-list>
     </section>
 
     <main class="p-2 max-w-screen flex-grow md:max-w-xl">
@@ -42,6 +42,8 @@
 
   import { Mem } from '../../functions/core/mems'
   import * as memModifiers from '../lib/mem-data-modifiers'
+  import { getViews } from '@/lib/prefs-get'
+
   import {
     queryForAllMems,
     queryForNewMems,
@@ -75,11 +77,15 @@
         visibleMems: [] as Mem[],
         visiblePages: 1,
         moreMemsAvailable: false,
+
+        currentView: '',
+        savedViews: [] as string[],
       }
     },
 
     watch: {
       $route(to, from) {
+        this.updateCurrentView(to)
         this.reloadMems()
       },
 
@@ -89,6 +95,7 @@
         } else {
           this.unbindMems()
         }
+        this.loadViews()
         this.reloadMems()
       },
 
@@ -98,11 +105,11 @@
 
       visibleMems() {
         this.moreMemsAvailable = this.visibleMems.length < this.mems.length
-
       }
     },
 
     computed: {
+    
       signedIn() {
         return this.user !== null
       },
@@ -116,8 +123,10 @@
 
     mounted() {
       if (this.user) {
+        this.loadViews()
         this.reloadMems()
       }
+      this.updateCurrentView(this.$route)
     },
 
     beforeUnmount() {
@@ -125,6 +134,16 @@
     },
 
     methods: {
+      updateCurrentView(route: any) {
+        if (
+          route &&
+          route.params.tags &&
+          typeof route.params.tags === 'string'
+        ) {
+          this.currentView = route.params.tags
+        }
+        console.log('updatecurrentview:', this.currentView, route)
+      },
       bindMems() {
         let collection = this.userMemCollection
         if (collection) {
@@ -139,6 +158,16 @@
         }
       },
 
+      async loadViews() {
+        if (this.user) {
+          getViews(this.user.uid, getFirestore(this.$firebase)).then(views => {
+            if (views) {
+              this.savedViews = views
+            }
+          })
+        }
+      },
+
       async reloadMems() {
         if (!this.userMemCollection) {
           this.allMems = []
@@ -149,12 +178,8 @@
 
         let filterTags = [] as string[]
         let filterStrategy = 'any'
-        if (
-          this.$route &&
-          this.$route.params.tags &&
-          typeof this.$route.params.tags === 'string'
-        ) {
-          let tags = this.$route.params.tags
+        if (          this.currentView        ) {
+          let tags = this.currentView
           if (tags.includes('+')) {
             filterStrategy = 'all'
             filterTags = tags.split('+').map(t => `#${t}`)

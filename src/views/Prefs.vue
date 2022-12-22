@@ -1,6 +1,7 @@
 <template>
   <div class="p-4">
-    <div>Shared Secret:</div>
+    <div class="mb-4">
+      <div class="font-bold">Shared Secret:</div>
     <div>
       <input
         type="text"
@@ -13,6 +14,24 @@
       >
         Save
       </button>
+    </div>
+    </div>
+   
+    <div class="mb-4">
+      <div class="font-bold">Views</div>
+    <div v-for="(view, index) in views" :key="index">
+      <input
+        type="text"
+        :value="view"
+        class="my-1 px-2 py-1 border border-gray-200"
+      />
+      <button class="mx-2 px-2 py-1 bg-gray-200 active:bg-gray-400" @click="deleteView(index)">Delete</button>
+
+      </div>
+    </div>
+    <div class="flex flex-row">
+      <input type="text" v-model="newView" class="my-1 px-2 py-1 border border-gray-200" />
+      <button class="mx-2 px-2 py-1 bg-gray-200 active:bg-gray-400" @click="addView">Add</button>
     </div>
   </div>
 </template>
@@ -28,6 +47,8 @@
     updateDoc,
   } from 'firebase/firestore'
 
+  import { getViews } from '../lib/prefs-get'
+
   // Types
   import { User } from 'firebase/auth'
 
@@ -41,20 +62,58 @@
     data() {
       return {
         writeSecret: '',
+        views: [] as string[],
+        newView: '',
       }
     },
     watch: {
       user() {
         this.getSecret()
+        this.getViews()
       },
     },
     mounted() {
       console.log('Mounted')
       if (this.user) {
         this.getSecret()
+        this.getViews()
       }
     },
     methods: {
+      getViews() {
+        if (this.user) {
+          let db = getFirestore(this.$firebase)
+          getViews(this.user.uid, db).then(result => {
+            if (result) {
+              this.views = result
+            }
+          })
+        }
+      },
+      saveViews() {
+        if (this.user) {
+          console.log('saveViews')
+          let db = getFirestore(this.$firebase)
+          let prefsCollection = collection(
+            doc(collection(db, 'users'), this.user.uid),
+            'prefs',
+          )
+          let viewsDoc = doc(prefsCollection, 'views')
+          updateDoc(viewsDoc, {
+            views: this.views,
+          })
+          console.log('updated views')
+        }
+      },
+      addView() {
+        this.views.push(this.newView)
+        this.newView = ''
+        this.saveViews()
+      },
+      deleteView(index: number) {
+        this.views.splice(index, 1)
+        this.saveViews()
+      },
       getSecret() {
         if (this.user) {
           console.log('getSecret')
