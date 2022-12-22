@@ -30,6 +30,11 @@
         {{ tag.label }} ({{ tag.count }})
       </router-link>
     </span>
+    <span v-if="!everything">
+      <button @click.prevent="everything = true" class="block p-0.5 whitespace-nowrap hover:underline">
+        More..
+      </button>
+      </span>
   </section>
 </template>
 
@@ -57,8 +62,13 @@
       views: {
         type: Array as PropType<string[]>,
         default: [] as string[],
-      }
+      },
+     
     },
+    data: () => ({
+      everything: false,
+      initialMaxTags: 30,
+    }),
     emits: {
       'tag-selected': (tag: string) => true,
     },
@@ -74,7 +84,7 @@
           }
         })
 
-        return orderBy(toPairs(tags), [1], ['desc']).map(
+        let orderedTags = orderBy(toPairs(tags), [1], ['desc']).map(
           o =>
             ({
               tag: o[0],
@@ -82,6 +92,10 @@
               count: o[1],
             } as TagListItem),
         )
+        if (!this.everything) {
+          orderedTags = orderedTags.slice(0, this.initialMaxTags)
+        }
+        return orderedTags;
       },
     },
     methods: {
