@@ -8,7 +8,7 @@
       <mem-add :user="user"></mem-add>
 
       <mem-list
-        :mems="mems"
+        :mems="visibleMems"
         @archive="archiveMem"
         @delete="deleteMem"
         @annotate="annotateMem"
@@ -17,8 +17,7 @@
         @description-changed="updateDescriptionForMem"
       />
       <div class="w-full flex flex-row justify-between m-1">
-        <a href="#" @click.prevent="prevPage">Prev</a>
-        <a href="#" @click.prevent="nextPage">Next</a>
+        <button @click.prevent="nextPage" class="px-6 py-1 rounded-xl bg-gray-700 text-gray-100 font-bold">More &gt;</button>
       </div>
     </main>
   </div>
@@ -71,6 +70,9 @@
         showArchivedStatus: 'new',
         unsubscribeListener: null as (() => void) | null,
         pageSize: 30,
+
+        visibleMems: [] as Mem[],
+        visiblePages: 1
       }
     },
 
@@ -89,6 +91,10 @@
         }
         this.reloadMems()
       },
+
+      visiblePages() {
+        this.visibleMems = this.mems.slice(0, this.pageSize * this.visiblePages)
+      }
     },
 
     computed: {
@@ -132,6 +138,7 @@
         if (!this.userMemCollection) {
           this.allMems = []
           this.mems = []
+          this.visibleMems = []
           return
         }
 
@@ -162,18 +169,23 @@
             this.userMemCollection,
             filterTags,
             filterStrategy,
-            this.pageSize,
+            0,
           )
+          this.visibleMems = this.mems.slice(0, this.pageSize)
         } else if (this.showArchivedStatus == 'archived') {
           this.mems = await queryForArchivedMems(
             this.userMemCollection,
             this.pageSize,
           )
+          this.visibleMems = this.mems.slice(0, this.pageSize)
+
         } else {
           this.mems = await queryForNewMems(
             this.userMemCollection,
             this.pageSize,
           )
+          this.visibleMems = this.mems.slice(0, this.pageSize)
+
         }
 
         // Get all the mems.
@@ -182,14 +194,9 @@
 
       // computed proper
 
-      prevPage() {
-        this.reloadMems()
-      },
 
       nextPage() {
-        this.reloadMems()
-        // TODO: animate
-        window.scrollTo(0, 0)
+        this.visiblePages++
       },
 
       annotateMem(mem: Mem): boolean {
