@@ -2,90 +2,83 @@
 
 const process = require("process");
 const fs = require("fs");
-const fetch = require("make-fetch-happen");
 const FormData = require("form-data");
 const program = require("commander");
+const axios = require("axios");
 
-const server = "http://localhost:5001/liquidx-mem/us-central1";
+const server = "http://127.0.0.1:5001/liquidx-mem/us-central1";
 //const server = "https://liquidx-mem.web.app/api";
 const testData = "https://liquidx.net/ This is a #test";
 
 const testQuery = () => {
   const data = encodeURIComponent(testData);
 
-  fetch(`${server}/add?text=${data}`, {
-    method: "GET"
-  })
-    .then(response => response.text())
+  axios.get(`${server}/add?text=${data}`)
     .then(response => {
-      console.log(response);
+      console.log(response.data);
     });
 };
 
 const testJsonWrongSecret = () => {
-  fetch(`${server}/add`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json"
-    },
-    body: JSON.stringify({ text: testData, secret: "wrongSecret" })
-  })
-    .then(response => response.text())
+  axios.post(`${server}/add`,
+    JSON.stringify({ text: testData, secret: "wrongSecret" }),
+    {
+      headers: {
+        "content-type": "application/json"
+      },
+    })
     .then(response => {
-      console.log(response);
+      console.log(response.data);
     });
 };
 
-const testJson = () => {
-  fetch(`${server}/add`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json"
-    },
-    body: JSON.stringify({ text: testData, secret: "akita-inu" })
-  })
-    .then(response => response.text())
+const testJsonAdd = () => {
+  axios.post(`${server}/add`,
+    JSON.stringify({ text: testData, secret: "akita-inu" }),
+    {
+      headers: {
+        "content-type": "application/json"
+      },
+    })
     .then(response => {
-      console.log(response);
+      console.log(response.data);
     });
 };
 
 const testJsonImage = testData => {
-  fetch(`${server}/add`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json"
-    },
-    body: JSON.stringify({ image: testData, secret: "akita-inu" })
-  })
-    .then(response => response.text())
+  axios.post(`${server}/add`,
+    JSON.stringify({ image: testData, secret: "akita-inu" }),
+    {
+      headers: {
+        "content-type": "application/json"
+      },
+    })
     .then(response => {
-      console.log(response);
+      console.log(response.data);
     });
 };
 
-const testFormData = () => {
+const testAddWithFormData = () => {
   const body = new FormData();
   body.append("text", testData);
+  body.append("secret", "akita-inu");
 
-  fetch(`${server}/add`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/x-www-form-urlencoded"
-    },
-    body: body
+  axios.post(`${server}/add`, {
+    text: testData,
+    secret: "akita-inu"
   })
-    .then(response => response.text())
     .then(response => {
-      console.log(response);
-    });
+      console.log(response.data);
+    })
+    .catch(err => {
+      console.log(err)
+    })
 };
 
 const testGet = () => {
-  fetch(`${server}/add`)
-    .then(response => response.text())
+  axios.get(`${server}/add`)
     .then(response => {
-      console.log(response);
+      console.log(response.data);
     });
 };
 
@@ -95,8 +88,17 @@ const main = () => {
     testJsonImage(imageBase64);
   });
 
+  program.command('test-add-get').action(() => {
+    testGet()
+  })
+
+  program.command('test-add-post').action(() => {
+    testJsonAdd()
+  })
+
+
+
   program.parse(process.argv);
 };
 
 main();
-//testJson();

@@ -1,5 +1,5 @@
 
-import { Mem, MemPhoto } from "./mems";
+import { Mem } from "./mems";
 import axios from 'axios';
 import { Bucket } from '@google-cloud/storage'
 import md5 from 'md5';

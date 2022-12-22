@@ -12,5 +12,5 @@ export const firestoreUpdate = (
     .doc(userId)
     .collection("mems")
     .doc(memId)
-    .update(mem);
+    .update(mem as { [x: string]: any; });
 };

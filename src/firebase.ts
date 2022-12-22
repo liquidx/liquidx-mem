@@ -1,7 +1,5 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore, QuerySnapshot, DocumentData } from 'firebase/firestore'
-import 'firebase/compat/auth'
-import 'firebase/compat/firestore'
 
 import firebaseConfig from '../credentials-firebase-web.json';
 

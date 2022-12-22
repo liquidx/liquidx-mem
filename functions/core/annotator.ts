@@ -9,19 +9,19 @@ import { isResultBlocked } from "./annotator-og-blocklist";
 
 const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
   const annotated: Mem = Object.assign({}, mem);
-  const request: openGraphScraper.Options = {
+  const request = {
     url: url,
     headers: {
       "user-agent": "liquidx-mem.web.app/1.0"
     }
   };
   return openGraphScraper(request)
-    .then(data => {
-      if (data.error) {
+    .then((response: { result: any, error: any | undefined }) => {
+      if (response.error) {
         return mem;
       }
 
-      const result = data.result;
+      const result = response.result;
       console.log(result);
       if (result && !isResultBlocked(result)) {
         if (result.ogTitle) {
