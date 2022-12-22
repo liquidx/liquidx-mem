@@ -16,8 +16,9 @@
         @title-changed="updateTitleForMem"
         @description-changed="updateDescriptionForMem"
       />
-      <div class="w-full flex flex-row justify-between m-1">
-        <button @click.prevent="nextPage" class="px-6 py-1 rounded-xl bg-gray-700 text-gray-100 font-bold hover:bg-gray-400">More &gt;</button>
+      <div class="w-full flex flex-row justify-between m-1" >
+        <button v-if="moreMemsAvailable" @click.prevent="nextPage" class="px-6 py-1 rounded-xl bg-gray-700 text-gray-100 font-bold hover:bg-gray-400">More &gt;</button>
+        <div v-else class="">That's it.</div>
       </div>
     </main>
   </div>
@@ -72,15 +73,14 @@
         pageSize: 30,
 
         visibleMems: [] as Mem[],
-        visiblePages: 1
+        visiblePages: 1,
+        moreMemsAvailable: false,
       }
     },
 
     watch: {
       $route(to, from) {
         this.reloadMems()
-
-        // react to route changes...
       },
 
       user() {
@@ -94,6 +94,11 @@
 
       visiblePages() {
         this.visibleMems = this.mems.slice(0, this.pageSize * this.visiblePages)
+      },
+
+      visibleMems() {
+        this.moreMemsAvailable = this.visibleMems.length < this.mems.length
+
       }
     },
 
