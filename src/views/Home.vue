@@ -17,7 +17,7 @@
         @description-changed="updateDescriptionForMem"
       />
       <div class="w-full flex flex-row justify-between m-1">
-        <button @click.prevent="nextPage" class="px-6 py-1 rounded-xl bg-gray-700 text-gray-100 font-bold">More &gt;</button>
+        <button @click.prevent="nextPage" class="px-6 py-1 rounded-xl bg-gray-700 text-gray-100 font-bold hover:bg-gray-400">More &gt;</button>
       </div>
     </main>
   </div>
