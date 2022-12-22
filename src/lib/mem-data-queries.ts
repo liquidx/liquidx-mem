@@ -1,33 +1,31 @@
 import { unwrapDocs } from '@/firebase'
 import { CollectionReference, DocumentData, QueryConstraint, Query, getDocs, query, where, orderBy, limit, WhereFilterOp } from 'firebase/firestore'
 
-export function queryForAllMems(collection: CollectionReference<DocumentData>): Promise<Array<DocumentData>> {
-  return getDocs(collection).then(unwrapDocs)
+export function queryForAllMems(collection: CollectionReference<DocumentData>): Query {
+  return query(collection, orderBy('addedMs', 'desc'))
 }
 
-export function queryForNewMems(collection: CollectionReference<DocumentData>, pageSize: number): Promise<Array<DocumentData>> {
+export function queryForNewMems(collection: CollectionReference<DocumentData>, pageSize: number): Query {
   let constraints : QueryConstraint[] = []
   constraints.push(where('new', '==', true))
   constraints.push(orderBy('addedMs', 'desc'))
   if (pageSize > 0) {
     constraints.push(limit(pageSize))
   }
-  const q = query(collection, ...constraints)
-  return getDocs(q).then(unwrapDocs)
+  return query(collection, ...constraints)
 }
 
-export function queryForArchivedMems(collection: CollectionReference<DocumentData>, pageSize: number): Promise<Array<DocumentData>> {
+export function queryForArchivedMems(collection: CollectionReference<DocumentData>, pageSize: number): Query {
   let constraints : QueryConstraint[] = []
   constraints.push(where('new', '==', false))
   constraints.push(orderBy('addedMs', 'desc'))
   if (pageSize > 0) {
     constraints.push(limit(pageSize))
   }
-  const q = query(collection, ...constraints)
-  return getDocs(q).then(unwrapDocs)
+  return query(collection, ...constraints)
 }
 
-export function queryForTaggedMems(collection: CollectionReference<DocumentData>,
+export function executeQueryForTaggedMems(collection: CollectionReference<DocumentData>,
   tags: Array<string>,
   matchOperator: string,
   pageSize: number): Promise<Array<DocumentData>> {
@@ -59,4 +57,8 @@ export function queryForTaggedMems(collection: CollectionReference<DocumentData>
     const q = query(collection, ...constraints)
     return getDocs(q).then(unwrapDocs)
   }
+}
+
+export function executeQuery(query: Query) : Promise<Array<DocumentData>> {
+  return getDocs(query).then(unwrapDocs)
 }

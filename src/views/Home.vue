@@ -34,7 +34,10 @@
     DocumentData,
     getFirestore,
     onSnapshot,
+    Query
   } from 'firebase/firestore'
+
+  import { unwrapDocs } from '@/firebase'
 
   import MemList from '../components/MemList.vue'
   import MemAdd from '../components/MemAdd.vue'
@@ -48,7 +51,8 @@
     queryForAllMems,
     queryForNewMems,
     queryForArchivedMems,
-    queryForTaggedMems,
+    executeQueryForTaggedMems,
+    executeQuery,
   } from '../lib/mem-data-queries'
   import { getUserMemCollection } from '../lib/mem-data-collection'
 
@@ -74,10 +78,9 @@
         unsubscribeListener: null as (() => void) | null,
         pageSize: 30,
 
-        visibleMems: [] as Mem[],
         visiblePages: 1,
-        moreMemsAvailable: false,
 
+        currentViewQuery: null as Query | null, 
         currentView: '',
         savedViews: [] as string[],
       }
@@ -86,26 +89,13 @@
     watch: {
       $route(to, from) {
         this.updateCurrentView(to)
-        this.reloadMems()
+        this.loadMems()
       },
 
       user() {
-        if (this.user) {
-          this.bindMems()
-        } else {
-          this.unbindMems()
-        }
         this.loadViews()
-        this.reloadMems()
+        this.loadMems()
       },
-
-      visiblePages() {
-        this.visibleMems = this.mems.slice(0, this.pageSize * this.visiblePages)
-      },
-
-      visibleMems() {
-        this.moreMemsAvailable = this.visibleMems.length < this.mems.length
-      }
     },
 
     computed: {
@@ -119,18 +109,28 @@
         }
         return null
       },
+      visibleMems() : Mem[] {
+        if (this.mems) {
+          return this.mems.slice(0, this.pageSize * this.visiblePages)
+        }
+        return []
+      },
+
+      moreMemsAvailable() : boolean {
+        return this.visibleMems.length < this.mems.length
+      }
     },
 
     mounted() {
       if (this.user) {
         this.loadViews()
-        this.reloadMems()
+        this.loadMems()
       }
       this.updateCurrentView(this.$route)
     },
 
     beforeUnmount() {
-      this.unbindMems()
+      this.unsubscribeChanges()
     },
 
     methods: {
@@ -141,20 +141,23 @@
           typeof route.params.tags === 'string'
         ) {
           this.currentView = route.params.tags
+        } else {
+          this.currentView = ''
         }
-        console.log('updatecurrentview:', this.currentView, route)
       },
-      bindMems() {
-        let collection = this.userMemCollection
-        if (collection) {
-          this.unsubscribeListener = onSnapshot(collection, () => {
-            this.reloadMems()
+      subscribeChanges() {
+        this.unsubscribeChanges();
+
+        if (this.currentViewQuery) {
+          this.unsubscribeListener = onSnapshot(this.currentViewQuery, (snapshot) => {
+            this.mems = unwrapDocs(snapshot)
           })
         }
       },
-      unbindMems() {
+      unsubscribeChanges() {
         if (this.unsubscribeListener) {
           this.unsubscribeListener()
+          this.unsubscribeListener = null;
         }
       },
 
@@ -168,7 +171,8 @@
         }
       },
 
-      async reloadMems() {
+      async loadMems() {
+        console.log('Calling loadMems')
         if (!this.userMemCollection) {
           this.allMems = []
           this.mems = []
@@ -178,7 +182,7 @@
 
         let filterTags = [] as string[]
         let filterStrategy = 'any'
-        if (          this.currentView        ) {
+        if (this.currentView) {
           let tags = this.currentView
           if (tags.includes('+')) {
             filterStrategy = 'all'
@@ -195,35 +199,39 @@
         }
 
         if (filterTags.length) {
-          this.mems = await queryForTaggedMems(
+          this.mems = await executeQueryForTaggedMems(
             this.userMemCollection,
             filterTags,
             filterStrategy,
             0,
           )
-          this.visibleMems = this.mems.slice(0, this.pageSize)
+          //this.visibleMems = this.mems.slice(0, this.pageSize)
+          this.visiblePages = 1
         } else if (this.showArchivedStatus == 'archived') {
-          this.mems = await queryForArchivedMems(
+          this.currentViewQuery = await queryForArchivedMems(
             this.userMemCollection,
             this.pageSize,
           )
-          this.visibleMems = this.mems.slice(0, this.pageSize)
+          this.subscribeChanges()
+          this.mems = await executeQuery(this.currentViewQuery)
+          //this.visibleMems = this.mems.slice(0, this.pageSize)
+          this.visiblePages = 1
 
         } else {
-          this.mems = await queryForNewMems(
+          this.currentViewQuery = queryForNewMems(
             this.userMemCollection,
             this.pageSize,
           )
-          this.visibleMems = this.mems.slice(0, this.pageSize)
-
+          this.subscribeChanges()
+          this.mems = await executeQuery(this.currentViewQuery)
+          //this.visibleMems = this.mems.slice(0, this.pageSize)
+          this.visiblePages = 1
         }
 
         // Get all the mems.
-        this.allMems = await queryForAllMems(this.userMemCollection)
+        let allQuery = queryForAllMems(this.userMemCollection)
+        this.allMems = await executeQuery(allQuery)
       },
-
-      // computed proper
-
 
       nextPage() {
         this.visiblePages++

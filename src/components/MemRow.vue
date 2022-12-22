@@ -201,8 +201,6 @@
 
         if (this.mem.title) {
           return this.mem.title
-        } else if (this.mem.description) {
-          return this.mem.description
         } else if (this.mem.url) {
           return this.mem.url.replace(/http[s]:\/\//, '')
         } else {
