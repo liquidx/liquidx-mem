@@ -1,5 +1,5 @@
 import { firestore } from "firebase-admin";
-import find from "lodash/find";
+import { find } from "lodash-es";
 
 export const USER_NOT_FOUND = "";
 
@@ -18,7 +18,7 @@ export const userForSharedSecret = async (
       });
     });
 
-  const match = find(secrets, o => o.secret == sharedSecret);
+  const match = find(secrets, (o: any) => o.secret == sharedSecret);
   if (match) {
     return match.userId;
   }
