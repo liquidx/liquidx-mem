@@ -4,8 +4,8 @@ import { getStorage } from 'firebase-admin/storage';
 import fs from 'fs';
 import { program } from 'commander';
 
-import { mirrorMedia } from './dist/core/mirror.js'
-import { annotateMem } from './dist/core/annotator.js'
+import { mirrorMedia } from './core/mirror.js'
+import { annotateMem } from './core/annotator.js'
 const DEFAULT_USER = 'BB8zGVrCbrQ2QryHyiZNaUZJjQ93'
 const BUCKET_NAME = 'liquidx-mem.appspot.com'
 
@@ -19,7 +19,7 @@ const main = async () => {
 
   program.command('annotate <memId>')
     .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
-    .action(async (memId, options) => {
+    .action(async (memId: string, options: any) => {
       const userId = options.userId
       const docResult = await firestore.collection("users").doc(userId).collection("mems").doc(memId).get()
       const mem = Object.assign(docResult.data(), { id: docResult.id })
@@ -37,7 +37,7 @@ const main = async () => {
 
   program.command('mirror <memId>')
     .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
-    .action(async (memId, options) => {
+    .action(async (memId: string, options) => {
       const userId = options.userId
       const outputPath = `users/${userId}/media`
       const docResult = await firestore.collection("users").doc(userId).collection("mems").doc(memId).get()
@@ -100,6 +100,30 @@ const main = async () => {
       }
     }
   })
+
+  // Rename a tag.
+  program.command("rename-tag")
+    .option('-u,--user-id <userId>', 'User ID', DEFAULT_USER)
+    .option('-f,--from <from>', 'From tag (without #)')
+    .option('-t,--to <to>', 'To tag (without #)')
+    .action(async (options) => {
+      const userId = options.userId
+      const docsResult = await firestore.collection("users").doc(userId).collection("mems").get()
+
+      const fromHashTag = `#${options.from}`
+      const toHashTag = `#${options.to}`
+      docsResult.docs.forEach(async doc => {
+        const mem = Object.assign(doc.data(), { id: doc.id })
+        if (mem.tags && mem.tags.includes(fromHashTag)) {
+          const newTags = mem.tags.filter(tag => tag !== fromHashTag)
+          newTags.push(toHashTag)
+          const note = mem.note ? mem.note.replace(fromHashTag, toHashTag) : undefined
+          console.log(`Renaming tag: ${mem.id} : ${mem.tags} --> ${newTags}`);
+          console.log(`Renaming tag: ${mem.id} : ${mem.note} --> ${note}`);
+          await firestore.collection("users").doc(userId).collection("mems").doc(mem.id).update({ tags: newTags, note: note })
+        }
+      })
+    })
 
   program.parse()
 }
