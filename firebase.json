@@ -27,6 +27,10 @@
         "function": "annotate"
       },
       {
+        "source": "/api/attach",
+        "function": "attach"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
