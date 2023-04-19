@@ -1,6 +1,10 @@
 <template>
   <div
     class="mem flex flex-col border-l-2 m-0.5 py-2 px-6 hover:border-l-gray-800"
+    :class="{ 'border-l-green-400': isDragging }"
+    @dragover="dragover"
+    @dragleave="dragleave"
+    @drop="drop"
   >
     <div class="grow">
       <div
@@ -26,7 +30,7 @@
 
       <div
         v-if="mem.description"
-        class="my-2 text-gray-400"
+        class="my-2 p-4 text-gray-400 bg-gray-50 rounded-xl"
         contenteditable="true"
         @blur="descriptionDidChange"
       >
@@ -34,7 +38,7 @@
       </div>
       <div v-else>
         <div
-          class="my-2 text-gray-400"
+          class="my-2 p-4 text-gray-400 bg-gray-50 rounded-xl"
           contenteditable="true"
           @blur="descriptionDidChange"
         >
@@ -70,7 +74,7 @@
         <img :src="mediaImageUrl" />
       </div>
 
-      <ul v-if="mem.links" class="border-1 border-gray-500 my-2">
+      <ul v-if="mem.links" class="my-2 py-2">
         <li v-for="link in mem.links" :key="link.url">
           <a :href="link.url" target="_blank" class="text-gray-500">
             <span v-if="link.description">{{ link.description }}</span>
@@ -86,6 +90,17 @@
         </div>
       </div>
     </div>
+
+    <input
+      type="file"
+      class="hidden"
+      multiple
+      name="file"
+      id="fileInput"
+      ref="file"
+      @change="fileDidChange"
+    />
+
     <div class="text-gray-400 flex flex-row flex-nowrap gap-1">
       <button
         v-if="mem.new"
@@ -148,6 +163,8 @@
         mediaImageUrl: '',
         displayPhotos: [] as MediaUrl[],
         displayVideos: [] as MediaUrl[],
+        isDragging: false,
+        files: [],
       }
     },
 
@@ -171,6 +188,9 @@
         return true
       },
       titleChanged(mem: Mem, title: string) {
+        return true
+      },
+      fileUpload(mem: Mem, files: FileList) {
         return true
       },
     },
@@ -224,6 +244,39 @@
     },
 
     methods: {
+      fileDidChange(e: Event): void {
+        const target: HTMLInputElement = e.target as HTMLInputElement
+        if (!target) {
+          return
+        }
+
+        const files = target.files
+        if (!files) {
+          return
+        }
+        this.$emit('fileUpload', this.mem, files)
+      },
+
+      dragover(e: Event) {
+        e.preventDefault()
+        this.isDragging = true
+      },
+      dragleave() {
+        this.isDragging = false
+      },
+      drop(e: DragEvent) {
+        e.preventDefault()
+
+        const dataTransfer = e.dataTransfer
+        if (!dataTransfer) {
+          return
+        }
+
+        console.log(e.dataTransfer.files)
+        this.isDragging = false
+        this.$emit('fileUpload', this.mem, dataTransfer.files)
+      },
+
       noteDidChange(e: FocusEvent): void {
         const target: HTMLElement = e.target as HTMLElement
         if (!target) {

@@ -1,7 +1,11 @@
 <template>
   <div class="flex flex-col w-full overflow-x-hidden md:flex-row">
     <section>
-      <mem-tag-list :mems="allMems" :views="savedViews" :currentView="currentView"></mem-tag-list>
+      <mem-tag-list
+        :mems="allMems"
+        :views="savedViews"
+        :currentView="currentView"
+      ></mem-tag-list>
     </section>
 
     <main class="p-2 max-w-screen flex-grow md:max-w-xl">
@@ -15,9 +19,16 @@
         @note-changed="updateNoteForMem"
         @title-changed="updateTitleForMem"
         @description-changed="updateDescriptionForMem"
+        @file-upload="uploadFilesForMem"
       />
-      <div class="w-full flex flex-row justify-between m-1" >
-        <button v-if="moreMemsAvailable" @click.prevent="nextPage" class="px-6 py-1 rounded-xl bg-gray-700 text-gray-100 font-bold hover:bg-gray-400">More &gt;</button>
+      <div class="w-full flex flex-row justify-between m-1">
+        <button
+          v-if="moreMemsAvailable"
+          @click.prevent="nextPage"
+          class="px-6 py-1 rounded-xl bg-gray-700 text-gray-100 font-bold hover:bg-gray-400"
+        >
+          More &gt;
+        </button>
         <div v-else class="">That's it.</div>
       </div>
     </main>
@@ -34,7 +45,7 @@
     DocumentData,
     getFirestore,
     onSnapshot,
-    Query
+    Query,
   } from 'firebase/firestore'
 
   import { unwrapDocs } from '@/firebase'
@@ -80,7 +91,7 @@
 
         visiblePages: 1,
 
-        currentViewQuery: null as Query | null, 
+        currentViewQuery: null as Query | null,
         currentView: '',
         savedViews: [] as string[],
       }
@@ -99,7 +110,6 @@
     },
 
     computed: {
-    
       signedIn() {
         return this.user !== null
       },
@@ -109,16 +119,16 @@
         }
         return null
       },
-      visibleMems() : Mem[] {
+      visibleMems(): Mem[] {
         if (this.mems) {
           return this.mems.slice(0, this.pageSize * this.visiblePages)
         }
         return []
       },
 
-      moreMemsAvailable() : boolean {
+      moreMemsAvailable(): boolean {
         return this.visibleMems.length < this.mems.length
-      }
+      },
     },
 
     mounted() {
@@ -146,18 +156,21 @@
         }
       },
       subscribeChanges() {
-        this.unsubscribeChanges();
+        this.unsubscribeChanges()
 
         if (this.currentViewQuery) {
-          this.unsubscribeListener = onSnapshot(this.currentViewQuery, (snapshot) => {
-            this.mems = unwrapDocs(snapshot)
-          })
+          this.unsubscribeListener = onSnapshot(
+            this.currentViewQuery,
+            snapshot => {
+              this.mems = unwrapDocs(snapshot)
+            },
+          )
         }
       },
       unsubscribeChanges() {
         if (this.unsubscribeListener) {
           this.unsubscribeListener()
-          this.unsubscribeListener = null;
+          this.unsubscribeListener = null
         }
       },
 
@@ -216,7 +229,6 @@
           this.mems = await executeQuery(this.currentViewQuery)
           //this.visibleMems = this.mems.slice(0, this.pageSize)
           this.visiblePages = 1
-
         } else {
           this.currentViewQuery = queryForNewMems(
             this.userMemCollection,
@@ -287,6 +299,15 @@
           description,
           this.userMemCollection,
         )
+        return true
+      },
+
+      uploadFilesForMem(mem: Mem, files: FileList): boolean {
+        if (!this.userMemCollection) {
+          return false
+        }
+
+        memModifiers.uploadFilesForMem(mem, files)
         return true
       },
     },

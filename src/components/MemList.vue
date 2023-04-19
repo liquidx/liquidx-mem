@@ -11,6 +11,7 @@
       @note-changed="updateNoteForMem"
       @description-changed="updateDescriptionForMem"
       @title-changed="updateTitleForMem"
+      @file-upload="uploadFilesForMem"
     />
   </div>
 </template>
@@ -45,6 +46,9 @@
       titleChanged(mem: Mem, title: string): boolean {
         return true
       },
+      fileUpload(mem: Mem, filelist: FileList): boolean {
+        return true
+      },
     },
     props: {
       mems: {
@@ -71,6 +75,9 @@
       },
       annotateMem(mem: Mem) {
         this.$emit('annotate', mem)
+      },
+      uploadFilesForMem(mem: Mem, filelist: FileList) {
+        this.$emit('fileUpload', mem, filelist)
       },
       updateNoteForMem(mem: Mem, note: string) {
         this.$emit('noteChanged', mem, note)

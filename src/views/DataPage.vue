@@ -90,10 +90,11 @@ import { onAuthStateChanged, User, getAuth } from 'firebase/auth';
     methods: {
 
       async loadMems() {
-        if (this.user) {
-          const collection = getUserMemCollection(db, this.user);
-          this.mems = await queryForAllMems(collection);
-        }
+        // TODO: fix this.
+        // if (this.user) {
+        //   const collection = getUserMemCollection(db, this.user);
+        //   this.mems = await queryForAllMems(collection);
+        // }
       },
 
       download(url: string) {

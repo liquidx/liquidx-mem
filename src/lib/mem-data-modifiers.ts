@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { Mem } from '../../functions/core/mems'
 import { extractEntities } from '../../functions/core/parser'
 import { CollectionReference, DocumentData, doc, addDoc, updateDoc, deleteDoc, DocumentReference } from 'firebase/firestore'
@@ -60,5 +61,27 @@ export function updateDescriptionForMem(
 
   return updateDoc(doc(collection, mem.id), updated).then(() => {
     console.log('Updated mem', mem.id, updated)
+  })
+}
+
+export async function uploadFilesForMem(
+  mem: Mem,
+  files: FileList): Promise<void> {
+
+  const formData = new FormData();
+  for (let f of files) {
+    formData.append("images", f);
+  };
+  if (mem.id) {
+    formData.append('mem', mem.id)
+  }
+
+  await axios({
+    url: '/api/attach',
+    method: 'POST',
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   })
 }
