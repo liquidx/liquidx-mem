@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts">
-  import orderBy from 'lodash/orderBy'
+  import { orderBy } from 'lodash-es'
   import { defineComponent } from 'vue'
   import MemRow from '@/components/MemRow.vue'
   import { Mem } from '../../functions/core/mems'

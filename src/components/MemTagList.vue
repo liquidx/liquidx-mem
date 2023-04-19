@@ -16,7 +16,6 @@
         :to="pathForView(view)"
         class="block p-0.5 whitespace-nowrap hover:underline"
         :class="isCurrent(view) ? 'font-bold' : ''"
-
       >
         {{ view }}
       </router-link>
@@ -31,17 +30,19 @@
       </router-link>
     </span>
     <span v-if="!everything">
-      <button @click.prevent="everything = true" class="block p-0.5 whitespace-nowrap hover:underline">
+      <button
+        @click.prevent="everything = true"
+        class="block p-0.5 whitespace-nowrap hover:underline"
+      >
         More..
       </button>
-      </span>
+    </span>
   </section>
 </template>
 
 <script lang="ts">
   import { defineComponent } from 'vue'
-  import toPairs from 'lodash/toPairs'
-  import orderBy from 'lodash/orderBy'
+  import { orderBy, toPairs } from 'lodash-es'
 
   import { Mem } from '../../functions/core/mems'
   import type { PropType } from 'vue'
@@ -63,7 +64,6 @@
         type: Array as PropType<string[]>,
         default: [] as string[],
       },
-     
     },
     data: () => ({
       everything: false,
@@ -95,11 +95,10 @@
         if (!this.everything) {
           orderedTags = orderedTags.slice(0, this.initialMaxTags)
         }
-        return orderedTags;
+        return orderedTags
       },
     },
     methods: {
-
       isCurrent(expression: string) {
         return this.currentView === expression.replaceAll('#', '')
       },
