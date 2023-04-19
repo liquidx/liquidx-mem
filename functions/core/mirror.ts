@@ -8,7 +8,7 @@ import m3u8 from 'm3u8';
 
 
 // Writes a file to cloud storage.
-const writeToCloudStorage = async (bucket: Bucket, storagePath: string, contents: ArrayBuffer) => {
+export const writeToCloudStorage = async (bucket: Bucket, storagePath: string, contents: ArrayBuffer) => {
   return new Promise((resolve, reject) => {
     const storageFile = bucket.file(storagePath);
     const stream = storageFile.createWriteStream();

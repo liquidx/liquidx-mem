@@ -18,20 +18,23 @@ const main = async () => {
   const bucket = storage.bucket(BUCKET_NAME)
 
   program.command('annotate <memId>')
+    .requiredOption('-m --mem-id <memId>', 'Mem ID')
     .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
-    .action(async (memId: string, options: any) => {
+    .action(async (options: any) => {
       const userId = options.userId
+      const memId = options.memId
       const docResult = await firestore.collection("users").doc(userId).collection("mems").doc(memId).get()
-      const mem = Object.assign(docResult.data(), { id: docResult.id })
+      const doc: any = docResult.data()
+      const mem = Object.assign(doc, { id: docResult.id })
 
-      return annotateMem(mem).then(mem => {
+      await annotateMem(mem).then(mem => {
         const writable = Object.assign({}, mem)
         // writable.description = mem.description.slice(0, -5)
         // writable.descriptionHtml = mem.descriptionHtml.slice(0, -5)
         delete writable.id
         console.log(writable)
 
-        return firestore.collection("users").doc(userId).collection("mems").doc(mem.id).set(writable)
+        return firestore.collection("users").doc(userId).collection("mems").doc(memId).set(writable)
       })
     });
 
@@ -41,12 +44,13 @@ const main = async () => {
       const userId = options.userId
       const outputPath = `users/${userId}/media`
       const docResult = await firestore.collection("users").doc(userId).collection("mems").doc(memId).get()
-      const mem = Object.assign(docResult.data(), { id: docResult.id })
+      const doc: any = docResult.data()
+      const mem = Object.assign(doc, { id: docResult.id })
 
-      return mirrorMedia(mem, bucket, outputPath).then(mem => {
+      await mirrorMedia(mem, bucket, outputPath).then(mem => {
         const writable = Object.assign({}, mem)
         delete writable.id
-        return firestore.collection("users").doc(userId).collection("mems").doc(mem.id).set(writable)
+        return firestore.collection("users").doc(userId).collection("mems").doc(memId).set(writable)
       })
     });
 
@@ -60,14 +64,17 @@ const main = async () => {
       for (let mem of mems) {
         if (mem.photos || mem.videos) {
           // Check if any of the photos are already mirrored
-          const uncachedPhotos = mem.photos ? mem.photos.filter(photo => !photo.cachedMediaPath) : []
-          const uncachedVideos = mem.videos ? mem.videos.filter(video => !video.cachedMediaPath) : []
+          const uncachedPhotos = mem.photos ? mem.photos.filter((photo: any) => !photo.cachedMediaPath) : []
+          const uncachedVideos = mem.videos ? mem.videos.filter((video: any) => !video.cachedMediaPath) : []
           if (uncachedPhotos.length > 0 || uncachedVideos.length > 0) {
             console.log(`- ${mem.id} ${mem.url}`)
-            await mirrorMedia(mem, bucket, `users/${userId}/media`).then(mem => {
+            await mirrorMedia(mem, bucket, `users/${userId}/media`).then(async mem => {
               const writable = Object.assign({}, mem)
               delete writable.id
-              return firestore.collection("users").doc(userId).collection("mems").doc(mem.id).set(writable)
+              const memId = mem.id;
+              if (memId) {
+                await firestore.collection("users").doc(userId).collection("mems").doc(memId).set(writable)
+              }
             })
               .then(() => {
                 console.log(`  - updated ${mem.id}`)
@@ -88,7 +95,6 @@ const main = async () => {
       console.log(`- ${mem.id}`)
       console.log(`  - url: ${mem.url}`)
       if (mem.photos) {
-        hasMedia = true;
         for (let photo of mem.photos) {
           console.log(`   - photo: ${photo.mediaUrl}`)
         }
@@ -115,7 +121,7 @@ const main = async () => {
       docsResult.docs.forEach(async doc => {
         const mem = Object.assign(doc.data(), { id: doc.id })
         if (mem.tags && mem.tags.includes(fromHashTag)) {
-          const newTags = mem.tags.filter(tag => tag !== fromHashTag)
+          const newTags = mem.tags.filter((tag: string) => tag !== fromHashTag)
           newTags.push(toHashTag)
           const note = mem.note ? mem.note.replace(fromHashTag, toHashTag) : undefined
           console.log(`Renaming tag: ${mem.id} : ${mem.tags} --> ${newTags}`);
