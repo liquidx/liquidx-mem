@@ -1,11 +1,14 @@
 import openGraphScraper from "open-graph-scraper";
-import { Mem, MemPhoto } from "./mems";
+import { Mem, MemPhoto } from "./mems.js";
 import {
   annotateWithTwitterApi,
   twitterStatusUrlRegex
-} from "./annotator-twitter";
+} from "./annotator-twitter.js";
 
-import { isResultBlocked } from "./annotator-og-blocklist";
+import { isResultBlocked } from "./annotator-og-blocklist.js";
+
+// TODO: Type not exporting properly.
+const getOpenGraph = openGraphScraper as any;
 
 const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
   const annotated: Mem = Object.assign({}, mem);
@@ -15,7 +18,7 @@ const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
       "user-agent": "liquidx-mem.web.app/1.0"
     }
   };
-  return openGraphScraper(request)
+  return getOpenGraph(request)
     .then((response: { result: any, error: any | undefined }) => {
       if (response.error) {
         return mem;
@@ -52,7 +55,7 @@ const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
       }
       return annotated;
     })
-    .catch(err => {
+    .catch((err: string) => {
       console.log(err);
       return mem;
     });

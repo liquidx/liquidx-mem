@@ -1,9 +1,8 @@
 import * as functions from "firebase-functions";
-
-import { mirrorMedia } from "../core/mirror";
-import { firebaseApp, getFirebaseStorageBucket, getFirestoreDb } from "./firebase-app";
 import cors from "cors";
 
+import { mirrorMedia } from "../core/mirror.js";
+import { firebaseApp, getFirebaseStorageBucket, getFirestoreDb } from "./firebase-app.js";
 
 const corsAllowOrigin = cors({ origin: true });
 

@@ -11,6 +11,7 @@
     "logs": "firebase functions:log",
     "test": "npm run build && npx mocha --reporter spec"
   },
+  "type": "module",
   "engines": {
     "node": "18"
   },
@@ -23,13 +24,13 @@
     "firebase-admin": "^11.7.0",
     "firebase-functions": "^4.3.0",
     "form-data": "^4.0.0",
-    "formidable": "^2.1.1",
     "lodash-es": "^4.17.21",
     "luxon": "^3.3.0",
     "m3u8": "^0.0.10",
     "m3u8stream": "^0.8.6",
     "make-fetch-happen": "^11.1.0",
     "md5": "^2.3.0",
+    "multer": "1.4.5-lts.1",
     "needle": "^3.2.0",
     "open-graph-scraper": "^5.2.3",
     "re2": "^1.18.0",
@@ -42,6 +43,7 @@
     "@types/luxon": "^3.3.0",
     "@types/make-fetch-happen": "^10.0.1",
     "@types/md5": "^2.3.2",
+    "@types/multer": "^1.4.7",
     "@types/needle": "^3.2.0",
     "@types/node": "^18.15.11",
     "@types/open-graph-scraper": "^4.8.2",

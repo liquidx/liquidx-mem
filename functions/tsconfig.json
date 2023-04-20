@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "es2022",
+    "moduleResolution": "node16",
     "noImplicitReturns": true,
     "esModuleInterop": true,
     "noUnusedLocals": true,
@@ -8,8 +9,8 @@
     "outDir": "dist",
     "sourceMap": true,
     "strict": true,
-    "target": "es2020"
+    "target": "es2022"
   },
   "compileOnSave": true,
-  "include": ["src", "core", "tool.ts"]
+  "include": ["src", "core", "tool.ts", "credentials-*.json"]
 }

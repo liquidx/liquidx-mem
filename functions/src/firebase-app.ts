@@ -1,20 +1,20 @@
-import * as admin from "firebase-admin";
-import { getFirestore } from "firebase-admin/firestore";
+import { initializeApp, type App } from "firebase-admin/app";
+import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { getStorage } from 'firebase-admin/storage';
 
-let app: admin.app.App | null = null;
+let sharedApp: App | null = null;
 
-export const firebaseApp = (): admin.app.App => {
-  if (!app) {
-    app = admin.initializeApp();
+export const firebaseApp = (): App => {
+  if (!sharedApp) {
+    sharedApp = initializeApp();
   }
-  return app;
+  return sharedApp;
 };
 
-export const getFirebaseStorageBucket = (app: admin.app.App) => {
-  return getStorage(app).bucket('liquidx-mem.appspot.com')
+export const getFirebaseStorageBucket = (firebaseApp: App) => {
+  return getStorage(firebaseApp).bucket('liquidx-mem.appspot.com')
 }
 
-export const getFirestoreDb = (app: admin.app.App): admin.firestore.Firestore => {
-  return getFirestore(app)
+export const getFirestoreDb = (firebaseApp: App): Firestore => {
+  return getFirestore(firebaseApp)
 }

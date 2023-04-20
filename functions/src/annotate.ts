@@ -1,7 +1,8 @@
 import * as functions from "firebase-functions";
-import { annotateMem } from "../core/annotator";
-import { firebaseApp } from "./firebase-app";
+import { annotateMem } from "../core/annotator.js";
+import { firebaseApp, getFirestoreDb } from "./firebase-app.js";
 import cors from "cors";
+import { DocumentSnapshot } from "firebase-admin/firestore";
 
 const corsAllowOrigin = cors({ origin: true });
 
@@ -23,10 +24,10 @@ export const annotate = functions
       const memId = request.query.mem || request.body.mem || "";
       const userId = request.query.user || request.body.user || "";
 
-      const db = firebaseApp().firestore();
+      const db = getFirestoreDb(firebaseApp());
       db.doc(`users/${userId}/mems/${memId}`)
         .get()
-        .then(snap => {
+        .then((snap: DocumentSnapshot) => {
           const value = Object.assign({}, snap.data(), { id: snap.id });
           return annotateMem(value).then(result => {
             functions.logger.debug("annotated result", result);
@@ -35,7 +36,7 @@ export const annotate = functions
             response.send("OK");
           });
         })
-        .catch(err => {
+        .catch((err: Error) => {
           response.status(500).send("Error: " + err.toString());
         });
     });

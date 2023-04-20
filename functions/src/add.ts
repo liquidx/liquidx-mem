@@ -1,13 +1,13 @@
 import * as functions from "firebase-functions";
 import { DateTime } from "luxon";
 
-import { parseText } from "../core/parser";
+import { parseText } from "../core/parser.js";
 import {
   userForSharedSecret,
   USER_NOT_FOUND
-} from "../core/firestore-user-secrets";
-import { firestoreAdd } from "../core/firestore-add";
-import { firebaseApp } from "./firebase-app";
+} from "../core/firestore-user-secrets.js";
+import { firestoreAdd } from "../core/firestore-add.js";
+import { firebaseApp, getFirestoreDb, getFirebaseStorageBucket } from "./firebase-app.js";
 
 export const add = functions
   .region("us-central1") // Must use us-central1 if using firebase.json:rewrites. :sadge:
@@ -23,7 +23,7 @@ export const add = functions
       return;
     }
 
-    const db = firebaseApp().firestore();
+    const db = getFirestoreDb(firebaseApp());
     const userId = await userForSharedSecret(db, secret);
 
     if (!userId || userId === USER_NOT_FOUND) {
@@ -42,10 +42,8 @@ export const add = functions
       //const imageDataBuffer = Buffer.from(image, "base64");
       const dateString = DateTime.utc().toFormat("yyyyMMddhhmmss");
       const path = `users/${userId}/${dateString}`;
-      const file = firebaseApp()
-        .storage()
-        .bucket()
-        .file(path);
+      const bucket = getFirebaseStorageBucket(firebaseApp())
+      const file = bucket.file(path);
 
       const writable = file.createWriteStream();
       writable.write(image, "base64");

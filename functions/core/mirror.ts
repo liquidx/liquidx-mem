@@ -1,10 +1,11 @@
 
-import { Mem } from "./mems";
 import axios from 'axios';
 import { Bucket } from '@google-cloud/storage'
 import md5 from 'md5';
 import m3u8stream from 'm3u8stream';
 import m3u8 from 'm3u8';
+
+import { Mem } from "./mems.js";
 
 
 // Writes a file to cloud storage.

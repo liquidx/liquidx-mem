@@ -6,9 +6,9 @@
 
 import needle from "needle";
 import { DateTime } from "luxon";
+import fs from "fs";
 
-import twitterToken from "../credentials-twitter.json";
-import { Mem, MemVideo, MemPhoto, MemLink } from "./mems";
+import { Mem, MemVideo, MemPhoto, MemLink } from "./mems.js";
 
 export const twitterStatusUrlRegex = new RegExp(
   "https://twitter.com/.*/status/([0-9]+)"
@@ -35,6 +35,11 @@ interface ShowTweetResponse {
     media?: any;
   };
 }
+
+const loadCredentials = () => {
+  return JSON.parse(fs.readFileSync('./credentials-twitter.json', 'utf8'));
+}
+
 
 
 const tweetVisibleText = (tweet: ShowTweetResponse): Mem => {
@@ -107,7 +112,7 @@ const tweetVisibleText = (tweet: ShowTweetResponse): Mem => {
           }
         }
 
-        
+
       } else if (entity.url) {
         // Parse links as MemLink objects.
         text += `${entity.display_url} `;
@@ -147,6 +152,7 @@ const tweetVisibleText = (tweet: ShowTweetResponse): Mem => {
 
 export const twitterApiRequest = (version: number, tweetId: string): { url: string, params: Record<string, unknown>, headers: Record<string, string> } => {
   if (version == 1) {
+    const twitterToken = loadCredentials();
     const url = "https://api.twitter.com/1.1/statuses/show.json";
     const params = {
       id: tweetId,
