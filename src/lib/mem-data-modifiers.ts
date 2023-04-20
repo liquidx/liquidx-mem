@@ -2,6 +2,10 @@ import axios from 'axios'
 import { Mem } from '../../functions/core/mems'
 import { extractEntities } from '../../functions/core/parser'
 import { CollectionReference, DocumentData, doc, addDoc, updateDoc, deleteDoc, DocumentReference } from 'firebase/firestore'
+import { User } from 'firebase/auth';
+
+//const serverUrl = '/api'
+const serverUrl = 'http://localhost:5001/liquidx-mem/us-central1'
 
 export function addMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<DocumentReference<DocumentData>> {
   return addDoc(collection, mem)
@@ -14,7 +18,7 @@ export function deleteMem(
 }
 
 export function annotateMem(mem: Mem, uid: string): void {
-  const url = `/api/annotate?user=${uid}&mem=${mem.id}`
+  const url = `${serverUrl}/annotate?user=${uid}&mem=${mem.id}`
   fetch(url)
     .then(response => response.text())
     .then(response => console.log(response))
@@ -66,21 +70,26 @@ export function updateDescriptionForMem(
 
 export async function uploadFilesForMem(
   mem: Mem,
-  files: FileList): Promise<void> {
+  files: FileList,
+  user: User): Promise<void> {
 
-  const formData = new FormData();
-  for (let f of files) {
-    formData.append("images", f);
-  };
-  if (mem.id) {
-    formData.append('mem', mem.id)
+  let authToken = await user.getIdToken()
+  if (!authToken) {
+    console.error('No auth token')
+    return;
   }
 
+  console.log(files)
+
   await axios({
-    url: '/api/attach',
+    url: `${serverUrl}/attach?mem=${mem.id}`,
     method: 'POST',
-    data: formData,
+    data: {
+      mem: mem.id,
+      'files[]': files,
+    },
     headers: {
+      "Authorization": `Bearer ${authToken}`,
       "Content-Type": "multipart/form-data",
     },
   })

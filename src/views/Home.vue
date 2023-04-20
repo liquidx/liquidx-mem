@@ -303,11 +303,13 @@
       },
 
       uploadFilesForMem(mem: Mem, files: FileList): boolean {
-        if (!this.userMemCollection) {
+        if (!this.user) {
+          // Not authenticated.
+          console.error('Not authenticated')
           return false
         }
 
-        memModifiers.uploadFilesForMem(mem, files)
+        memModifiers.uploadFilesForMem(mem, files, this.user)
         return true
       },
     },
