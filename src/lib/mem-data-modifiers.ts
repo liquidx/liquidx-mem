@@ -4,8 +4,8 @@ import { extractEntities } from '../../functions/core/parser'
 import { CollectionReference, DocumentData, doc, addDoc, updateDoc, deleteDoc, DocumentReference } from 'firebase/firestore'
 import { User } from 'firebase/auth';
 
-//const serverUrl = '/api'
-const serverUrl = 'http://localhost:5001/liquidx-mem/us-central1'
+const serverUrl = '/api'
+//const serverUrl = 'http://localhost:5001/liquidx-mem/us-central1'
 
 export function addMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<DocumentReference<DocumentData>> {
   return addDoc(collection, mem)
