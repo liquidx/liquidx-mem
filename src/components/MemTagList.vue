@@ -123,7 +123,10 @@
           case '#photo':
             return `📷 ${tag}`
           case '#japan':
+          case '#japanese':
             return `🇯🇵 ${tag}`
+          case '#tokyo':
+            return `🗼 ${tag}`
           case '#hongkong':
             return `🇭🇰 ${tag}`
           case '#house':
@@ -137,9 +140,9 @@
           case '#3d':
             return `📦 ${tag}`
           case '#ml':
-          case '#generativeml':
+          case '#ml-generative':
           case '#generated':
-          case '#mlapps':
+          case '#ml-app':
           case '#dreambooth':
           case '#nerf':
           case '#cloudml':
@@ -151,7 +154,29 @@
             return `🧠 ${tag}`
           case '#f1':
             return `🏎️ ${tag}`
-
+          case '#snow':
+            return `❄️ ${tag}`
+          case '#datavis':
+            return `📊 ${tag}`
+          case '#design':
+            return `🎨 ${tag}`
+          case '#keyboard':
+            return `⌨️ ${tag}`
+          case '#web':
+            return `🌐 ${tag}`
+          case '#music':
+            return `🎵 ${tag}`
+          case '#game':
+          case '#gaming':
+            return `🎮 ${tag}`
+          case '#place':
+            return `📍 ${tag}`
+          case '#snowboard':
+            return `🏂 ${tag}`
+          case '#furniture':
+            return `🛋️ ${tag}`
+          case '#watch':
+            return `⌚ ${tag}`
           default:
             return tag
         }
