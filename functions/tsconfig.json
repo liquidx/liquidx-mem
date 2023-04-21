@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "module": "es2022",
-    "moduleResolution": "node16",
+    "module": "commonjs",
+    "moduleResolution": "node",
     "noImplicitReturns": true,
     "esModuleInterop": true,
     "noUnusedLocals": true,
