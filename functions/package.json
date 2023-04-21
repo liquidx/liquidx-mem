@@ -45,7 +45,7 @@
     "@types/md5": "^2.3.2",
     "@types/multer": "^1.4.7",
     "@types/needle": "^3.2.0",
-    "@types/node": "^18.15.12",
+    "@types/node": "^18.15.13",
     "@types/open-graph-scraper": "^4.8.2",
     "@types/twitter-text": "^3.1.5",
     "@types/url-regex-safe": "^1.0.0",
