@@ -133,7 +133,6 @@
             return `🏠 ${tag}`
           case '#look':
           case '#read':
-          case '#watch':
             return `👀 ${tag}`
           case '#want':
             return `🤩 ${tag}`
