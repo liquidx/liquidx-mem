@@ -1,5 +1,6 @@
 {
-  "name": "functions",
+  "name": "liquidx-mem-functions",
+  "version": "2.0.0",
   "scripts": {
     "dev": "tsc-watch",
     "lint": "eslint --ext .js,.ts .",
