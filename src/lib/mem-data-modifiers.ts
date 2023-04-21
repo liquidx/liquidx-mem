@@ -5,6 +5,7 @@ import { CollectionReference, DocumentData, doc, addDoc, updateDoc, deleteDoc, D
 import { User } from 'firebase/auth';
 
 const serverUrl = '/api'
+// For debugging.
 //const serverUrl = 'http://localhost:5001/liquidx-mem/us-central1'
 
 export function addMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<DocumentReference<DocumentData>> {
