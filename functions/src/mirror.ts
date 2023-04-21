@@ -6,7 +6,7 @@ import { firebaseApp, getFirebaseStorageBucket, getFirestoreDb } from "./firebas
 
 const corsAllowOrigin = cors({ origin: true });
 
-export const mrirorOnAnnotate = functions.firestore
+export const mirrorOnAnnotate = functions.firestore
   .document("users/{userId}/mems/{memId}")
   .onUpdate((change, context) => {
     // Get an object representing the document
