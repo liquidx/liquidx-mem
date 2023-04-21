@@ -107,7 +107,7 @@ export const mirrorMedia = async (mem: Mem, bucket: Bucket, outputPath: string):
 
   if (mem.photos) {
     for (let media of mem.photos) {
-      if (media.mediaUrl && media.mediaUrl.startsWith('http')) {
+      if (media.mediaUrl && media.mediaUrl.startsWith('http') && media.cachedMediaPath == null) {
         console.log(' -- mediaUrl: ', media.mediaUrl)
 
         let mediaUrl = new URL(media.mediaUrl);
@@ -125,7 +125,7 @@ export const mirrorMedia = async (mem: Mem, bucket: Bucket, outputPath: string):
     }
     if (mem.videos) {
       for (let media of mem.videos) {
-        if (media.mediaUrl && media.mediaUrl.startsWith('http')) {
+        if (media.mediaUrl && media.mediaUrl.startsWith('http') && media.cachedMediaPath == null) {
           console.log(' -- mediaUrl: ', media.mediaUrl)
 
           let mediaUrl = new URL(media.mediaUrl);
