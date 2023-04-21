@@ -2,7 +2,7 @@ import urlRegexSafe from "url-regex-safe";
 
 import { Mem } from "./mems.js";
 
-const tagRegex = new RegExp("#\\w+", "g");
+const tagRegex = new RegExp("#[^\\s,]+", "g");
 const dateRegex = new RegExp("[0-9]{4}-[0-9]{2}-[0-9]{2}");
 
 export const extractTags = (text: string): string[] => {
