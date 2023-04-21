@@ -1,5 +1,5 @@
 import { firestore } from "firebase-admin";
-import { find } from "lodash-es";
+import { find } from "lodash";
 
 export const USER_NOT_FOUND = "";
 
