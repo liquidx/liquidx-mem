@@ -46,7 +46,7 @@
       titleChanged(mem: Mem, title: string): boolean {
         return true
       },
-      fileUpload(mem: Mem, filelist: FileList): boolean {
+      fileUpload(mem: Mem, filelist: FileList, onFinish?: () => void): boolean {
         return true
       },
     },
@@ -76,8 +76,8 @@
       annotateMem(mem: Mem) {
         this.$emit('annotate', mem)
       },
-      uploadFilesForMem(mem: Mem, filelist: FileList) {
-        this.$emit('fileUpload', mem, filelist)
+      uploadFilesForMem(mem: Mem, filelist: FileList, onFinish?: () => void) {
+        this.$emit('fileUpload', mem, filelist, onFinish)
       },
       updateNoteForMem(mem: Mem, note: string) {
         this.$emit('noteChanged', mem, note)

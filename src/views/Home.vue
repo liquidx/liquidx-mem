@@ -302,14 +302,18 @@
         return true
       },
 
-      uploadFilesForMem(mem: Mem, files: FileList): boolean {
+      uploadFilesForMem(
+        mem: Mem,
+        files: FileList,
+        onFinish?: () => void,
+      ): boolean {
         if (!this.user) {
           // Not authenticated.
           console.error('Not authenticated')
           return false
         }
 
-        memModifiers.uploadFilesForMem(mem, files, this.user)
+        memModifiers.uploadFilesForMem(mem, files, this.user, onFinish)
         return true
       },
     },

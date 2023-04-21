@@ -198,7 +198,7 @@
       titleChanged(mem: Mem, title: string) {
         return true
       },
-      fileUpload(mem: Mem, files: FileList) {
+      fileUpload(mem: Mem, files: FileList, onFinish: () => void | undefined) {
         return true
       },
     },
@@ -262,9 +262,10 @@
           return
         }
 
-        console.log(target.files)
-        this.$emit('fileUpload', this.mem, target.files)
-        target.value = ''
+        console.log('Upload Files', target.files)
+        this.$emit('fileUpload', this.mem, target.files, () => {
+          target.value = ''
+        })
       },
 
       dragover(e: Event) {
@@ -284,7 +285,7 @@
 
         console.log(e.dataTransfer.files)
         this.isDragging = false
-        this.$emit('fileUpload', this.mem, dataTransfer.files)
+        this.$emit('fileUpload', this.mem, dataTransfer.files, () => {})
       },
 
       noteDidChange(e: FocusEvent): void {
@@ -322,7 +323,7 @@
           titleEl.setAttribute('contenteditable', 'true')
           titleEl.focus()
           titleEl.onblur = () => {
-            this.$emit('title-changed', this.mem, titleEl.innerText)
+            this.$emit('titleChanged', this.mem, titleEl.innerText)
             titleEl.removeAttribute('contenteditable')
             if (linkUrl) {
               linkEl.setAttribute('href', linkUrl)

@@ -68,10 +68,26 @@ export function updateDescriptionForMem(
   })
 }
 
+const contentsAsBase64 = (file: File) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => {
+    if (typeof reader.result !== 'string') {
+      reject('reader.result is not a string')
+      return;
+    }
+    resolve(reader.result.split(',')[1])
+  }
+  reader.onerror = error => reject(error);
+});
+
+
+
 export async function uploadFilesForMem(
   mem: Mem,
   files: FileList,
-  user: User): Promise<void> {
+  user: User,
+  onFinish?: () => void): Promise<void> {
 
   let authToken = await user.getIdToken()
   if (!authToken) {
@@ -79,16 +95,31 @@ export async function uploadFilesForMem(
     return;
   }
 
-  await axios({
+  if (!files || files.length < 1) {
+    console.error('No files')
+    return;
+  }
+
+  let firstFile: File = files[0]
+  let fileContents = await contentsAsBase64(firstFile)
+
+  return axios({
     url: `${serverUrl}/attach?mem=${mem.id}`,
     method: 'POST',
     data: {
-      images: files,
+      image: {
+        body: fileContents,
+        filename: firstFile.name,
+        mimetype: firstFile.type
+      },
       mem: mem.id
     },
     headers: {
       "Authorization": `Bearer ${authToken}`,
-      "Content-Type": "multipart/form-data",
     },
+  }).then((response) => {
+    if (onFinish) onFinish()
+  }).catch((error) => {
+    if (onFinish) onFinish()
   })
 }
