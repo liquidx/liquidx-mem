@@ -91,16 +91,6 @@
       </div>
     </div>
 
-    <input
-      type="file"
-      class="hidden"
-      multiple
-      name="file"
-      id="fileInput"
-      ref="file"
-      @change="fileDidChange"
-    />
-
     <div class="text-gray-400 flex flex-row flex-nowrap gap-1">
       <button
         v-if="mem.new"
@@ -132,6 +122,24 @@
         <span class="material-icons text-sm align-middle">&#xE872;</span>
         Delete
       </button>
+      <div class="pr-2 py-1 hover:text-gray-500">
+        <form enctype="multipart/form-data">
+          <input
+            type="file"
+            class="hidden"
+            multiple
+            name="images[]"
+            id="fileInput"
+            accept="image/*"
+            ref="file"
+            @change="fileDidChange"
+          />
+          <label for="fileInput">
+            <span class="material-icons text-sm align-middle">&#xf071;</span>
+            Upload
+          </label>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -250,11 +258,13 @@
           return
         }
 
-        const files = target.files
-        if (!files) {
+        if (!target.files) {
           return
         }
-        this.$emit('fileUpload', this.mem, files)
+
+        console.log(target.files)
+        this.$emit('fileUpload', this.mem, target.files)
+        target.value = ''
       },
 
       dragover(e: Event) {

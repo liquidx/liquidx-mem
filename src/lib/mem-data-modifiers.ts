@@ -79,14 +79,12 @@ export async function uploadFilesForMem(
     return;
   }
 
-  console.log(files)
-
   await axios({
     url: `${serverUrl}/attach?mem=${mem.id}`,
     method: 'POST',
     data: {
-      mem: mem.id,
-      'files[]': files,
+      images: files,
+      mem: mem.id
     },
     headers: {
       "Authorization": `Bearer ${authToken}`,
