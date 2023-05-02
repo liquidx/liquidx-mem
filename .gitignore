@@ -35,3 +35,6 @@ ui-debug.log*
 
 # TypeScript v1 declaration files
 functions/typings/
+
+# Backup test
+firestore-backup/
