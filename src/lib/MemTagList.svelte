@@ -56,7 +56,7 @@
 	{/each}
 	{#if !showAll}
 		<a
-			href="#"
+			href="#top"
 			on:click|preventDefault={showAllDidClick}
 			class="block p-0.5 whitespace-nowrap hover:underline"
 		>
