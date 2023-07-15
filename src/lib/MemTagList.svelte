@@ -43,7 +43,7 @@
 	class="w-screen p-2 md:w-48 text-gray-500 flex flex-row flex-wrap md:flex-col justify-start"
 >
 	<a href="/" class="block p-0.5 whitespace-nowrap hover:underline">New </a>
-	<a href="/archive" class="block p-0.5 whitespace-nowrap hover:underline">Archive</a>
+	<a href="/tag/*" class="block p-0.5 whitespace-nowrap hover:underline">Archive</a>
 	{#each views as view}
 		<a href={pathForView(view)} class="block p-0.5 whitespace-nowrap hover:underline">
 			{view}
@@ -56,7 +56,7 @@
 	{/each}
 	{#if !showAll}
 		<a
-			href="#"
+			href="#top"
 			on:click|preventDefault={showAllDidClick}
 			class="block p-0.5 whitespace-nowrap hover:underline"
 		>

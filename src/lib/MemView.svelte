@@ -280,6 +280,7 @@
 		{#if displayVideos}
 			<div class="videos">
 				{#each displayVideos as video (video.url)}
+					<!-- svelte-ignore a11y-media-has-caption -->
 					<video src={video.url} title={video.status} class="my-4" playsinline controls loop />
 				{/each}
 			</div>

@@ -19,9 +19,8 @@
     "baseUrl": ".",
     "types": ["jest"],
     "paths": {
-      "@/*": ["src/*"],
-      "$lib":["./src/lib"],
-      "$lib/*":["./src/lib/*"]
+      "$lib/*":["./src/lib/*"],
+      "@/*": ["src/*"]
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
