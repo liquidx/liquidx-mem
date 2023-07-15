@@ -169,9 +169,9 @@
 </svelte:head>
 
 <div class="flex flex-col w-full overflow-x-hidden md:flex-row">
-	<section>
+	<!-- <section>
 		<MemTagList />
-	</section>
+	</section> -->
 	<main class="p-2 max-w-screen flex-grow md:max-w-xl">
 		<MemAdd />
 		<MemList
