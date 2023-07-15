@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getViews, getWriteSecret, updateViews, updateWriteSecret } from '$lib/prefs-get';
+	import { getViews, getWriteSecret, updateViews, updateWriteSecret } from '$lib/prefs';
 	import { sharedFirestore, sharedUser } from '$lib/firebase-shared';
 
 	let writeSecret = '';
