@@ -1,18 +1,18 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue';
-import { resolve } from 'path';
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vitest/config';
 
-/** @type {import('vite').UserConfig} */
 export default defineConfig({
-  plugins: [vue({
-  })],
   server: {
     host: '127.0.0.1',
     port: 12000,
-  },
-  resolve: {
-    alias: {
-      '@': resolve('./src'),
+    fs: {
+      // Allow serving files from one level up to the project root
+      allow: ['..'],
     },
+
   },
-})
+  plugins: [sveltekit()],
+  test: {
+    include: ['src/**/*.{test,spec}.{js,ts}']
+  },
+});
