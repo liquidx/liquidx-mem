@@ -7,14 +7,23 @@ dist/
 # credentials
 credentials-*.json
 
-
+# testing
 /tests/e2e/videos/
 /tests/e2e/screenshots/
 
+# svelte
+/build
+/.svelte-kit
+/package
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
 
 # local env files
 .env.local
 .env.*.local
+.env
+.env.*
+!.env.example
 
 # Log files
 npm-debug.log*
