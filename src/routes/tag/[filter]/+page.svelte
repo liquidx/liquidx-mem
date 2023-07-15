@@ -1,13 +1,13 @@
 <script lang="ts">
+	// @ts-ignore
+	import { page } from '$app/stores';
 	import MainView from '$lib/MainView.svelte';
-
-	export let data;
 
 	let filter: string = '';
 
 	$: {
-		if (data) {
-			filter = data.filter;
+		if ($page && $page.params && $page.params.filter) {
+			filter = $page.params.filter;
 		}
 	}
 </script>
