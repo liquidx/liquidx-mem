@@ -1,10 +1,11 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import type { QuerySnapshot, DocumentData, DocumentSnapshot } from 'firebase/firestore';
-import firebaseConfig from '$lib/credentials-firebase-web.json';
+import { PUBLIC_MEM_FIREBASE_WEB_SECRETS } from '$env/static/public';
 
 export function initializeFirebase() {
-	return initializeApp(firebaseConfig);
+	let config = JSON.parse(PUBLIC_MEM_FIREBASE_WEB_SECRETS);
+	return initializeApp(config);
 }
 
 export function initializeLocalFirestore() {
