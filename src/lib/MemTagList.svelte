@@ -51,7 +51,8 @@
 	{/each}
 	{#each visibleTags as tag (tag.tag)}
 		<a href={pathForView(tag.tag)} class="block p-0.5 whitespace-nowrap hover:underline">
-			{tag.label} ({tag.count})
+			{tag.icon}
+			{tag.tag} ({tag.count})
 		</a>
 	{/each}
 	{#if !showAll}

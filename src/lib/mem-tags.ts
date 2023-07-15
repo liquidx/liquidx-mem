@@ -1,13 +1,9 @@
-import { orderBy, toPairs } from 'lodash-es';
-import type { Mem } from '../../functions/core/mems';
-import { getUserMemCollection } from '../lib/mem-data-collection';
+import { getUserTagIndexDoc } from '../lib/mem-data-collection';
 import type { Firestore } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { queryForAllMems, executeQuery } from './mem-data-queries';
-import { getViews } from '$lib/prefs-get';
-
-export type TagIndex = { [field: string]: number };
-export type TagListItem = { tag: string; label: string; count: number };
+import { getViews } from '$lib/prefs';
+import { getDoc } from 'firebase/firestore';
+import type { IndexTagDocument, TagListItem } from '../../functions/core/tags';
 
 export const getSavedViews = async (firestore: Firestore, user: User) => {
 	let views = await getViews(firestore, user);
@@ -15,63 +11,52 @@ export const getSavedViews = async (firestore: Firestore, user: User) => {
 };
 
 export const getTags = async (firestore: Firestore, user: User) => {
-	let collection = getUserMemCollection(firestore, user);
-	let allQuery = queryForAllMems(collection);
-	let mems = await executeQuery(allQuery);
-
-	return tagListForMems(mems);
-};
-
-export const tagListForMems = (mems: Mem[]) => {
-	const tags: TagIndex = {};
-	mems.forEach((mem: Mem) => {
-		if (mem.tags) {
-			for (const tag of mem.tags) {
-				tags[tag] = tags[tag] ? tags[tag] + 1 : 1;
-			}
+	let tagCountDoc = getUserTagIndexDoc(firestore, user);
+	let tags = await getDoc(tagCountDoc).then((doc) => {
+		if (doc.exists()) {
+			let docData = doc.data() as IndexTagDocument;
+			let tags = docData.counts;
+			console.log(docData);
+			tags.map((tag: TagListItem) => {
+				tag.icon = iconForTag(tag.tag);
+				return tag;
+			});
+			return tags;
 		}
+		return [];
 	});
-
-	let orderedTags = orderBy(toPairs(tags), [1], ['desc']).map(
-		(o) =>
-			({
-				tag: o[0],
-				label: labelForTag(o[0]),
-				count: o[1]
-			} as TagListItem)
-	);
-	return orderedTags;
+	return tags;
 };
 
-export const labelForTag = (tag: string) => {
+export const iconForTag = (tag: string) => {
 	if (!tag) {
-		return tag;
+		return '';
 	}
 	switch (tag) {
 		case '#art':
-			return `🎨 ${tag}`;
+			return `🎨`;
 		case '#code':
-			return `👨‍💻 ${tag}`;
+			return `👨‍💻`;
 		case '#map':
-			return `🗺️ ${tag}`;
+			return `🗺️`;
 		case '#photo':
-			return `📷 ${tag}`;
+			return `📷`;
 		case '#japan':
 		case '#japanese':
-			return `🇯🇵 ${tag}`;
+			return `🇯🇵`;
 		case '#tokyo':
-			return `🗼 ${tag}`;
+			return `🗼`;
 		case '#hongkong':
-			return `🇭🇰 ${tag}`;
+			return `🇭🇰`;
 		case '#house':
-			return `🏠 ${tag}`;
+			return `🏠`;
 		case '#look':
 		case '#read':
-			return `👀 ${tag}`;
+			return `👀`;
 		case '#want':
-			return `🤩 ${tag}`;
+			return `🤩`;
 		case '#3d':
-			return `📦 ${tag}`;
+			return `📦`;
 		case '#ml':
 		case '#ml-generative':
 		case '#generated':
@@ -84,33 +69,33 @@ export const labelForTag = (tag: string) => {
 		case '#midjourney':
 		case '#llm':
 		case '#colab':
-			return `🧠 ${tag}`;
+			return `🧠`;
 		case '#f1':
-			return `🏎️ ${tag}`;
+			return `🏎️`;
 		case '#snow':
-			return `❄️ ${tag}`;
+			return `❄️`;
 		case '#datavis':
-			return `📊 ${tag}`;
+			return `📊`;
 		case '#design':
-			return `🎨 ${tag}`;
+			return `🎨`;
 		case '#keyboard':
-			return `⌨️ ${tag}`;
+			return `⌨️`;
 		case '#web':
-			return `🌐 ${tag}`;
+			return `🌐`;
 		case '#music':
-			return `🎵 ${tag}`;
+			return `🎵`;
 		case '#game':
 		case '#gaming':
-			return `🎮 ${tag}`;
+			return `🎮`;
 		case '#place':
-			return `📍 ${tag}`;
+			return `📍`;
 		case '#snowboard':
-			return `🏂 ${tag}`;
+			return `🏂`;
 		case '#furniture':
-			return `🛋️ ${tag}`;
+			return `🛋️`;
 		case '#watch':
-			return `⌚ ${tag}`;
+			return `⌚`;
 		default:
-			return tag;
+			return '';
 	}
 };
