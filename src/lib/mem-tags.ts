@@ -3,7 +3,7 @@ import type { Firestore } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { getViews } from '$lib/prefs';
 import { getDoc } from 'firebase/firestore';
-import type { IndexTagDocument, TagListItem } from '../../functions/core/tags';
+import type { IndexTagDocument, TagListItem } from '$lib/server/tags';
 
 export const getSavedViews = async (firestore: Firestore, user: User) => {
 	let views = await getViews(firestore, user);

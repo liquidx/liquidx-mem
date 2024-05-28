@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { error, json } from '@sveltejs/kit';
 
 import type { RequestHandler } from './$types';
-import { parseText } from '$lib/server/parser.js';
+import { parseText } from '$lib/common/parser.js';
 import { userForSharedSecret, USER_NOT_FOUND } from '$lib/server/firestore-user-secrets.js';
 import { firestoreAdd } from '$lib/server/firestore-add.js';
 import { firebaseApp, getFirestoreDb, getFirebaseStorageBucket } from '$lib/server/firebase-app.js';

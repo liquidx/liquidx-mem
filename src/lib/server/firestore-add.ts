@@ -1,14 +1,14 @@
-import { firestore } from "firebase-admin";
-import { Mem } from "./mems.js";
+import type { Firestore, DocumentReference, DocumentData } from '@google-cloud/firestore';
+import { Mem } from '../common/mems.js';
 
 export const firestoreAdd = (
-  db: firestore.Firestore,
-  userId: string,
-  mem: Mem
-): Promise<firestore.DocumentReference<firestore.DocumentData>> => {
-  return db
-    .collection("users")
-    .doc(userId)
-    .collection("mems")
-    .add(mem as { [x: string]: any; });
+	db: Firestore,
+	userId: string,
+	mem: Mem
+): Promise<DocumentReference<DocumentData>> => {
+	return db
+		.collection('users')
+		.doc(userId)
+		.collection('mems')
+		.add(mem as { [x: string]: any });
 };

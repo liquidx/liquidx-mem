@@ -4,9 +4,9 @@ import type {
 	QuerySnapshot,
 	DocumentData,
 	Firestore
-} from 'firebase-admin/firestore';
+} from '@google-cloud/firestore';
 import { type IndexTagDocument, getTagCounts } from '$lib/server/tags';
-import type { Mem } from '$lib/server/mems';
+import type { Mem } from '$lib/common/mems';
 import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 

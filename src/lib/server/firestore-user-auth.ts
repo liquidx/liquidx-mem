@@ -1,4 +1,3 @@
-import { getAuth } from 'firebase-admin/auth';
 import { firebaseApp } from './firebase-app.js';
 import type { DecodedIdToken } from 'firebase-admin/auth';
 
@@ -11,7 +10,7 @@ export const validateFirebaseIdToken = async (
 ): Promise<DecodedIdToken | undefined> => {
 	console.log('Check if request is authorized with Firebase ID token');
 
-	const auth = getAuth(firebaseApp());
+	const auth = firebaseApp().auth();
 
 	if (
 		(!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) &&
