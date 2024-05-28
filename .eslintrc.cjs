@@ -10,10 +10,10 @@ module.exports = {
 	plugins: ['@typescript-eslint'],
 	ignorePatterns: [
 		'*.cjs',
-		"functions/dist/**/*", // Ignore built files.
-		"functions/test/*",
-		"functions/tools/*",
-		"functions/test-tools/*"
+		'functions/dist/**/*', // Ignore built files.
+		'functions/test/*',
+		'functions/tools/*',
+		'functions/test-tools/*'
 	],
 	parserOptions: {
 		sourceType: 'module',
@@ -35,7 +35,7 @@ module.exports = {
 		}
 	],
 	rules: {
-    '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/no-unused-vars': 'warn',
+		'@typescript-eslint/no-unused-vars': 'warn',
+		'@typescript-eslint/no-explicit-any': 0
 	}
 };

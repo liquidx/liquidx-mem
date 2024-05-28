@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { DateTime } from 'luxon';
-	import { parseText } from '../../functions/core/parser';
+	import { parseText } from '$lib/common/parser';
 	import { sharedFirestore, sharedUser } from './firebase-shared';
 	import { getUserMemCollection } from '$lib/mem-data-collection';
 	import { addMem } from '$lib/mem-data-modifiers';
