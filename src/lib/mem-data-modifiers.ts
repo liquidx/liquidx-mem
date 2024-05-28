@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Mem } from '$lib/server/mems';
+import type { Mem } from '$lib/common/mems';
 import { extractEntities } from '$lib/common/parser';
 import {
 	CollectionReference,
@@ -16,11 +16,17 @@ const serverUrl = '/_api';
 // For debugging.
 //const serverUrl = 'http://localhost:5001/liquidx-mem/us-central1'
 
-export function addMem(
+export async function addMem(
 	mem: Mem,
 	collection: CollectionReference<DocumentData>
-): Promise<DocumentReference<DocumentData>> {
-	return addDoc(collection, mem);
+): Promise<void> {
+	// API
+	// const url = `${serverUrl}/add`;
+
+	// const body = { text: mem.raw };
+	// return axios.post(url, body).then((response) => console.log('addMem', response));
+	// Firebase client
+	await addDoc(collection, mem);
 }
 
 export function deleteMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<void> {

@@ -1,5 +1,5 @@
-import { orderBy, toPairs } from 'lodash';
-import type { Mem } from './mems';
+import { orderBy, toPairs } from 'lodash-es';
+import type { Mem } from '../common/mems';
 
 export type TagIndex = { [field: string]: number };
 export type TagListItem = { tag: string; count: number; icon?: string };
@@ -21,7 +21,7 @@ export const getTagCounts = (mems: Mem[]): TagListItem[] => {
 				tag: o[0],
 				icon: '',
 				count: o[1]
-			} as TagListItem)
+			}) as TagListItem
 	);
 	return orderedTags;
 };

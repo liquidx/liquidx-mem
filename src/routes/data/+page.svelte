@@ -2,7 +2,7 @@
 	import { getUserMemCollection } from '$lib/mem-data-collection';
 	import { addMem } from '$lib/mem-data-modifiers';
 	import { executeQuery, queryForAllMems } from '$lib/mem-data-queries';
-	import { type Mem, memFromJson } from '../../../functions/core/mems';
+	import { type Mem, memFromJson } from '$lib/common/mems';
 	import { sharedUser, sharedFirestore } from '$lib/firebase-shared';
 	let importMems = [] as Mem[];
 	let fileInput: HTMLInputElement;

@@ -1,6 +1,6 @@
 import urlRegexSafe from 'url-regex-safe';
 
-import type { Mem } from '../server/mems.js';
+import type { Mem } from './mems.js';
 
 const tagRegex = new RegExp('#[^\\s,]+', 'g');
 const dateRegex = new RegExp('[0-9]{4}-[0-9]{2}-[0-9]{2}');

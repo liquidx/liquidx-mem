@@ -7,7 +7,7 @@
 
 	let rawInput: string = '';
 
-	const addNewMem = () => {
+	const addNewMem = async () => {
 		if (!$sharedFirestore || !$sharedUser || !rawInput) {
 			return;
 		}
@@ -18,9 +18,8 @@
 		mem.addedMs = DateTime.utc().toMillis();
 
 		let collection = getUserMemCollection($sharedFirestore, $sharedUser);
-		addMem(mem, collection).then(() => {
-			rawInput = '';
-		});
+		await addMem(mem, collection);
+		rawInput = '';
 	};
 </script>
 
