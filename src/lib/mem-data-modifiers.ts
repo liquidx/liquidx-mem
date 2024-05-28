@@ -1,6 +1,6 @@
 import axios from 'axios';
-import type { Mem } from '../../functions/core/mems';
-import { extractEntities } from '../../functions/core/parser';
+import type { Mem } from '$lib/server/mems';
+import { extractEntities } from '$lib/common/parser';
 import {
 	CollectionReference,
 	doc,
@@ -12,7 +12,7 @@ import {
 import type { DocumentData } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 
-const serverUrl = '/api';
+const serverUrl = '/_api';
 // For debugging.
 //const serverUrl = 'http://localhost:5001/liquidx-mem/us-central1'
 
@@ -27,11 +27,10 @@ export function deleteMem(mem: Mem, collection: CollectionReference<DocumentData
 	return deleteDoc(doc(collection, mem.id));
 }
 
-export function annotateMem(mem: Mem, uid: string): void {
-	const url = `${serverUrl}/annotate?user=${uid}&mem=${mem.id}`;
-	fetch(url)
-		.then((response) => response.text())
-		.then((response) => console.log(response));
+export async function annotateMem(mem: Mem, uid: string): Promise<void> {
+	const url = `${serverUrl}/annotate`;
+	const body = { user: uid, mem: mem.id };
+	return axios.post(url, body).then((response) => console.log(response));
 }
 
 export function archiveMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<void> {

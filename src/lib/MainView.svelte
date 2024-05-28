@@ -104,10 +104,10 @@
 	// Actions
 	////
 
-	const annotateMem = (e: CustomEvent) => {
+	const annotateMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
 		if (mem && $sharedUser) {
-			memModifiers.annotateMem(mem, $sharedUser.uid);
+			await memModifiers.annotateMem(mem, $sharedUser.uid);
 		}
 	};
 
