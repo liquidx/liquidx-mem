@@ -11,10 +11,12 @@ export const validateFirebaseIdToken = async (
 	console.log('Check if request is authorized with Firebase ID token');
 
 	const auth = firebaseApp().auth();
+	const headers = req.headers;
+	const cookies = req.cookies;
 
 	if (
-		(!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) &&
-		!(req.cookies && req.cookies.__session)
+		(!headers.get('authorization') || !headers.get('authorization').startsWith('Bearer ')) &&
+		!(cookies && cookies.__session)
 	) {
 		console.error(
 			'No Firebase ID token was passed as a Bearer token in the Authorization header.',

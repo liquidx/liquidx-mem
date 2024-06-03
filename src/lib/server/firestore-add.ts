@@ -1,5 +1,5 @@
 import type { Firestore, DocumentReference, DocumentData } from '@google-cloud/firestore';
-import { Mem } from '../common/mems.js';
+import type { Mem } from '../common/mems.js';
 
 export const firestoreAdd = (
 	db: Firestore,

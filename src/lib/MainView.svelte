@@ -4,7 +4,7 @@
 	import type { CollectionReference, Query } from 'firebase/firestore';
 	import { onSnapshot } from 'firebase/firestore';
 	import { getUserMemCollection } from '$lib/mem-data-collection';
-	import type { Mem } from '../../functions/core/mems';
+	import type { Mem } from '../lib/common/mems';
 	import {
 		executeQuery,
 		executeQueryForTaggedMems,

@@ -1,15 +1,16 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import type { QuerySnapshot, DocumentData, DocumentSnapshot } from 'firebase/firestore';
+// @ts-expect-error $env actually exists
 import { PUBLIC_MEM_FIREBASE_WEB_SECRETS } from '$env/static/public';
 
 export function initializeFirebase() {
-	let config = JSON.parse(PUBLIC_MEM_FIREBASE_WEB_SECRETS);
+	const config = JSON.parse(PUBLIC_MEM_FIREBASE_WEB_SECRETS);
 	return initializeApp(config);
 }
 
 export function initializeLocalFirestore() {
-	let db = getFirestore();
+	const db = getFirestore();
 	connectFirestoreEmulator(db, 'localhost', 15001);
 	return db;
 }
@@ -24,9 +25,9 @@ export function initializeFirestore(firebaseApp: FirebaseApp) {
 // export { Timestamp, GeoPoint };
 
 export const unwrapDocs = (docs: QuerySnapshot<DocumentData>): Array<DocumentData> => {
-	let unwrapped: Array<DocumentData> = [];
+	const unwrapped: Array<DocumentData> = [];
 	docs.forEach((snapshot) => {
-		let doc: DocumentData = snapshot.data();
+		const doc: DocumentData = snapshot.data();
 		doc.id = snapshot.id;
 
 		unwrapped.push(doc);
@@ -38,7 +39,7 @@ export const unwrapDocs = (docs: QuerySnapshot<DocumentData>): Array<DocumentDat
 // db.settings({ timestampsInSnapshots: true });
 
 export const unwrapDoc = (snapshot: DocumentSnapshot) => {
-	let doc: DocumentData | undefined = snapshot.data();
+	const doc: DocumentData | undefined = snapshot.data();
 	if (!doc) {
 		return;
 	}

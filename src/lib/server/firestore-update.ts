@@ -1,5 +1,5 @@
 import { firestore } from 'firebase-admin';
-import { Mem } from '../common/mems.js';
+import type { Mem } from '../common/mems.js';
 
 export const firestoreUpdate = (
 	db: firestore.Firestore,

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getTags, getSavedViews } from '$lib/mem-tags';
-	import type { TagListItem } from '$lib/mem-tags';
+	import type { TagListItem } from './common/tags';
 	import { sharedFirestore, sharedUser } from './firebase-shared';
 
 	let showAll = false;
