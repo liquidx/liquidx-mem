@@ -8,16 +8,10 @@ module.exports = {
 	],
 	parser: '@typescript-eslint/parser',
 	plugins: ['@typescript-eslint'],
-	ignorePatterns: [
-		'*.cjs',
-		'functions/dist/**/*', // Ignore built files.
-		'functions/test/*',
-		'functions/tools/*',
-		'functions/test-tools/*'
-	],
+	ignorePatterns: ['vite.config.js', '*.json'],
 	parserOptions: {
+		project: ['tsconfig.json'],
 		sourceType: 'module',
-		ecmaVersion: 2020,
 		extraFileExtensions: ['.svelte']
 	},
 	env: {

@@ -238,6 +238,8 @@
 	on:dragover={ondragover}
 	on:dragleave={ondragleave}
 	on:drop={ondrop}
+	role="button"
+	tabindex="0"
 >
 	<div class="grow">
 		<div
