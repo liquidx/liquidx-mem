@@ -26,11 +26,18 @@
 		"src/**/*.ts",
 		"src/**/*.tsx",
 		"tests/**/*.ts",
+		"tests/**/*.js",
 		"tests/**/*.tsx",
 		"function/**/*.ts",
 		"src/router/index.ts",
 		"src/firebase.ts",
 		"src/main.ts"
 	],
-	"exclude": ["node_modules", "node_modules/**"]
+	"exclude": [
+		"node_modules",
+		"node_modules/**",
+		"vite.config.js",
+		"tailwind.config.js",
+		"svelte.config.js"
+	]
 }

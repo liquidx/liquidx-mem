@@ -56,12 +56,11 @@
 		</a>
 	{/each}
 	{#if !showAll}
-		<a
-			href="#"
+		<button
 			on:click|preventDefault={showAllDidClick}
 			class="block p-0.5 whitespace-nowrap hover:underline"
 		>
 			More..
-		</a>
+		</button>
 	{/if}
 </section>
