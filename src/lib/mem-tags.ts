@@ -6,16 +6,16 @@ import { getDoc } from 'firebase/firestore';
 import type { IndexTagDocument, TagListItem } from '$lib/server/tags';
 
 export const getSavedViews = async (firestore: Firestore, user: User) => {
-	let views = await getViews(firestore, user);
+	const views = await getViews(firestore, user);
 	return views;
 };
 
 export const getTags = async (firestore: Firestore, user: User) => {
-	let tagCountDoc = getUserTagIndexDoc(firestore, user);
-	let tags = await getDoc(tagCountDoc).then((doc) => {
+	const tagCountDoc = getUserTagIndexDoc(firestore, user);
+	const tags = await getDoc(tagCountDoc).then((doc) => {
 		if (doc.exists()) {
-			let docData = doc.data() as IndexTagDocument;
-			let tags = docData.counts;
+			const docData = doc.data() as IndexTagDocument;
+			const tags = docData.counts;
 			console.log(docData);
 			tags.map((tag: TagListItem) => {
 				tag.icon = iconForTag(tag.tag);

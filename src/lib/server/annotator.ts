@@ -1,5 +1,5 @@
 import openGraphScraper from 'open-graph-scraper';
-import { Mem, MemPhoto } from '../common/mems.js';
+import type { Mem, MemPhoto } from '../common/mems.js';
 import { annotateWithTwitterApi, twitterStatusUrlRegex } from './annotator-twitter.js';
 
 import { isResultBlocked } from './annotator-og-blocklist.js';

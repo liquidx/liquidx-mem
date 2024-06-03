@@ -1,21 +1,24 @@
 {
 	"extends": "./.svelte-kit/tsconfig.json",
 	"compilerOptions": {
+		"outDir": "./dist",
 		"allowJs": true,
 		"checkJs": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
+		"noImplicitReturns": true,
+		"noUnusedLocals": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true,
-		"target": "esnext",
-		"module": "esnext",
-		"jsx": "preserve",
 		"importHelpers": true,
-		"moduleResolution": "node",
 		"experimentalDecorators": true,
 		"allowSyntheticDefaultImports": true,
+		"noEmit": false,
+		"target": "esnext",
+		"module": "esnext",
+		"moduleResolution": "node",
 		"types": ["jest"],
 		"lib": ["esnext", "dom", "dom.iterable", "scripthost"]
 	},
@@ -29,5 +32,5 @@
 		"src/firebase.ts",
 		"src/main.ts"
 	],
-	"exclude": ["node_modules"]
+	"exclude": ["node_modules", "node_modules/**"]
 }

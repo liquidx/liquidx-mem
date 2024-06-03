@@ -1,11 +1,5 @@
 import { unwrapDocs, unwrapDoc } from './firebase-init';
-import type {
-	CollectionReference,
-	DocumentData,
-	QueryConstraint,
-	Query,
-	WhereFilterOp
-} from 'firebase/firestore';
+import type { CollectionReference, DocumentData, QueryConstraint, Query } from 'firebase/firestore';
 import { getDocs, query, where, orderBy, limit, doc, getDoc } from 'firebase/firestore';
 
 export function queryForAllMems(collection: CollectionReference<DocumentData>): Query {
@@ -16,7 +10,7 @@ export function queryForNewMems(
 	collection: CollectionReference<DocumentData>,
 	maxResults?: number
 ): Query {
-	let constraints: QueryConstraint[] = [];
+	const constraints: QueryConstraint[] = [];
 	constraints.push(where('new', '==', true));
 	constraints.push(orderBy('addedMs', 'desc'));
 	if (maxResults && maxResults > 0) {
@@ -29,7 +23,7 @@ export function queryForArchivedMems(
 	collection: CollectionReference<DocumentData>,
 	maxResults?: number
 ): Query {
-	let constraints: QueryConstraint[] = [];
+	const constraints: QueryConstraint[] = [];
 	constraints.push(where('new', '==', false));
 	constraints.push(orderBy('addedMs', 'desc'));
 	if (maxResults && maxResults > 0) {
@@ -44,7 +38,7 @@ export function executeQueryForTaggedMems(
 	matchOperator: string,
 	pageSize: number
 ): Promise<Array<DocumentData>> {
-	let constraints: QueryConstraint[] = [];
+	const constraints: QueryConstraint[] = [];
 
 	if (matchOperator === 'all') {
 		// Limitation of Firestore is that we can't combined multple array-contains conditions.
@@ -82,7 +76,7 @@ export const executeQueryForMem = (
 	collection: CollectionReference<DocumentData>,
 	id: string
 ): Promise<DocumentData | undefined> => {
-	let docId = doc(collection, id);
+	const docId = doc(collection, id);
 	return getDoc(docId).then((doc) => {
 		if (doc) {
 			return unwrapDoc(doc);

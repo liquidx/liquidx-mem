@@ -1,14 +1,7 @@
 import axios from 'axios';
 import type { Mem } from '$lib/common/mems';
 import { extractEntities } from '$lib/common/parser';
-import {
-	CollectionReference,
-	doc,
-	addDoc,
-	updateDoc,
-	deleteDoc,
-	DocumentReference
-} from 'firebase/firestore';
+import { CollectionReference, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 
@@ -110,7 +103,7 @@ export async function uploadFilesForMem(
 	user: User,
 	onFinish?: () => void
 ): Promise<void> {
-	let authToken = await user.getIdToken();
+	const authToken = await user.getIdToken();
 	if (!authToken) {
 		console.error('No auth token');
 		return;
@@ -121,8 +114,8 @@ export async function uploadFilesForMem(
 		return;
 	}
 
-	let firstFile: File = files[0];
-	let fileContents = await contentsAsBase64(firstFile);
+	const firstFile: File = files[0];
+	const fileContents = await contentsAsBase64(firstFile);
 
 	return axios({
 		url: `${serverUrl}/attach?mem=${mem.id}`,
@@ -139,10 +132,10 @@ export async function uploadFilesForMem(
 			Authorization: `Bearer ${authToken}`
 		}
 	})
-		.then((response) => {
+		.then(() => {
 			if (onFinish) onFinish();
 		})
-		.catch((error) => {
+		.catch(() => {
 			if (onFinish) onFinish();
 		});
 }

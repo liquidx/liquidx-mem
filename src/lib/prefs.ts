@@ -7,12 +7,12 @@ export const getPrefsCollection = (db: Firestore, user: User) => {
 
 export function getViews(db: Firestore, user: User): Promise<string[] | null> {
 	console.log('getViews');
-	let prefsCollection = getPrefsCollection(db, user);
-	let docRef = doc(prefsCollection, 'views');
+	const prefsCollection = getPrefsCollection(db, user);
+	const docRef = doc(prefsCollection, 'views');
 	return getDoc(docRef)
 		.then((doc) => {
 			if (doc.exists()) {
-				let views = doc.data();
+				const views = doc.data();
 				if (views.views) {
 					return views.views;
 				}
@@ -29,12 +29,12 @@ export function getViews(db: Firestore, user: User): Promise<string[] | null> {
 
 export function getWriteSecret(db: Firestore, user: User): Promise<string | null> {
 	console.log('getSecret');
-	let prefsCollection = getPrefsCollection(db, user);
-	let docRef = doc(prefsCollection, 'secrets');
+	const prefsCollection = getPrefsCollection(db, user);
+	const docRef = doc(prefsCollection, 'secrets');
 	return getDoc(docRef)
 		.then((doc) => {
 			if (doc.exists()) {
-				let data = doc.data();
+				const data = doc.data();
 				if (data.writeSecret) {
 					return data.writeSecret;
 				}
@@ -50,16 +50,16 @@ export function getWriteSecret(db: Firestore, user: User): Promise<string | null
 }
 
 export const updateViews = (db: Firestore, user: User, value: string[]) => {
-	let prefsCollection = collection(doc(collection(db, 'users'), user.uid), 'prefs');
-	let docRef = doc(prefsCollection, 'views');
+	const prefsCollection = collection(doc(collection(db, 'users'), user.uid), 'prefs');
+	const docRef = doc(prefsCollection, 'views');
 	updateDoc(docRef, {
 		views: value
 	});
 };
 
 export const updateWriteSecret = (db: Firestore, user: User, value: string) => {
-	let prefsCollection = collection(doc(collection(db, 'users'), user.uid), 'prefs');
-	let docRef = doc(prefsCollection, 'secrets');
+	const prefsCollection = collection(doc(collection(db, 'users'), user.uid), 'prefs');
+	const docRef = doc(prefsCollection, 'secrets');
 	updateDoc(docRef, {
 		writeSecret: value
 	});
