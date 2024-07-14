@@ -1,17 +1,19 @@
+import process from 'process';
+import fs from 'fs';
+
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import fs from 'fs';
 import type { Command } from 'commander';
+
 import { mirrorMedia } from '../lib/server/mirror.js';
 import { annotateMem } from '../lib/server/annotator.js';
+
 const DEFAULT_USER = 'BB8zGVrCbrQ2QryHyiZNaUZJjQ93';
 const BUCKET_NAME = 'liquidx-mem.appspot.com';
 
 export const addFirebaseCommands = (program: Command) => {
-	const firebaseAdminCreds = JSON.parse(
-		fs.readFileSync('./credentials-firebase-adminsdk.json', 'utf8')
-	);
+	const firebaseAdminCreds = JSON.parse(process.env.MEM_FIREBASE_ADMIN_KEY ?? '');
 	const firebaseApp = initializeApp({ credential: cert(firebaseAdminCreds) });
 	const firestore = getFirestore(firebaseApp);
 	const storage = getStorage(firebaseApp);
@@ -120,25 +122,34 @@ export const addFirebaseCommands = (program: Command) => {
 		});
 
 	// Add a command in commander
-	program.command('get-all').action(async () => {
-		const userId = DEFAULT_USER;
-		const docsResult = await firestore.collection('users').doc(userId).collection('mems').get();
-		const mems = docsResult.docs.map((doc) => Object.assign(doc.data(), { id: doc.id }));
-		for (const mem of mems) {
-			console.log(`- ${mem.id}`);
-			console.log(`  - url: ${mem.url}`);
-			if (mem.photos) {
-				for (const photo of mem.photos) {
-					console.log(`   - photo: ${photo.mediaUrl}`);
+	program
+		.command('get-all')
+		.option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
+		.option('-o --output <output>', 'Output file')
+		.action(async (options) => {
+			const userId = options.userId;
+			const docsResult = await firestore.collection('users').doc(userId).collection('mems').get();
+			const mems = docsResult.docs.map((doc) => Object.assign(doc.data(), { id: doc.id }));
+			if (options.output) {
+				fs.writeFileSync(options.output, JSON.stringify(mems, null, 2));
+				console.log('Output to JSON file');
+			}
+
+			for (const mem of mems) {
+				console.log(`- ${mem.id}`);
+				console.log(`  - url: ${mem.url}`);
+				if (mem.photos) {
+					for (const photo of mem.photos) {
+						console.log(`   - photo: ${photo.mediaUrl}`);
+					}
+				}
+				if (mem.videos) {
+					for (const video of mem.videos) {
+						console.log(`   - video: ${video.mediaUrl}`);
+					}
 				}
 			}
-			if (mem.videos) {
-				for (const video of mem.videos) {
-					console.log(`   - video: ${video.mediaUrl}`);
-				}
-			}
-		}
-	});
+		});
 
 	// Rename a tag.
 	program
