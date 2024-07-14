@@ -81,5 +81,6 @@ export const executeQueryForMem = (
 		if (doc) {
 			return unwrapDoc(doc);
 		}
+		return;
 	});
 };

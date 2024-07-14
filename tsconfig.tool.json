@@ -1,6 +1,9 @@
 {
-	"extends": "./.svelte-kit/tsconfig.json",
 	"compilerOptions": {
+		"paths": {
+			"$lib": ["../src/lib"],
+			"$lib/*": ["../src/lib/*"]
+		},
 		"outDir": "./dist",
 		"allowJs": true,
 		"checkJs": true,
@@ -22,17 +25,7 @@
 		"types": ["jest"],
 		"lib": ["esnext", "dom", "dom.iterable", "scripthost"]
 	},
-	"include": [
-		"src/**/*.ts",
-		"src/**/*.tsx",
-		"tests/**/*.ts",
-		"tests/**/*.js",
-		"tests/**/*.tsx",
-		"function/**/*.ts",
-		"src/router/index.ts",
-		"src/firebase.ts",
-		"src/main.ts"
-	],
+	"include": ["src/tool.ts", "src/lib/**.ts", "src/tools/**.ts"],
 	"exclude": [
 		"node_modules",
 		"./node_modules/**",

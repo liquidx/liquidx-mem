@@ -50,6 +50,11 @@ using OpenGraph headers, or specialized annotators for services like Twitter.
 
 Data is exported as a flat JSON file through a web browser, or can be imported.
 
+# Migration from Firebase to MongoDB
+
+In 2024, Mem is being migrated from Firebase Firestore to MongoDB and from Firebase
+Functions to regular SvelteKit functions.
+
 # Setup (Work in Progress)
 
 Instructions to set up for yourself is still work in progress, but the basics are:

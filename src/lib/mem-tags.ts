@@ -1,9 +1,9 @@
 import { getUserTagIndexDoc } from '../lib/mem-data-collection';
 import type { Firestore } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { getViews } from '$lib/prefs';
+import { getViews } from './prefs';
 import { getDoc } from 'firebase/firestore';
-import type { IndexTagDocument, TagListItem } from '$lib/server/tags';
+import type { IndexTagDocument, TagListItem } from './server/tags';
 
 export const getSavedViews = async (firestore: Firestore, user: User) => {
 	const views = await getViews(firestore, user);

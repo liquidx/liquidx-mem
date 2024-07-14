@@ -1,9 +1,11 @@
 import axios from 'axios';
-import type { Mem } from '$lib/common/mems';
-import { extractEntities } from '$lib/common/parser';
+import type { Mem } from './common/mems';
+import { extractEntities } from './common/parser';
 import { CollectionReference, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
+
+const clientImpl = false;
 
 const serverUrl = '/_api';
 // For debugging.
@@ -14,16 +16,27 @@ export async function addMem(
 	collection: CollectionReference<DocumentData>
 ): Promise<void> {
 	// API
-	// const url = `${serverUrl}/add`;
+	if (clientImpl) {
+		// Firebase client
+		await addDoc(collection, mem);
+		return;
+	} else {
+		const url = `${serverUrl}/add`;
 
-	// const body = { text: mem.raw };
-	// return axios.post(url, body).then((response) => console.log('addMem', response));
-	// Firebase client
-	await addDoc(collection, mem);
+		const body = { text: mem.raw };
+		return axios.post(url, body).then((response) => console.log('addMem', response));
+	}
 }
 
 export function deleteMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<void> {
-	return deleteDoc(doc(collection, mem.id));
+	if (clientImpl) {
+		// Firebase client
+		return deleteDoc(doc(collection, mem.id));
+	} else {
+		const url = `${serverUrl}/delete`;
+		const body = { mem: mem.id };
+		return axios.post(url, body).then((response) => console.log('deleteMem', response));
+	}
 }
 
 export async function annotateMem(mem: Mem, uid: string): Promise<void> {
@@ -33,7 +46,9 @@ export async function annotateMem(mem: Mem, uid: string): Promise<void> {
 }
 
 export function archiveMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<void> {
-	return updateDoc(doc(collection, mem.id), { new: false });
+	if (clientImpl) {
+		return updateDoc(doc(collection, mem.id), { new: false });
+	}
 }
 
 export function unarchiveMem(
