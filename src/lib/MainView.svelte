@@ -1,4 +1,6 @@
 <script lang="ts">
+	import axios from 'axios';
+
 	import { sharedUser, sharedFirestore } from '$lib/firebase-shared';
 	import { getFilterCondition } from '$lib/filter';
 	import type { CollectionReference, Query } from 'firebase/firestore';
@@ -18,6 +20,7 @@
 	import MemAdd from '$lib/MemAdd.svelte';
 	import MoreMem from '$lib/MoreMem.svelte';
 	import MemTagList from '$lib/MemTagList.svelte';
+	import type { MemListResponse } from './request.types';
 
 	export let filter: string = '';
 	export let showTags = true;
@@ -52,6 +55,7 @@
 	$: {
 		if ($sharedUser && $sharedFirestore) {
 			loadMems(filter);
+			//loadMemsWithFirebase(filter);
 		}
 	}
 
@@ -61,12 +65,30 @@
 		console.log('visibleMems', visibleMems.length);
 	}
 
-	async function loadMems(withFilter: string) {
+	const loadMems = async (withFilter: string) => {
+		if (!$sharedUser) {
+			return;
+		}
+
+		const result = (await axios.post(`/_api/mem/list`, {
+			userId: $sharedUser.uid,
+			filter: withFilter
+		})) as { data?: MemListResponse };
+
+		if (result.data) {
+			const { data } = result;
+			if (data.status == 'OK' && data.mems) {
+				mems = data.mems;
+			}
+		}
+	};
+
+	async function loadMemsWithFirebase(withFilter: string) {
 		if (!$sharedUser || !$sharedFirestore) {
 			return;
 		}
 
-		console.log('loadMems', withFilter);
+		console.log('loadMemsWithFirebase', withFilter);
 		userMemCollection = getUserMemCollection($sharedFirestore, $sharedUser);
 		let conditions = getFilterCondition(withFilter);
 

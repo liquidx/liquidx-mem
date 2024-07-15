@@ -5,7 +5,7 @@ import type { RequestHandler } from './$types';
 import { parseText } from '$lib/common/parser.js';
 import { userForSharedSecret, USER_NOT_FOUND } from '$lib/server/firestore-user-secrets.js';
 import { firestoreAdd } from '$lib/server/firestore-add.js';
-import { firebaseApp, getFirestoreDb, getFirebaseStorageBucket } from '$lib/server/firebase-app.js';
+import { getFirebaseApp, getFirestoreDb, getFirebaseStorageBucket } from '$lib/firebase.server.js';
 
 export const fallback: RequestHandler = async ({ url, request }) => {
 	let text: string = '';
@@ -29,7 +29,7 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 		return error(500, "Error: 'secret' parameter not found");
 	}
 
-	const db = getFirestoreDb(firebaseApp());
+	const db = getFirestoreDb(getFirebaseApp());
 	const userId = await userForSharedSecret(db, secret);
 
 	if (!userId || userId === USER_NOT_FOUND) {
@@ -46,7 +46,7 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 		//const imageDataBuffer = Buffer.from(image, "base64");
 		const dateString = DateTime.utc().toFormat('yyyyMMddhhmmss');
 		const path = `users/${userId}/${dateString}`;
-		const bucket = getFirebaseStorageBucket(firebaseApp());
+		const bucket = getFirebaseStorageBucket(getFirebaseApp());
 		const file = bucket.file(path);
 
 		const writable = file.createWriteStream();

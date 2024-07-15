@@ -5,12 +5,12 @@ import type {
 	DocumentData,
 	Firestore
 } from '@google-cloud/firestore';
-import { type IndexTagDocument, getTagCounts } from '$lib/server/tags';
 import type { Mem } from '$lib/common/mems';
 import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
+import type { MemListResponse } from '$lib/request.types';
 
-const refreshTagCounts = async (db: Firestore, userId: string) => {
+const getAll = async (db: Firestore, userId: string) => {
 	return db
 		.collection(`users/${userId}/mems`)
 		.get()
@@ -21,22 +21,25 @@ const refreshTagCounts = async (db: Firestore, userId: string) => {
 				mems.push(mem);
 			});
 
-			const counts = getTagCounts(mems);
-			return db.doc(`users/${userId}/index/tags`).set({ counts: counts } as IndexTagDocument);
+			return mems;
 		});
 };
 
-// TODO: Call on tag edits and creates.
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json();
-	const userId = body.user || '';
+	const userId = body.userId || '';
 
 	if (!userId) {
 		return error(500, 'Missing user');
 	}
-	const db = getFirestoreDb(getFirebaseApp());
-	await refreshTagCounts(db, userId).catch((err: Error) => {
+
+	const app = getFirebaseApp();
+	const db = getFirestoreDb(app);
+	const mems = await getAll(db, userId).catch((err: Error) => {
 		return error(500, 'Error: ' + err.toString());
 	});
-	return json({ status: 'OK' });
+
+	const response: MemListResponse = { status: 'OK', mems: mems };
+	console.log('POST mem/list: Mems', mems.length);
+	return json(response);
 };
