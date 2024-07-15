@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import { mirrorMedia } from '$lib/server/mirror.js';
-import { firebaseApp, getFirebaseStorageBucket, getFirestoreDb } from '$lib/server/firebase-app.js';
+import { getFirebaseApp, getFirebaseStorageBucket, getFirestoreDb } from '$lib/firebase.server.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -8,14 +8,14 @@ export const POST: RequestHandler = async ({ request }) => {
 	const memId = body.mem || '';
 	const userId = body.user || '';
 
-	const db = getFirestoreDb(firebaseApp());
+	const db = getFirestoreDb(getFirebaseApp());
 	return db
 		.doc(`users/${userId}/mems/${memId}`)
 		.get()
 		.then((snap) => {
 			const mem = Object.assign({}, snap.data(), { id: snap.id });
 			const outputPath = `users/${userId}/media`;
-			const bucket = getFirebaseStorageBucket(firebaseApp());
+			const bucket = getFirebaseStorageBucket(getFirebaseApp());
 			return mirrorMedia(mem, bucket, outputPath).then((updatedMem) => {
 				const writable = Object.assign({}, updatedMem);
 				delete writable.id;

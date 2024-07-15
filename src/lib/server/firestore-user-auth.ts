@@ -1,5 +1,6 @@
-import { firebaseApp } from './firebase-app.js';
+import { getFirebaseApp } from '../firebase.server.js';
 import type { DecodedIdToken } from 'firebase-admin/auth';
+import { getAuth } from 'firebase-admin/auth';
 
 // Express middleware that validates Firebase ID Tokens passed in the Authorization HTTP header.
 // The Firebase ID token needs to be passed as a Bearer token in the Authorization HTTP header like this:
@@ -10,12 +11,14 @@ export const validateFirebaseIdToken = async (
 ): Promise<DecodedIdToken | undefined> => {
 	console.log('Check if request is authorized with Firebase ID token');
 
-	const auth = firebaseApp().auth();
+	const auth = getAuth(getFirebaseApp());
 	const headers = req.headers;
 	const cookies = req.cookies;
 
+	const authorizationHeader = headers.get('authorization');
+
 	if (
-		(!headers.get('authorization') || !headers.get('authorization').startsWith('Bearer ')) &&
+		(!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) &&
 		!(cookies && cookies.__session)
 	) {
 		console.error(
@@ -28,14 +31,14 @@ export const validateFirebaseIdToken = async (
 	}
 
 	let idToken;
-	if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+	if (authorizationHeader && authorizationHeader) {
 		console.log('Found "Authorization" header');
 		// Read the ID Token from the Authorization header.
-		idToken = req.headers.authorization.split('Bearer ')[1];
-	} else if (req.cookies) {
+		idToken = authorizationHeader.split('Bearer ')[1];
+	} else if (cookies) {
 		console.log('Found "__session" cookie');
 		// Read the ID Token from cookie.
-		idToken = req.cookies.__session;
+		idToken = cookies.__session;
 	} else {
 		return;
 	}

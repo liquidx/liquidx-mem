@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import { annotateMem } from '$lib/server/annotator.js';
-import { firebaseApp, getFirestoreDb } from '$lib/server/firebase-app.js';
+import { getFirebaseApp, getFirestoreDb } from '$lib/firebase.server';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -9,7 +9,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const memId = body.mem || '';
 	const userId = body.user || '';
 
-	const db = getFirestoreDb(firebaseApp());
+	const db = getFirestoreDb(getFirebaseApp());
 	const snapshot = await db.doc(`users/${userId}/mems/${memId}`).get();
 	if (!snapshot.exists) {
 		return error(404, 'Error: Mem not found');

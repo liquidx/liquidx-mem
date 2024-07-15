@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 
 import { firestoreUpdate } from '$lib/server/firestore-update.js';
-import { firebaseApp, getFirebaseStorageBucket, getFirestoreDb } from '$lib/server/firebase-app.js';
+import { getFirebaseApp, getFirebaseStorageBucket, getFirestoreDb } from '$lib/firebase.server.js';
 import { writeToCloudStorage } from '$lib/server/mirror.js';
 import { validateFirebaseIdToken } from '$lib/server/firestore-user-auth.js';
 
@@ -31,8 +31,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	const userId = validUser.user.uid;
 	const files = [body.image];
 
-	const db = getFirestoreDb(firebaseApp());
-	const bucket = getFirebaseStorageBucket(firebaseApp());
+	const db = getFirestoreDb(getFirebaseApp());
+	const bucket = getFirebaseStorageBucket(getFirebaseApp());
 	const snapshot = await db.doc(`users/${userId}/mems/${memId}`).get();
 
 	if (!snapshot.exists) {

@@ -1,26 +1,26 @@
-import firebaseAdmin from 'firebase-admin';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
 
 import type { Bucket } from '@google-cloud/storage';
 import type { Firestore } from '@google-cloud/firestore';
-import type { app } from 'firebase-admin';
-// import { initializeApp, type App } from 'firebase-admin';
-// import { getFirestore, type Firestore } from 'firebase-admin';
-// import { getStorage } from 'firebase-admin/storage';
-// @ts-expect-error : $lib/env/private exists despite ts warning.
-import { MEM_FIREBASE_ADMIN_KEY } from '$env/static/public';
-let sharedApp: app.App | null = null;
+import { getStorage } from 'firebase/storage';
+import type { QuerySnapshot, DocumentData, DocumentSnapshot } from 'firebase/firestore';
 
-export const firebaseApp = (): app.App => {
+// @ts-expect-error : $lib/env/private exists despite ts warning.
+import { MEM_FIREBASE_ADMIN_KEY } from '$env/static/private';
+let sharedApp: FirebaseApp | null = null;
+
+export const firebaseApp = (): FirebaseApp => {
 	if (!sharedApp) {
-		sharedApp = firebaseAdmin.initializeApp({ credential: MEM_FIREBASE_ADMIN_KEY });
+		const credential = JSON.parse(MEM_FIREBASE_ADMIN_KEY);
+		sharedApp = initializeApp(credential);
 	}
 	return sharedApp;
 };
 
-export const getFirebaseStorageBucket = (firebaseApp: app.App): Bucket => {
-	return firebaseApp.storage().bucket('liquidx-mem.appspot.com');
+export const getFirebaseStorageBucket = (firebaseApp: FirebaseApp): Bucket => {
+	return getStorage(firebaseApp).bucket('liquidx-mem.appspot.com');
 };
 
-export const getFirestoreDb = (firebaseApp: app.App): Firestore => {
-	return firebaseApp.firestore();
+export const getFirestoreDb = (firebaseApp: FirestoreApp): Firestore => {
+	return getFirestore(firebaseApp);
 };
