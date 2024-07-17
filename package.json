@@ -21,6 +21,7 @@
 		"tsc-once": "tsc  --project tsconfig.tool.json"
 	},
 	"dependencies": {
+		"@google-cloud/firestore": "^7.9.0",
 		"@google-cloud/storage": "^6.12.0",
 		"@lucia-auth/adapter-mongodb": "^1.0.3",
 		"axios": "^1.7.2",

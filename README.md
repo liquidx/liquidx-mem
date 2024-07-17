@@ -65,10 +65,10 @@ Instructions to set up for yourself is still work in progress, but the basics ar
 
 2. Create a [service account](https://firebase.google.com/docs/admin/setup) for Firebase/Google by following the instructions.
 
-3. Place credentials in `credentials-firebase-web.json` that have the following :
+3. Place credentials in `.env` that have the following :
 
 ```
-{
+export MEM_FIREBASE_ADMIN_KEY='{
    "apiKey": "AIza...HY",
    "authDomain": "project-name.firebaseapp.com",
    "projectId": "project-name",
@@ -76,7 +76,7 @@ Instructions to set up for yourself is still work in progress, but the basics ar
    "messagingSenderId": "...",
    "appId": "1:5...:web:62...",
    "measurementId": "G-..."
-}
+}'
 ```
 
 # Development

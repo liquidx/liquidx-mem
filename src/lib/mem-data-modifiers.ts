@@ -11,41 +11,68 @@ const serverUrl = '/_api';
 // For debugging.
 //const serverUrl = 'http://localhost:5001/liquidx-mem/us-central1'
 
+export interface MemAddResponse {
+	mem: Mem;
+}
+
 export async function addMem(
 	mem: Mem,
-	collection: CollectionReference<DocumentData>
-): Promise<void> {
+	collection: CollectionReference<DocumentData>,
+	user: User
+): Promise<any> {
 	// API
 	if (clientImpl) {
 		// Firebase client
 		await addDoc(collection, mem);
 		return;
 	} else {
-		const url = `${serverUrl}/add`;
+		const url = `${serverUrl}/mem/add`;
 
 		const body = { text: mem.raw };
-		return axios.post(url, body).then((response) => console.log('addMem', response));
+		const authToken = await user.getIdToken();
+		const headers = {
+			Authorization: `Bearer ${authToken}`
+		};
+
+		return axios.post(url, body, { headers });
 	}
 }
 
-export function deleteMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<void> {
+export async function deleteMem(
+	mem: Mem,
+	collection: CollectionReference<DocumentData>,
+	user: User
+): Promise<any> {
 	if (clientImpl) {
 		// Firebase client
 		return deleteDoc(doc(collection, mem.id));
 	} else {
-		const url = `${serverUrl}/delete`;
-		const body = { mem: mem.id };
-		return axios.post(url, body).then((response) => console.log('deleteMem', response));
+		console.log('deleteMem', mem);
+		const url = `${serverUrl}/mem/del`;
+		const body = { memId: mem.id };
+		const authToken = await user.getIdToken();
+		const headers = {
+			Authorization: `Bearer ${authToken}`
+		};
+
+		return axios
+			.post(url, body, { headers })
+			.then((response) => console.log('deleteMem', response));
 	}
 }
 
-export async function annotateMem(mem: Mem, uid: string): Promise<void> {
+export async function annotateMem(mem: Mem, user: User): Promise<any> {
 	const url = `${serverUrl}/annotate`;
-	const body = { user: uid, mem: mem.id };
-	return axios.post(url, body).then((response) => console.log(response));
+	const body = { user: user.uid, mem: mem.id };
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, body, { headers }).then((response) => console.log(response));
 }
 
-export function archiveMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<void> {
+export function archiveMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<any> {
 	if (clientImpl) {
 		return updateDoc(doc(collection, mem.id), { new: false });
 	}
