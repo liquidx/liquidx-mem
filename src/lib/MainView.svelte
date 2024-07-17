@@ -54,31 +54,35 @@
 
 	$: {
 		if ($sharedUser && $sharedFirestore) {
-			loadMems(filter);
+			loadMems(filter, false);
 			//loadMemsWithFirebase(filter);
 		}
 	}
 
 	$: {
-		visibleMems = mems.slice(0, visiblePages * pageSize);
-		moreMemsAvailable = mems.length > visibleMems.length;
-		console.log('visibleMems', visibleMems.length);
+		visibleMems = mems;
 	}
 
-	const loadMems = async (withFilter: string) => {
+	const loadMems = async (withFilter: string, append: boolean) => {
 		if (!$sharedUser) {
 			return;
 		}
 
 		const result = (await axios.post(`/_api/mem/list`, {
 			userId: $sharedUser.uid,
-			filter: withFilter
+			isArchived: withFilter === '*',
+			pageSize: pageSize,
+			page: visiblePages - 1
 		})) as { data?: MemListResponse };
 
 		if (result.data) {
 			const { data } = result;
 			if (data.status == 'OK' && data.mems) {
-				mems = data.mems;
+				if (append) {
+					mems = [...mems, ...data.mems];
+				} else {
+					mems = data.mems;
+				}
 			}
 		}
 	};
@@ -119,6 +123,7 @@
 
 	const loadMore = () => {
 		visiblePages += 1;
+		loadMems(filter, true);
 		console.log('loadMore', visiblePages);
 	};
 
@@ -129,14 +134,16 @@
 	const annotateMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
 		if (mem && $sharedUser) {
-			await memModifiers.annotateMem(mem, $sharedUser.uid);
+			await memModifiers.annotateMem(mem, $sharedUser);
 		}
 	};
 
 	const deleteMem = (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
-		if (mem && userMemCollection) {
-			memModifiers.deleteMem(mem, userMemCollection);
+		console.log('deleteMem', mem);
+		if (mem && $sharedUser) {
+			memModifiers.deleteMem(mem, userMemCollection, $sharedUser);
+			loadMems(filter, false);
 		}
 	};
 
@@ -185,6 +192,10 @@
 			memModifiers.uploadFilesForMem(mem, files, $sharedUser);
 		}
 	};
+
+	const memDidAdd = (e: CustomEvent) => {
+		loadMems(filter, false);
+	};
 </script>
 
 <svelte:head>
@@ -198,7 +209,7 @@
 		</section>
 	{/if}
 	<main class="p-2 max-w-screen flex-grow md:max-w-xl">
-		<MemAdd />
+		<MemAdd on:memDidAdd={memDidAdd} />
 		<MemList
 			mems={visibleMems}
 			on:annotate={annotateMem}
