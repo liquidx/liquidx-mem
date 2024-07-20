@@ -3,7 +3,7 @@
 
 	import { sharedUser, sharedFirestore } from '$lib/firebase-shared';
 	import type { Mem } from '$lib/common/mems';
-	import * as memModifiers from '$lib/mem-data-modifiers';
+	import * as memModifiers from '$lib/mem.client';
 
 	import MemList from '$lib/svelte/MemList.svelte';
 	import MemAdd from '$lib/svelte/MemAdd.svelte';

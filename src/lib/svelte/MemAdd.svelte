@@ -2,7 +2,7 @@
 	import { DateTime } from 'luxon';
 	import { parseText } from '$lib/common/parser';
 	import { sharedUser } from '$lib/firebase-shared';
-	import { addMem } from '$lib/mem-data-modifiers';
+	import { addMem } from '$lib/mem.client';
 	import { createEventDispatcher } from 'svelte';
 
 	let rawInput: string = '';
