@@ -1,5 +1,5 @@
 <script lang="ts">
-	import MemAdd from '$lib/MemAdd.svelte';
+	import MemAdd from '$lib/svelte/MemAdd.svelte';
 </script>
 
 <div class="flex flex-col w-full overflow-x-hidden md:flex-row">

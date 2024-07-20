@@ -3,8 +3,8 @@
 	// @ts-ignore
 	import { page } from '$app/stores';
 
-	import type { Mem } from '../../../../functions/core/mems';
-	import MemView from '$lib/MemView.svelte';
+	import type { Mem } from '$lib/common/mems';
+	import MemView from '$lib/svelte/MemView.svelte';
 	import { sharedUser, sharedFirestore } from '$lib/firebase-shared';
 	import { executeQueryForMem } from '$lib/mem-data-queries';
 	import { getUserMemCollection } from '$lib/mem-data-collection';

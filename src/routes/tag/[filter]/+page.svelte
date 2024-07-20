@@ -1,7 +1,7 @@
 <script lang="ts">
 	// @ts-ignore
 	import { page } from '$app/stores';
-	import MainView from '$lib/MainView.svelte';
+	import MainView from '$lib/svelte/MainView.svelte';
 
 	let filter: string = '';
 

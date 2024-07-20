@@ -1,10 +1,8 @@
 import { DateTime } from 'luxon';
 import { error, json } from '@sveltejs/kit';
-import { getAuth } from 'firebase-admin/auth';
 
 import type { RequestHandler } from './$types';
 import { parseText } from '$lib/common/parser.js';
-import { userForSharedSecret, USER_NOT_FOUND } from '$lib/server/firestore-user-secrets.js';
 import { firestoreAdd } from '$lib/server/firestore-add.js';
 import { getUserId } from '$lib/server/api.server.js';
 import {
@@ -14,6 +12,7 @@ import {
 	getFirestoreClient
 } from '$lib/firebase.server.js';
 import { memToJson } from '$lib/common/mems';
+import { refreshTagCounts } from '$lib/server/tags.server.js';
 
 export const fallback: RequestHandler = async ({ url, request }) => {
 	let text: string = '';
@@ -74,7 +73,8 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 	mem.addedMs = DateTime.utc().toMillis();
 
 	return firestoreAdd(db, userId, mem)
-		.then(() => {
+		.then(async () => {
+			await refreshTagCounts(db, userId);
 			return json({ mem: memToJson(mem) });
 		})
 		.catch((err) => {

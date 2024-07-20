@@ -2,7 +2,7 @@
 	import { sharedUser } from '$lib/firebase-shared';
 	import { sharedFirebaseApp, sharedFirestore } from '$lib/firebase-shared';
 	import { initializeFirebase, initializeFirestore } from '$lib/firebase-init';
-	import SignIn from '$lib/components/SignIn.svelte';
+	import SignIn from '$lib/svelte/SignIn.svelte';
 	import '../app.css';
 
 	$sharedFirebaseApp = initializeFirebase();

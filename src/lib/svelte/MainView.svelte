@@ -2,14 +2,14 @@
 	import axios from 'axios';
 
 	import { sharedUser, sharedFirestore } from '$lib/firebase-shared';
-	import type { Mem } from '../lib/common/mems';
+	import type { Mem } from '$lib/common/mems';
 	import * as memModifiers from '$lib/mem-data-modifiers';
 
-	import MemList from '$lib/MemList.svelte';
-	import MemAdd from '$lib/MemAdd.svelte';
-	import MoreMem from '$lib/MoreMem.svelte';
-	import MemTagList from '$lib/MemTagList.svelte';
-	import type { MemListResponse } from './request.types';
+	import MemList from '$lib/svelte/MemList.svelte';
+	import MemAdd from '$lib/svelte/MemAdd.svelte';
+	import MoreMem from '$lib/svelte/MoreMem.svelte';
+	import MemTagList from '$lib/svelte/MemTagList.svelte';
+	import type { MemListRequest } from '$lib/request.types';
 
 	export let filter: string = '';
 	export let showTags = true;
@@ -36,16 +36,20 @@
 		const headers = {
 			Authorization: `Bearer ${authToken}`
 		};
-		const params = {
+		const params: MemListRequest = {
 			userId: $sharedUser.uid,
 			isArchived: withFilter === '*',
 			pageSize: pageSize,
 			page: visiblePages - 1
 		};
 
-		const result = (await axios.post(`/_api/mem/list`, params, { headers })) as {
-			data?: MemListResponse;
-		};
+		if (withFilter) {
+			params.allOfTags = withFilter.split(',').map((tag) => `#${tag}`);
+		}
+
+		console.log(params);
+
+		const result = await axios.post(`/_api/mem/list`, params, { headers });
 
 		if (result.data) {
 			const { data } = result;

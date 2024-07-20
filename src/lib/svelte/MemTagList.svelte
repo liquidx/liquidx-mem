@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getTags, getSavedViews } from '$lib/mem-tags';
-	import type { TagListItem } from './common/tags';
-	import { sharedFirestore, sharedUser } from './firebase-shared';
+	import type { TagListItem } from '$lib/common/tags';
+	import { sharedFirestore, sharedUser } from '$lib/firebase-shared';
 
 	let showAll = false;
 	let initialVisibleCount = 30;
