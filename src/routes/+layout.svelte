@@ -29,9 +29,6 @@
 							<a href="/prefs" class="underline">Preferences</a>
 						</li>
 						<li>
-							<a href="/data" class="underline">Data</a>
-						</li>
-						<li>
 							<a href="/about" class="underline">Help & About</a>
 						</li>
 					</ul>

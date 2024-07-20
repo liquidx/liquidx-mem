@@ -14,6 +14,25 @@ export interface MemAddResponse {
 	mem: Mem;
 }
 
+export async function getMem(memId: string, user: User): Promise<Mem | undefined> {
+	const url = `${serverUrl}/mem/get?memId=${memId}`;
+
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.get(url, { headers }).then((response) => {
+		if (response.status != 200) {
+			return;
+		}
+		if (!response.data.mem) {
+			return;
+		}
+		return memFromJson(response.data.mem);
+	});
+}
+
 export async function addMem(mem: Mem, user: User): Promise<Mem | undefined> {
 	const url = `${serverUrl}/mem/add`;
 
