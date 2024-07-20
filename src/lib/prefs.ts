@@ -6,7 +6,6 @@ export const getPrefsCollection = (db: Firestore, user: User) => {
 };
 
 export function getViews(db: Firestore, user: User): Promise<string[] | null> {
-	console.log('getViews');
 	const prefsCollection = getPrefsCollection(db, user);
 	const docRef = doc(prefsCollection, 'views');
 	return getDoc(docRef)
