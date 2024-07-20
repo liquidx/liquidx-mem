@@ -1,6 +1,5 @@
 import openGraphScraper from 'open-graph-scraper';
 import type { Mem, MemPhoto } from '../common/mems.js';
-import { annotateWithTwitterApi, twitterStatusUrlRegex } from './annotator-twitter.js';
 
 import { isResultBlocked } from './annotator-og-blocklist.js';
 
@@ -66,11 +65,7 @@ const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
 
 export const annotateMem = (mem: Mem): Promise<Mem> => {
 	if (mem.url) {
-		if (mem.url.match(twitterStatusUrlRegex)) {
-			return annotateWithTwitterApi(mem, mem.url);
-		} else {
-			return annotateWithOpenGraph(mem, mem.url);
-		}
+		return annotateWithOpenGraph(mem, mem.url);
 	}
 
 	return new Promise((resolve) => {

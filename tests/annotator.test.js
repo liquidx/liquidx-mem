@@ -46,36 +46,4 @@ describe('annotator', () => {
 		const result = await annotateMem(mem);
 		result.should.have.property('descriptionHtml');
 	});
-
-	it('should get twitter images', async () => {
-		const mem = {
-			url: 'https://twitter.com/0_skyblue/status/1404741709548769281'
-		};
-		const result = await annotateMem(mem);
-		result.should.have.property('twitterMedia').with.lengthOf(2);
-	});
-
-	it('should get twitter animated gifs', async () => {
-		const mem = {
-			url: 'https://twitter.com/ggsimm/status/1390017555612512257'
-		};
-		const result = await annotateMem(mem);
-		result.should.have.property('videos').with.lengthOf(1);
-	});
-
-	it('should get twitter entities for long tweets', async () => {
-		const mem = {
-			url: 'https://twitter.com/aemkei/status/1447297123440119824?s=12'
-		};
-		const result = await annotateMem(mem);
-		result.should.have.property('twitterMedia').with.lengthOf(1);
-	});
-
-	it('should get url in tweet', async () => {
-		const mem = {
-			url: 'https://twitter.com/karenklcheung/status/1448862196503482378?s=12'
-		};
-		const result = await annotateMem(mem);
-		result.should.have.property('links').with.lengthOf(1);
-	});
 });
