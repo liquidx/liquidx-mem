@@ -1,11 +1,12 @@
 import { DateTime } from 'luxon';
 import { error, json } from '@sveltejs/kit';
+import { getAuth } from 'firebase-admin/auth';
 
 import type { RequestHandler } from './$types';
 import { parseText } from '$lib/common/parser.js';
 import { userForSharedSecret, USER_NOT_FOUND } from '$lib/server/firestore-user-secrets.js';
 import { firestoreAdd } from '$lib/server/firestore-add.js';
-import { getAuth } from 'firebase-admin/auth';
+import { getUserId } from '$lib/server/api.server.js';
 import {
 	FIREBASE_PROJECT_ID,
 	getFirebaseApp,
@@ -40,18 +41,9 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 
 	const firebaseApp = getFirebaseApp();
 	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
-	let userId = '';
-	if (token) {
-		const decodedToken = await getAuth(firebaseApp).verifyIdToken(token);
-		if (!decodedToken) {
-			return error(403, JSON.stringify({ error: 'Permission denied' }));
-		}
-		userId = decodedToken.uid;
-	} else if (secret) {
-		userId = await userForSharedSecret(db, secret);
-	}
+	const userId = await getUserId(firebaseApp, request);
 
-	if (!userId || userId === USER_NOT_FOUND) {
+	if (!userId) {
 		return error(403, JSON.stringify({ error: 'Permission denied' }));
 	}
 

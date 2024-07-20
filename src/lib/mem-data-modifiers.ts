@@ -38,91 +38,94 @@ export async function addMem(
 	}
 }
 
-export async function deleteMem(
-	mem: Mem,
-	collection: CollectionReference<DocumentData>,
-	user: User
-): Promise<any> {
-	if (clientImpl) {
-		// Firebase client
-		return deleteDoc(doc(collection, mem.id));
-	} else {
-		console.log('deleteMem', mem);
-		const url = `${serverUrl}/mem/del`;
-		const body = { memId: mem.id };
-		const authToken = await user.getIdToken();
-		const headers = {
-			Authorization: `Bearer ${authToken}`
-		};
-
-		return axios
-			.post(url, body, { headers })
-			.then((response) => console.log('deleteMem', response));
-	}
-}
-
-export async function annotateMem(mem: Mem, user: User): Promise<any> {
-	const url = `${serverUrl}/annotate`;
-	const body = { user: user.uid, mem: mem.id };
+export async function deleteMem(mem: Mem, user: User): Promise<any> {
+	console.log('deleteMem', mem);
+	const url = `${serverUrl}/mem/del`;
+	const body = { memId: mem.id };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, body, { headers }).then((response) => console.log(response));
+	return axios.post(url, body, { headers }).then((response) => console.log('deleteMem', response));
 }
 
-export function archiveMem(mem: Mem, collection: CollectionReference<DocumentData>): Promise<any> {
-	if (clientImpl) {
-		return updateDoc(doc(collection, mem.id), { new: false });
-	}
+export async function annotateMem(mem: Mem, user: User): Promise<any> {
+	const url = `${serverUrl}/mem/annotate`;
+	const body = { userId: user.uid, memId: mem.id };
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
 }
 
-export function unarchiveMem(
-	mem: Mem,
-	collection: CollectionReference<DocumentData>
-): Promise<void> {
-	return updateDoc(doc(collection, mem.id), { new: true });
+export async function archiveMem(mem: Mem, user: User): Promise<any> {
+	const url = `${serverUrl}/mem/archive`;
+	const body = { userId: user.uid, memId: mem.id, new: false };
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
 }
 
-export function updateNoteForMem(
-	mem: Mem,
-	note: string,
-	collection: CollectionReference<DocumentData>
-): Promise<void> {
-	const entities = extractEntities(note);
-	const updated = Object.assign({ note: note }, entities);
-	return updateDoc(doc(collection, mem.id), updated).then(() => {
-		console.log('Updated mem', mem.id, updated);
-	});
+export async function unarchiveMem(mem: Mem, user: User): Promise<any> {
+	const url = `${serverUrl}/mem/archive`;
+	const body = { userId: user.uid, memId: mem.id, new: true };
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
 }
 
-export function updateTitleForMem(
-	mem: Mem,
-	title: string,
-	collection: CollectionReference<DocumentData>
-): Promise<void> {
-	const updated = {
+export async function updateNoteForMem(mem: Mem, note: string, user: User): Promise<void> {
+	const url = `${serverUrl}/mem/edit`;
+	const body = { userId: user.uid, memId: mem.id, updates: { note: note } };
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
+}
+
+export async function updateTitleForMem(mem: Mem, title: string, user: User): Promise<void> {
+	const updates = {
 		title: title
 	};
-	return updateDoc(doc(collection, mem.id), updated).then(() => {
-		console.log('Updated mem', mem.id, updated);
-	});
+
+	const url = `${serverUrl}/mem/edit`;
+	const body = { userId: user.uid, memId: mem.id, updates };
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
 }
 
-export function updateDescriptionForMem(
+export async function updateDescriptionForMem(
 	mem: Mem,
 	description: string,
-	collection: CollectionReference<DocumentData>
+	user: User
 ): Promise<void> {
-	const updated = {
+	const updates = {
 		description: description
 	};
-	console.log('updateDescriptionForMem', mem);
 
-	return updateDoc(doc(collection, mem.id), updated).then(() => {
-		console.log('Updated mem', mem.id, updated);
-	});
+	const url = `${serverUrl}/mem/edit`;
+	const body = { userId: user.uid, memId: mem.id, updates };
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
 }
 
 const contentsAsBase64 = (file: File) =>
