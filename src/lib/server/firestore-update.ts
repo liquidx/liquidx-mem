@@ -1,12 +1,12 @@
-import { firestore } from 'firebase-admin';
+import type { Firestore, WriteResult } from '@google-cloud/firestore';
 import type { Mem } from '../common/mems.js';
 
 export const firestoreUpdate = (
-	db: firestore.Firestore,
+	db: Firestore,
 	userId: string,
 	memId: string,
 	mem: Mem
-): Promise<firestore.WriteResult> => {
+): Promise<WriteResult> => {
 	return db
 		.collection('users')
 		.doc(userId)

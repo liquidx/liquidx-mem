@@ -1,11 +1,13 @@
 import { DateTime } from 'luxon';
 import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
+import { getUserId } from '$lib/server/api.server.js';
 
 import { firestoreUpdate } from '$lib/server/firestore-update.js';
-import { getFirebaseApp, getFirebaseStorageBucket, getFirestoreDb } from '$lib/firebase.server.js';
+import { getFirebaseApp, getFirebaseStorageBucket } from '$lib/firebase.server.js';
 import { writeToCloudStorage } from '$lib/server/mirror.js';
-import { validateFirebaseIdToken } from '$lib/server/firestore-user-auth.js';
+import { getFirestoreClient, FIREBASE_PROJECT_ID } from '$lib/firebase.server.js';
+import { memToJson } from '$lib/common/mems';
 
 const getFileExtension = (fileType: string | null): string => {
 	switch (fileType) {
@@ -21,18 +23,19 @@ const getFileExtension = (fileType: string | null): string => {
 };
 
 export const POST: RequestHandler = async ({ request }) => {
-	const validUser = await validateFirebaseIdToken(request);
-	if (!validUser || !validUser.user) {
-		return error(403, 'Unauthorized');
-	}
-
 	const body = await request.json();
 	const memId = body.mem || '';
-	const userId = validUser.user.uid;
 	const files = [body.image];
 
-	const db = getFirestoreDb(getFirebaseApp());
-	const bucket = getFirebaseStorageBucket(getFirebaseApp());
+	const firebaseApp = getFirebaseApp();
+	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
+
+	const userId = await getUserId(firebaseApp, request);
+	if (!userId) {
+		return error(403, JSON.stringify({ error: 'Permission denied' }));
+	}
+
+	const bucket = getFirebaseStorageBucket(firebaseApp);
 	const snapshot = await db.doc(`users/${userId}/mems/${memId}`).get();
 
 	if (!snapshot.exists) {
@@ -60,7 +63,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	return firestoreUpdate(db, userId, memId, mem)
 		.then(() => {
-			return json({ status: 'OK' });
+			return json({ mem: memToJson(mem) });
 		})
 		.catch((err) => {
 			error(500, `Error saving: ${err}`);

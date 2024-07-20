@@ -261,23 +261,13 @@
 			</div>
 		{/if}
 
-		{#if mem.description}
-			<div
-				class="my-2 p-4 text-gray-400 bg-gray-50 rounded-xl"
-				contenteditable="true"
-				on:blur={descriptionDidChange}
-			>
-				{getShortDescription()}
-			</div>
-		{:else}
-			<div
-				class="my-2 p-4 text-gray-400 bg-gray-50 rounded-xl"
-				contenteditable="true"
-				on:blur={descriptionDidChange}
-			>
-				No description
-			</div>
-		{/if}
+		<div
+			class="my-2 p-4 text-gray-400 bg-gray-50 rounded-xl"
+			contenteditable="true"
+			on:blur={descriptionDidChange}
+		>
+			{getShortDescription()}
+		</div>
 
 		{#if displayVideos}
 			<div class="videos">
