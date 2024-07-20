@@ -47,8 +47,6 @@
 			params.allOfTags = withFilter.split(',').map((tag) => `#${tag}`);
 		}
 
-		console.log(params);
-
 		const result = await axios.post(`/_api/mem/list`, params, { headers });
 
 		if (result.data) {

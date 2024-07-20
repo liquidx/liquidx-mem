@@ -3,7 +3,7 @@ import axios from 'axios';
 import type { Firestore } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { getViews } from './prefs';
-import type { TagListItem } from './server/tags';
+import type { TagListItem } from './server/tags.server';
 
 const serverUrl = '/_api';
 // For debugging.
