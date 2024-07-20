@@ -6,6 +6,33 @@ import { isResultBlocked } from './annotator-og-blocklist.js';
 // TODO: Type not exporting properly.
 const getOpenGraph = openGraphScraper as any;
 
+const ogImageToPhotos = (ogImage: any): MemPhoto[] => {
+	let ogImages = [];
+	if (Array.isArray(ogImage)) {
+		ogImages = ogImage;
+	} else {
+		ogImages = [ogImage];
+	}
+
+	return ogImages.map((image: any) => {
+		const photo: MemPhoto = {
+			mediaUrl: image.url
+		};
+		if (
+			'width' in image &&
+			'height' in image &&
+			typeof image.width === 'string' &&
+			typeof image.height === 'string'
+		) {
+			photo.size = {
+				w: parseInt(image.width),
+				h: parseInt(image.height)
+			};
+		}
+		return photo;
+	});
+};
+
 const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
 	const annotated: Mem = Object.assign({}, mem);
 	const request = {
@@ -37,28 +64,7 @@ const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
 					annotated.description = result.ogDescription;
 				}
 				if (result.ogImage) {
-					if ('url' in result.ogImage) {
-						// Make sure the URL is absolute.
-						if (!result.ogImage.url.startsWith('http')) {
-							result.ogImage.url = new URL(result.ogImage.url, url).href;
-						}
-
-						const photo: MemPhoto = {
-							mediaUrl: result.ogImage.url
-						};
-						if (
-							'width' in result.ogImage &&
-							'height' in result.ogImage &&
-							typeof result.ogImage.width === 'string' &&
-							typeof result.ogImage.height === 'string'
-						) {
-							photo.size = {
-								w: parseInt(result.ogImage.width),
-								h: parseInt(result.ogImage.height)
-							};
-						}
-						annotated.photos = [photo];
-					}
+					annotated.photos = ogImageToPhotos(result.ogImage);
 				}
 			}
 			return annotated;
