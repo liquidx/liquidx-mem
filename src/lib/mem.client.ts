@@ -1,6 +1,10 @@
 import axios from 'axios';
-import { memFromJson, type Mem } from './common/mems';
 import type { User } from 'firebase/auth';
+
+import { memFromJson, type Mem } from './common/mems';
+import type { TagListItem } from './server/tags.server';
+import { iconForTag } from './tags';
+import type { PrefsViews, PrefsSecrets } from './common/prefs';
 
 const serverUrl = '/_api';
 // For debugging.
@@ -249,3 +253,79 @@ export async function uploadFilesForMem(
 			return undefined;
 		});
 }
+
+export const getSavedViews = async (user: User): Promise<PrefsViews | undefined> => {
+	const url = `${serverUrl}/prefs?key=views`;
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.get(url, { headers }).then((response) => {
+		const views = response.data.settings as PrefsViews;
+		return views;
+	});
+};
+
+export const updateSavedViews = async (user: User, settings: PrefsViews): Promise<void> => {
+	const url = `${serverUrl}/prefs`;
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, { key: 'views', settings }, { headers }).then((response) => {
+		return;
+	});
+};
+
+export const getSecrets = async (user: User): Promise<PrefsSecrets> => {
+	const url = `${serverUrl}/prefs?key=secrets`;
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.get(url, { headers }).then((response) => {
+		const views = response.data.settings as PrefsSecrets;
+		return views;
+	});
+};
+
+export const updateSecrets = async (user: User, settings: PrefsSecrets): Promise<void> => {
+	const url = `${serverUrl}/prefs`;
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, { key: 'secrets', settings }, { headers }).then((response) => {
+		return;
+	});
+};
+
+export const getTags = async (user: User) => {
+	const url = `${serverUrl}/tag/count`;
+	const body = { userId: user.uid };
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, body, { headers }).then((response) => {
+		if (response.status != 200) {
+			return [];
+		}
+
+		if (!response.data.counts) {
+			return [];
+		}
+
+		const tags = response.data.counts;
+		tags.map((tag: TagListItem) => {
+			tag.icon = iconForTag(tag.tag);
+			return tag;
+		});
+		return tags;
+	});
+};

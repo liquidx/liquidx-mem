@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { getUserMemCollection } from '$lib/mem-data-collection';
-	import { addMem } from '$lib/mem-data-modifiers';
+	import { addMem } from '$lib/mem.client';
 	import { executeQuery, queryForAllMems } from '$lib/mem-data-queries';
 	import { type Mem, memFromJson } from '$lib/common/mems';
-	import { sharedUser, sharedFirestore } from '$lib/firebase-shared';
+	import { sharedUser } from '$lib/firebase-shared';
+
 	let importMems = [] as Mem[];
 	let fileInput: HTMLInputElement;
 
@@ -14,7 +15,8 @@
 	}
 
 	const loadMems = async () => {
-		if ($sharedUser && $sharedFirestore) {
+		if ($sharedUser) {
+			let mems = await loadMems();
 			let query = queryForAllMems(getUserMemCollection($sharedFirestore, $sharedUser));
 			return executeQuery(query);
 		}

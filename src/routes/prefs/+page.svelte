@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { getViews, getWriteSecret, updateViews, updateWriteSecret } from '$lib/prefs';
+	import { getSavedViews, updateSavedViews, getSecrets, updateSecrets } from '$lib/mem.client.js';
 	import { sharedFirestore, sharedUser } from '$lib/firebase-shared';
 
-	let writeSecret = '';
+	let writeSecret: string = '';
 	let views: string[] = [];
 	let newView = '';
 
@@ -18,9 +18,9 @@
 			return;
 		}
 
-		let result = await getViews($sharedFirestore, $sharedUser);
-		if (result) {
-			views = result;
+		let settings = await getSavedViews($sharedUser);
+		if (settings) {
+			views = settings.views;
 			console.log('views', views);
 		}
 	};
@@ -30,7 +30,7 @@
 		if (!$sharedFirestore || !$sharedUser) {
 			return;
 		}
-		updateViews($sharedFirestore, $sharedUser, views);
+		updateSavedViews($sharedUser, { views: views });
 	};
 
 	const addView = () => {
@@ -52,21 +52,21 @@
 	};
 
 	const loadWriteSecret = async () => {
-		if (!$sharedUser || !$sharedFirestore) {
+		if (!$sharedUser) {
 			return;
 		}
 
-		let result = await getWriteSecret($sharedFirestore, $sharedUser);
-		if (result) {
-			writeSecret = result;
+		let settings = await getSecrets($sharedUser);
+		if (settings && settings.writeSecret) {
+			writeSecret = settings.writeSecret;
 		}
 	};
 
 	const saveWriteSecret = () => {
-		if (!$sharedFirestore || !$sharedUser) {
+		if (!$sharedUser) {
 			return;
 		}
-		updateWriteSecret($sharedFirestore, $sharedUser, writeSecret);
+		updateSecrets($sharedUser, { writeSecret });
 	};
 </script>
 

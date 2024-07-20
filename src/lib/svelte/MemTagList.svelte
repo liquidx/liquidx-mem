@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getTags, getSavedViews } from '$lib/mem-tags';
+	import { getTags, getSavedViews } from '$lib/mem.client.js';
 	import type { TagListItem } from '$lib/common/tags';
 	import { sharedFirestore, sharedUser } from '$lib/firebase-shared';
 
@@ -10,7 +10,7 @@
 	let visibleTags: TagListItem[] = [];
 
 	$: {
-		if ($sharedFirestore && $sharedUser) {
+		if ($sharedUser) {
 			getData();
 		}
 	}
@@ -20,11 +20,11 @@
 	}
 
 	const getData = async () => {
-		if ($sharedFirestore && $sharedUser) {
-			tags = await getTags($sharedFirestore, $sharedUser);
-			let result = await getSavedViews($sharedFirestore, $sharedUser);
-			if (result) {
-				views = result;
+		if ($sharedUser) {
+			tags = await getTags($sharedUser);
+			let result = await getSavedViews($sharedUser);
+			if (result && result.views) {
+				views = result.views;
 			}
 		}
 	};

@@ -19,3 +19,12 @@ export interface MemAddResponse {
 	mem?: Mem;
 	error?: string;
 }
+
+export interface SettingsWriteRequest {
+	key: string;
+	settings: any;
+}
+export interface SettingsReadResponse {
+	key: string;
+	settings: any;
+}
