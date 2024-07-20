@@ -13,9 +13,9 @@
 	{#if moreAvailable}
 		<button
 			on:click={loadMoreDidClick}
-			class="px-6 py-1 rounded-xl bg-gray-700 text-gray-100 font-bold hover:bg-gray-400"
+			class="px-4 py-2 my-4 rounded-xl text-gray-600 font-bold hover:shadow-lg border border-gray-200 shadow-sm"
 		>
-			More &gt;
+			More
 		</button>
 	{:else}
 		<div>That's it.</div>

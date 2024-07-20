@@ -1,13 +1,36 @@
-import { annotateMem } from '$lib/server/annotator.js';
 import { error, json } from '@sveltejs/kit';
-import { getAuth } from 'firebase-admin/auth';
+import type { Firestore } from '@google-cloud/firestore';
+
 import type { RequestHandler } from './$types';
-import { USER_NOT_FOUND } from '$lib/server/firestore-user-secrets.js';
-import { getFirebaseApp, getFirestoreClient, FIREBASE_PROJECT_ID } from '$lib/firebase.server.js';
+import type { Mem } from '$lib/common/mems';
+import {
+	getFirebaseApp,
+	getFirestoreClient,
+	getFirebaseStorageBucket,
+	FIREBASE_PROJECT_ID
+} from '$lib/firebase.server.js';
 import { getMem } from '$lib/server/mem';
 import { memToJson } from '$lib/common/mems';
-import type { Mem } from '$lib/common/mems';
 import { getUserId } from '$lib/server/api.server.js';
+import { annotateMem } from '$lib/server/annotator.js';
+import { mirrorMedia } from '$lib/server/mirror.js';
+import { firestoreUpdate } from '$lib/server/firestore-update.js';
+
+const doMirror = async (
+	db: Firestore,
+	memId: string,
+	mem: Mem,
+	userId: string
+): Promise<Mem | void> => {
+	const outputPath = `users/${userId}/media`;
+	const bucket = getFirebaseStorageBucket(getFirebaseApp());
+	const updatedMem = await mirrorMedia(mem, bucket, outputPath);
+	delete updatedMem.id;
+	const result = await firestoreUpdate(db, userId, memId, updatedMem);
+	if (result) {
+		return updatedMem;
+	}
+};
 
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json();
@@ -16,6 +39,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	if (!memId) {
 		return error(400, JSON.stringify({ error: 'No mem id' }));
 	}
+
+	console.log('annotate mem', memId);
 
 	const firebaseApp = getFirebaseApp();
 	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
@@ -31,7 +56,13 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	const mem = memSnap.data() as unknown as Mem;
-	const updatedMem = await annotateMem(mem);
+
+	let updatedMem = await annotateMem(mem);
+	const updatedMemWithMedia = await doMirror(db, memId, updatedMem, userId);
+	if (updatedMemWithMedia) {
+		updatedMem = updatedMemWithMedia;
+	}
+	console.log('updatedMem', updatedMem);
 	if (updatedMem) {
 		return json({ mem: memToJson(updatedMem) });
 	}
