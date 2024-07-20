@@ -1,4 +1,4 @@
-import { writable, type Writable } from 'svelte/store'
+import { writable, type Writable } from 'svelte/store';
 import type { FirebaseApp } from 'firebase/app';
 import type { Firestore } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
