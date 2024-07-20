@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { Bucket } from '@google-cloud/storage';
 import md5 from 'md5';
-import m3u8stream from 'm3u8stream';
 import m3u8 from 'm3u8';
 
 import type { Mem } from '../common/mems.js';
@@ -81,32 +80,6 @@ const getBestStreamUrl = async (streamUrl: string) => {
 	return bestStreamUrl;
 };
 
-// Downloads and writes a video stream to cloud storage.
-const writeVideoStreamToCloudStorage = async (
-	bucket: Bucket,
-	storagePath: string,
-	streamUrl: any
-) => {
-	const bestStreamUrl = await getBestStreamUrl(streamUrl);
-	console.log(` -- best stream ${bestStreamUrl}`);
-
-	return new Promise((resolve, reject) => {
-		const inputStream = m3u8stream(bestStreamUrl);
-		const storageFile = bucket.file(storagePath);
-		const outputStream = storageFile.createWriteStream();
-		// Write mediaURL stream to cloud storage.
-		inputStream.on('finish', () => {
-			console.log('finished.');
-			resolve(null);
-		});
-		inputStream.on('error', (err) => {
-			console.log('error getting stream', err);
-			reject(err);
-		});
-		inputStream.pipe(outputStream);
-	});
-};
-
 export const mirrorMedia = async (mem: Mem, bucket: Bucket, outputPath: string): Promise<Mem> => {
 	const requests = [];
 
@@ -140,19 +113,7 @@ export const mirrorMedia = async (mem: Mem, bucket: Bucket, outputPath: string):
 					const destinationSubpath = mediaUrl.host.replace(/\./g, '_');
 
 					const extension = mediaUrl.pathname.split('.').pop();
-					if (media.contentType == 'application/x-mpegURL') {
-						const destinationPath = `${outputPath}/${destinationSubpath}/${destinationFilename}.mp4`;
-						console.log(` -- stream ${media.mediaUrl} to ${destinationPath}}`);
-						const request = writeVideoStreamToCloudStorage(
-							bucket,
-							destinationPath,
-							media.mediaUrl
-						).then(() => {
-							media.cachedMediaPath = destinationPath;
-							return media;
-						});
-						requests.push(request);
-					} else {
+					if (media.contentType != 'application/x-mpegURL') {
 						const destinationPath = `${outputPath}/${destinationSubpath}/${destinationFilename}.${extension}`;
 						const request = writeMediaToCloudStorage(bucket, destinationPath, media.mediaUrl).then(
 							() => {

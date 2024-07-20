@@ -1,8 +1,9 @@
 <script lang="ts">
-	import type { Mem } from '../lib/common/mems';
 	import { DateTime } from 'luxon';
 	import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 	import { createEventDispatcher } from 'svelte';
+
+	import type { Mem } from '$lib/common/mems';
 	import { sharedFirebaseApp } from '$lib/firebase-shared';
 
 	type MediaUrl = {

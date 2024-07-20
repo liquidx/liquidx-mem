@@ -1,9 +1,13 @@
-import { getUserTagIndexDoc } from '../lib/mem-data-collection';
+import axios from 'axios';
+
 import type { Firestore } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { getViews } from './prefs';
-import { getDoc } from 'firebase/firestore';
-import type { IndexTagDocument, TagListItem } from './server/tags';
+import type { TagListItem } from './server/tags';
+
+const serverUrl = '/_api';
+// For debugging.
+//const serverUrl = 'http://localhost:5001/liquidx-mem/us-central1'
 
 export const getSavedViews = async (firestore: Firestore, user: User) => {
 	const views = await getViews(firestore, user);
@@ -11,21 +15,31 @@ export const getSavedViews = async (firestore: Firestore, user: User) => {
 };
 
 export const getTags = async (firestore: Firestore, user: User) => {
-	const tagCountDoc = getUserTagIndexDoc(firestore, user);
-	const tags = await getDoc(tagCountDoc).then((doc) => {
-		if (doc.exists()) {
-			const docData = doc.data() as IndexTagDocument;
-			const tags = docData.counts;
-			console.log(docData);
-			tags.map((tag: TagListItem) => {
-				tag.icon = iconForTag(tag.tag);
-				return tag;
-			});
-			return tags;
+	const url = `${serverUrl}/tag/count`;
+	const body = { userId: user.uid };
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, body, { headers }).then((response) => {
+		if (response.status != 200) {
+			return [];
 		}
-		return [];
+
+		if (!response.data.counts) {
+			return [];
+		}
+
+		console.log(response.data);
+
+		const tags = response.data.counts;
+		tags.map((tag: TagListItem) => {
+			tag.icon = iconForTag(tag.tag);
+			return tag;
+		});
+		return tags;
 	});
-	return tags;
 };
 
 export const iconForTag = (tag: string) => {
