@@ -15,6 +15,7 @@ credentials-*.json
 # svelte
 /build
 /.svelte-kit
+/.vercel
 /package
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
