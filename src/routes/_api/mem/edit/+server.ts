@@ -8,6 +8,7 @@ import type { Mem } from '$lib/common/mems';
 import { getUserId } from '$lib/server/api.server.js';
 import { firestoreUpdate } from '$lib/server/firestore-update.js';
 import { extractEntities } from '$lib/common/parser.js';
+import { refreshTagCounts } from '$lib/server/tags.server.js';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json();
@@ -53,5 +54,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		return error(500, JSON.stringify({ error: 'Error updating mem' }));
 	}
 
-	return json({ mem: memToJson(mem) });
+	await refreshTagCounts(db, userId);
+	const resultMem = Object.assign({}, mem, { id: memId });
+	return json({ mem: memToJson(resultMem) });
 };
