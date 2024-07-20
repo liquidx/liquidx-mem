@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { DateTime } from 'luxon';
 	import { parseText } from '$lib/common/parser';
-	import { sharedUser, sharedFirestore } from '$lib/firebase-shared';
-	import { getUserMemCollection } from '$lib/mem-data-collection';
+	import { sharedUser } from '$lib/firebase-shared';
 	import { addMem } from '$lib/mem-data-modifiers';
 	import { createEventDispatcher } from 'svelte';
 
@@ -10,7 +9,7 @@
 	const dispatch = createEventDispatcher();
 
 	const addNewMem = async () => {
-		if (!$sharedFirestore || !$sharedUser || !rawInput) {
+		if (!$sharedUser || !rawInput) {
 			return;
 		}
 
@@ -19,10 +18,9 @@
 		mem.new = true;
 		mem.addedMs = DateTime.utc().toMillis();
 
-		let collection = getUserMemCollection($sharedFirestore, $sharedUser);
-		const result = await addMem(mem, collection, $sharedUser);
-		if (result) {
-			dispatch('memDidAdd', result.mem);
+		const addedMem = await addMem(mem, $sharedUser);
+		if (addedMem) {
+			dispatch('memDidAdd', { mem: addedMem });
 		}
 		rawInput = '';
 	};

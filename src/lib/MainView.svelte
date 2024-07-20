@@ -2,10 +2,7 @@
 	import axios from 'axios';
 
 	import { sharedUser, sharedFirestore } from '$lib/firebase-shared';
-	import type { CollectionReference, Query } from 'firebase/firestore';
-	import { onSnapshot } from 'firebase/firestore';
 	import type { Mem } from '../lib/common/mems';
-	import { unwrapDocs } from '$lib/firebase-init';
 	import * as memModifiers from '$lib/mem-data-modifiers';
 
 	import MemList from '$lib/MemList.svelte';
@@ -19,9 +16,7 @@
 
 	let pageSize = 30;
 	let visiblePages = 1;
-	let userMemCollection: CollectionReference | null = null;
 	let mems: Mem[] = [];
-	let visibleMems: Mem[] = [];
 	let moreMemsAvailable = true;
 
 	// Firestore
@@ -30,10 +25,6 @@
 		if ($sharedUser && $sharedFirestore) {
 			loadMems(filter, false);
 		}
-	}
-
-	$: {
-		visibleMems = mems;
 	}
 
 	const loadMems = async (withFilter: string, append: boolean) => {
@@ -172,6 +163,7 @@
 	};
 
 	const memDidAdd = (e: CustomEvent) => {
+		//const mem = e.detail.mem;
 		loadMems(filter, false);
 	};
 </script>
@@ -189,7 +181,7 @@
 	<main class="p-2 max-w-screen flex-grow md:max-w-xl">
 		<MemAdd on:memDidAdd={memDidAdd} />
 		<MemList
-			mems={visibleMems}
+			{mems}
 			on:annotate={annotateMem}
 			on:archive={archiveMem}
 			on:unarchive={unarchiveMem}
