@@ -1,7 +1,7 @@
 <script lang="ts">
 	import axios from 'axios';
 
-	import { sharedUser, sharedFirestore } from '$lib/firebase-shared';
+	import { sharedUser } from '$lib/firebase-shared';
 	import type { Mem } from '$lib/common/mems';
 	import * as memModifiers from '$lib/mem.client';
 
@@ -22,7 +22,7 @@
 	// Firestore
 
 	$: {
-		if ($sharedUser && $sharedFirestore) {
+		if ($sharedUser) {
 			loadMems(filter, false);
 		}
 	}
