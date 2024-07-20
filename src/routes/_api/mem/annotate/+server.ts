@@ -16,7 +16,7 @@ import { annotateMem } from '$lib/server/annotator.js';
 import { mirrorMedia } from '$lib/server/mirror.js';
 import { firestoreUpdate } from '$lib/server/firestore-update.js';
 
-const doMirror = async (
+const mirrorMediaInMem = async (
 	db: Firestore,
 	memId: string,
 	mem: Mem,
@@ -57,7 +57,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const mem = memSnap.data() as unknown as Mem;
 
 	let updatedMem = await annotateMem(mem);
-	const updatedMemWithMedia = await doMirror(db, memId, updatedMem, userId);
+	const updatedMemWithMedia = await mirrorMediaInMem(db, memId, updatedMem, userId);
 	if (updatedMemWithMedia) {
 		updatedMem = updatedMemWithMedia;
 	}
