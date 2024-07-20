@@ -25,7 +25,6 @@ const doMirror = async (
 	const outputPath = `users/${userId}/media`;
 	const bucket = getFirebaseStorageBucket(getFirebaseApp());
 	const updatedMem = await mirrorMedia(mem, bucket, outputPath);
-	delete updatedMem.id;
 	const result = await firestoreUpdate(db, userId, memId, updatedMem);
 	if (result) {
 		return updatedMem;
