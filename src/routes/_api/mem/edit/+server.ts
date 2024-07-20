@@ -7,6 +7,7 @@ import { memToJson } from '$lib/common/mems';
 import type { Mem } from '$lib/common/mems';
 import { getUserId } from '$lib/server/api.server.js';
 import { firestoreUpdate } from '$lib/server/firestore-update.js';
+import { extractEntities } from '$lib/common/parser.js';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json();
@@ -32,14 +33,19 @@ export const POST: RequestHandler = async ({ request }) => {
 		return error(500, JSON.stringify({ error: 'Error getting mem' }));
 	}
 
-	const mem = memSnap.data() as unknown as Mem;
+	let mem = memSnap.data() as unknown as Mem;
 	if (!mem) {
 		return error(404, JSON.stringify({ error: 'Mem not found' }));
 	}
 
-	// TODO: Update the mem with the new data in the request.
+	// Update the mem with the new data in the request.
 	for (const key in updates) {
 		mem[key as keyof Mem] = updates[key];
+	}
+
+	// Post processing of any edits to note.
+	if (mem.note) {
+		mem = Object.assign(mem, extractEntities(mem.note));
 	}
 
 	const result = await firestoreUpdate(db, userId, memId, mem);

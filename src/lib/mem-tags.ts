@@ -31,8 +31,6 @@ export const getTags = async (firestore: Firestore, user: User) => {
 			return [];
 		}
 
-		console.log(response.data);
-
 		const tags = response.data.counts;
 		tags.map((tag: TagListItem) => {
 			tag.icon = iconForTag(tag.tag);
