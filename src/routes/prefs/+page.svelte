@@ -1,20 +1,20 @@
 <script lang="ts">
 	import { getSavedViews, updateSavedViews, getSecrets, updateSecrets } from '$lib/mem.client.js';
-	import { sharedFirestore, sharedUser } from '$lib/firebase-shared';
+	import { sharedUser } from '$lib/firebase-shared';
 
 	let writeSecret: string = '';
 	let views: string[] = [];
 	let newView = '';
 
 	$: {
-		if ($sharedUser && $sharedFirestore) {
+		if ($sharedUser) {
 			loadWriteSecret();
 			loadViews();
 		}
 	}
 
 	const loadViews = async () => {
-		if (!$sharedUser || !$sharedFirestore) {
+		if (!$sharedUser) {
 			return;
 		}
 
@@ -27,7 +27,7 @@
 
 	const saveViews = () => {
 		console.log('saveViews');
-		if (!$sharedFirestore || !$sharedUser) {
+		if (!$sharedUser) {
 			return;
 		}
 		updateSavedViews($sharedUser, { views: views });

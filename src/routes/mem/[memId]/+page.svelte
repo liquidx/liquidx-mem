@@ -5,9 +5,8 @@
 
 	import type { Mem } from '$lib/common/mems';
 	import MemView from '$lib/svelte/MemView.svelte';
-	import { sharedUser, sharedFirestore } from '$lib/firebase-shared';
-	import { executeQueryForMem } from '$lib/mem-data-queries';
-	import { getUserMemCollection } from '$lib/mem-data-collection';
+	import { sharedUser } from '$lib/firebase-shared';
+	import { getMem } from '$lib/mem.client';
 
 	let mem: Mem | undefined;
 
@@ -17,16 +16,15 @@
 	});
 
 	$: {
-		if ($sharedUser && $sharedFirestore && $page.params.memId) {
+		if ($sharedUser && $page.params.memId) {
 			let memId = $page.params.memId;
 			loadMem(memId);
 		}
 	}
 
 	const loadMem = async (memId: string) => {
-		if ($sharedUser && $sharedFirestore && memId) {
-			let collection = getUserMemCollection($sharedFirestore, $sharedUser);
-			mem = await executeQueryForMem(collection, memId);
+		if ($sharedUser && memId) {
+			mem = await getMem(memId, $sharedUser);
 		}
 	};
 </script>
