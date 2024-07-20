@@ -1,11 +1,6 @@
 import axios from 'axios';
 import { memFromJson, type Mem } from './common/mems';
-import { extractEntities } from './common/parser';
-import { CollectionReference, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import type { DocumentData } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-
-const clientImpl = false;
 
 const serverUrl = '/_api';
 // For debugging.
@@ -15,35 +10,24 @@ export interface MemAddResponse {
 	mem: Mem;
 }
 
-export async function addMem(
-	mem: Mem,
-	collection: CollectionReference<DocumentData>,
-	user: User
-): Promise<Mem | undefined> {
-	// API
-	if (clientImpl) {
-		// Firebase client
-		await addDoc(collection, mem);
-		return;
-	} else {
-		const url = `${serverUrl}/mem/add`;
+export async function addMem(mem: Mem, user: User): Promise<Mem | undefined> {
+	const url = `${serverUrl}/mem/add`;
 
-		const body = { text: mem.raw };
-		const authToken = await user.getIdToken();
-		const headers = {
-			Authorization: `Bearer ${authToken}`
-		};
+	const body = { text: mem.raw };
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
 
-		return axios.post(url, body, { headers }).then((response) => {
-			if (response.status != 200) {
-				return;
-			}
-			if (!response.data.mem) {
-				return;
-			}
-			return memFromJson(response.data.mem);
-		});
-	}
+	return axios.post(url, body, { headers }).then((response) => {
+		if (response.status != 200) {
+			return;
+		}
+		if (!response.data.mem) {
+			return;
+		}
+		return memFromJson(response.data.mem);
+	});
 }
 
 export async function deleteMem(mem: Mem, user: User): Promise<string | undefined> {
@@ -252,16 +236,16 @@ export async function uploadFilesForMem(
 		.then((response) => {
 			if (onFinish) onFinish();
 			if (response.status != 200) {
-				return;
+				return undefined;
 			}
 			if (!response.data.mem) {
-				return;
+				return undefined;
 			}
 			const mem = memFromJson(response.data.mem);
 			return mem;
 		})
 		.catch(() => {
 			if (onFinish) onFinish();
-			return;
+			return undefined;
 		});
 }
