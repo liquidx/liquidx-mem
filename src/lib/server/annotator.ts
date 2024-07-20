@@ -28,6 +28,7 @@ const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
 			}
 
 			const result = response.result;
+			console.log('Annotation result:', result);
 			if (result && !isResultBlocked(result)) {
 				if (result.ogTitle) {
 					annotated.title = result.ogTitle;
