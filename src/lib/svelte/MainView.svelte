@@ -85,7 +85,10 @@
 	const annotateMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
 		if (mem && $sharedUser) {
-			await memModifiers.annotateMem(mem, $sharedUser);
+			const updatedMem = await memModifiers.annotateMem(mem, $sharedUser);
+			if (updatedMem) {
+				updateVisibleMems(mems, updatedMem);
+			}
 		}
 	};
 
