@@ -1,9 +1,4 @@
-import {
-	getFirebaseApp,
-	getFirestoreDb,
-	getFirestoreClient,
-	FIREBASE_PROJECT_ID
-} from '$lib/firebase.server.js';
+import { getFirebaseApp, getFirestoreClient, FIREBASE_PROJECT_ID } from '$lib/firebase.server.js';
 import type {
 	DocumentSnapshot,
 	QuerySnapshot,
@@ -16,6 +11,7 @@ import type { Mem } from '$lib/common/mems';
 import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import type { MemListRequest, MemListResponse } from '$lib/request.types';
+import { getUserId } from '$lib/server/api.server.js';
 
 const getMems = async (db: Firestore, request: MemListRequest) => {
 	let ref: CollectionReference<DocumentData> | Query<DocumentData> = db.collection(
@@ -57,13 +53,25 @@ const getMems = async (db: Firestore, request: MemListRequest) => {
 
 export const POST: RequestHandler = async ({ request }) => {
 	const body = (await request.json()) as MemListRequest;
-	const userId = body.userId || '';
+	const requestUserId = body.userId || '';
 
-	if (!userId) {
+	if (!requestUserId) {
 		return error(500, 'Missing user');
 	}
 
+	const firebaseApp = getFirebaseApp();
 	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
+
+	const userId = await getUserId(firebaseApp, request);
+	if (!userId) {
+		return error(403, JSON.stringify({ error: 'Permission denied' }));
+	}
+
+	if (requestUserId != userId) {
+		// Currently all users are private.
+		return error(403, JSON.stringify({ error: 'Permission denied' }));
+	}
+
 	const mems = await getMems(db, body).catch((err: Error) => {
 		console.log('Error: ' + err.toString());
 		return error(500, 'Error: ' + err.toString());

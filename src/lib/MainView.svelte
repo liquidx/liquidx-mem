@@ -68,12 +68,20 @@
 			return;
 		}
 
-		const result = (await axios.post(`/_api/mem/list`, {
+		const authToken = await $sharedUser.getIdToken();
+		const headers = {
+			Authorization: `Bearer ${authToken}`
+		};
+		const params = {
 			userId: $sharedUser.uid,
 			isArchived: withFilter === '*',
 			pageSize: pageSize,
 			page: visiblePages - 1
-		})) as { data?: MemListResponse };
+		};
+
+		const result = (await axios.post(`/_api/mem/list`, params, { headers })) as {
+			data?: MemListResponse;
+		};
 
 		if (result.data) {
 			const { data } = result;
@@ -86,40 +94,6 @@
 			}
 		}
 	};
-
-	async function loadMemsWithFirebase(withFilter: string) {
-		if (!$sharedUser || !$sharedFirestore) {
-			return;
-		}
-
-		console.log('loadMemsWithFirebase', withFilter);
-		userMemCollection = getUserMemCollection($sharedFirestore, $sharedUser);
-		let conditions = getFilterCondition(withFilter);
-
-		if (conditions.filterTags.length > 0) {
-			// Tag filtered mems.
-			// TODO: Cannot do subscribe because of the way the query is constructed.
-			mems = await executeQueryForTaggedMems(
-				userMemCollection,
-				conditions.filterTags,
-				conditions.filterStrategy,
-				pageSize
-			);
-			visiblePages = 1;
-		} else if (conditions.archivedOnly) {
-			let query = queryForArchivedMems(userMemCollection);
-			mems = await executeQuery(query);
-			subscribeChanges(query);
-			visiblePages = 1;
-		} else {
-			let query = queryForNewMems(userMemCollection);
-			mems = await executeQuery(query);
-			subscribeChanges(query);
-			visiblePages = 1;
-		}
-
-		console.log('mems', mems.length);
-	}
 
 	const loadMore = () => {
 		visiblePages += 1;
@@ -142,7 +116,7 @@
 		let mem: Mem = e.detail.mem;
 		console.log('deleteMem', mem);
 		if (mem && $sharedUser) {
-			memModifiers.deleteMem(mem, userMemCollection, $sharedUser);
+			memModifiers.deleteMem(mem, $sharedUser);
 			loadMems(filter, false);
 		}
 	};
@@ -150,14 +124,14 @@
 	const archiveMem = (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
 		if (mem && userMemCollection) {
-			memModifiers.archiveMem(mem, userMemCollection);
+			memModifiers.archiveMem(mem, $sharedUser);
 		}
 	};
 
 	const unarchiveMem = (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
 		if (mem && userMemCollection) {
-			memModifiers.unarchiveMem(mem, userMemCollection);
+			memModifiers.unarchiveMem(mem, $sharedUser);
 		}
 	};
 
@@ -165,7 +139,7 @@
 		let mem: Mem = e.detail.mem;
 		let text = e.detail.text;
 		if (mem && userMemCollection) {
-			memModifiers.updateNoteForMem(mem, text, userMemCollection);
+			memModifiers.updateNoteForMem(mem, text, $sharedUser);
 		}
 	};
 
@@ -173,7 +147,7 @@
 		let mem: Mem = e.detail.mem;
 		let text = e.detail.text;
 		if (mem && userMemCollection) {
-			memModifiers.updateTitleForMem(mem, text, userMemCollection);
+			memModifiers.updateTitleForMem(mem, text, $sharedUser);
 		}
 	};
 
@@ -181,7 +155,7 @@
 		let mem: Mem = e.detail.mem;
 		let text = e.detail.text;
 		if (mem && userMemCollection) {
-			memModifiers.updateDescriptionForMem(mem, text, userMemCollection);
+			memModifiers.updateDescriptionForMem(mem, text, $sharedUser);
 		}
 	};
 
