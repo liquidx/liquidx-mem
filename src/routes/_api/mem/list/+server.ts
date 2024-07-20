@@ -28,7 +28,7 @@ const getMems = async (db: Firestore, request: MemListRequest) => {
 	} else if (request.oneOfTags) {
 		ref = ref.where('tags', 'array-contains-any', request.oneOfTags);
 	} else {
-		//ref = ref.where('new', '==', true);
+		ref = ref.where('new', '==', true);
 	}
 
 	// TODO: ref.limit(request.pageSize)

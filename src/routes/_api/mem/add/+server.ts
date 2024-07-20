@@ -13,6 +13,7 @@ import {
 	getFirebaseStorageBucket,
 	getFirestoreClient
 } from '$lib/firebase.server.js';
+import { memToJson } from '$lib/common/mems';
 
 export const fallback: RequestHandler = async ({ url, request }) => {
 	let text: string = '';
@@ -74,7 +75,7 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 
 	return firestoreAdd(db, userId, mem)
 		.then(() => {
-			return json({ mem: mem });
+			return json({ mem: memToJson(mem) });
 		})
 		.catch((err) => {
 			console.error('Unable to save', err);

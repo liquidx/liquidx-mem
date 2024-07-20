@@ -2,17 +2,9 @@
 	import axios from 'axios';
 
 	import { sharedUser, sharedFirestore } from '$lib/firebase-shared';
-	import { getFilterCondition } from '$lib/filter';
 	import type { CollectionReference, Query } from 'firebase/firestore';
 	import { onSnapshot } from 'firebase/firestore';
-	import { getUserMemCollection } from '$lib/mem-data-collection';
 	import type { Mem } from '../lib/common/mems';
-	import {
-		executeQuery,
-		executeQueryForTaggedMems,
-		queryForArchivedMems,
-		queryForNewMems
-	} from '$lib/mem-data-queries';
 	import { unwrapDocs } from '$lib/firebase-init';
 	import * as memModifiers from '$lib/mem-data-modifiers';
 
@@ -33,29 +25,10 @@
 	let moreMemsAvailable = true;
 
 	// Firestore
-	let unsubscribeListener: (() => void) | null = null;
-
-	function subscribeChanges(query: Query) {
-		unsubscribeChanges();
-		if (query) {
-			unsubscribeListener = onSnapshot(query, (snapshot) => {
-				console.log('Snapshot received');
-				mems = unwrapDocs(snapshot);
-			});
-		}
-	}
-
-	function unsubscribeChanges() {
-		if (unsubscribeListener) {
-			unsubscribeListener();
-			unsubscribeListener = null;
-		}
-	}
 
 	$: {
 		if ($sharedUser && $sharedFirestore) {
 			loadMems(filter, false);
-			//loadMemsWithFirebase(filter);
 		}
 	}
 
@@ -101,6 +74,17 @@
 		console.log('loadMore', visiblePages);
 	};
 
+	const updateVisibleMems = (mems: Mem[], updatedMem: Mem) => {
+		console.log(updatedMem);
+		let replacedMems = mems.map((mem) => {
+			if (mem.id === updatedMem.id) {
+				return updatedMem;
+			}
+			return mem;
+		});
+		mems = replacedMems;
+	};
+
 	////
 	// Actions
 	////
@@ -112,58 +96,78 @@
 		}
 	};
 
-	const deleteMem = (e: CustomEvent) => {
+	const deleteMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
 		console.log('deleteMem', mem);
 		if (mem && $sharedUser) {
-			memModifiers.deleteMem(mem, $sharedUser);
-			loadMems(filter, false);
+			const deleteMemId = await memModifiers.deleteMem(mem, $sharedUser);
+			if (deleteMemId) {
+				mems = mems.filter((mem) => mem.id !== deleteMemId);
+			}
 		}
 	};
 
-	const archiveMem = (e: CustomEvent) => {
+	const archiveMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
-		if (mem && userMemCollection) {
-			memModifiers.archiveMem(mem, $sharedUser);
+		if (mem && $sharedUser) {
+			const updatedMem = await memModifiers.archiveMem(mem, $sharedUser);
+			if (updatedMem) {
+				loadMems(filter, false);
+			}
 		}
 	};
 
-	const unarchiveMem = (e: CustomEvent) => {
+	const unarchiveMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
-		if (mem && userMemCollection) {
-			memModifiers.unarchiveMem(mem, $sharedUser);
+		if (mem && $sharedUser) {
+			const updatedMem = await memModifiers.unarchiveMem(mem, $sharedUser);
+			if (updatedMem) {
+				loadMems(filter, false);
+			}
 		}
 	};
 
-	const updateNoteForMem = (e: CustomEvent) => {
-		let mem: Mem = e.detail.mem;
-		let text = e.detail.text;
-		if (mem && userMemCollection) {
-			memModifiers.updateNoteForMem(mem, text, $sharedUser);
-		}
-	};
-
-	const updateTitleForMem = (e: CustomEvent) => {
-		let mem: Mem = e.detail.mem;
-		let text = e.detail.text;
-		if (mem && userMemCollection) {
-			memModifiers.updateTitleForMem(mem, text, $sharedUser);
-		}
-	};
-
-	const updateDescriptionForMem = (e: CustomEvent) => {
+	const updateNoteForMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
 		let text = e.detail.text;
-		if (mem && userMemCollection) {
-			memModifiers.updateDescriptionForMem(mem, text, $sharedUser);
+		if (mem && $sharedUser) {
+			const updatedMem = await memModifiers.updateNoteForMem(mem, text, $sharedUser);
+			if (updatedMem) {
+				updateVisibleMems(mems, updatedMem);
+			}
 		}
 	};
 
-	const uploadFilesForMem = (e: CustomEvent) => {
+	const updateTitleForMem = async (e: CustomEvent) => {
+		let mem: Mem = e.detail.mem;
+		let text = e.detail.text;
+		if (mem && $sharedUser) {
+			const updatedMem = await memModifiers.updateTitleForMem(mem, text, $sharedUser);
+			if (updatedMem) {
+				updateVisibleMems(mems, updatedMem);
+			}
+		}
+	};
+
+	const updateDescriptionForMem = async (e: CustomEvent) => {
+		let mem: Mem = e.detail.mem;
+		let text = e.detail.text;
+		if (mem && $sharedUser) {
+			const updatedMem = await memModifiers.updateDescriptionForMem(mem, text, $sharedUser);
+			if (updatedMem) {
+				updateVisibleMems(mems, updatedMem);
+			}
+		}
+	};
+
+	const uploadFilesForMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
 		let files = e.detail.files;
 		if (mem && $sharedUser) {
-			memModifiers.uploadFilesForMem(mem, files, $sharedUser);
+			const updatedMem = await memModifiers.uploadFilesForMem(mem, files, $sharedUser);
+			if (updatedMem) {
+				updateVisibleMems(mems, updatedMem);
+			}
 		}
 	};
 

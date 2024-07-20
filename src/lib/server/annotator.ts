@@ -38,6 +38,11 @@ const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
 				}
 				if (result.ogImage) {
 					if ('url' in result.ogImage) {
+						// Make sure the URL is absolute.
+						if (!result.ogImage.url.startsWith('http')) {
+							result.ogImage.url = new URL(result.ogImage.url, url).href;
+						}
+
 						const photo: MemPhoto = {
 							mediaUrl: result.ogImage.url
 						};

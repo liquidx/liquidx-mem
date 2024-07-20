@@ -6,6 +6,7 @@ import { getMem } from '$lib/server/mem';
 import { memToJson } from '$lib/common/mems';
 import type { Mem } from '$lib/common/mems';
 import { getUserId } from '$lib/server/api.server.js';
+import { firestoreUpdate } from '$lib/server/firestore-update.js';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json();
@@ -29,13 +30,18 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	const mem = memSnap.data() as unknown as Mem;
+	if (!mem) {
+		return error(404, JSON.stringify({ error: 'Mem not found' }));
+	}
+
 	if (body.new !== undefined) {
 		mem.new = body.new;
 	}
 
-	const updatedMem = await annotateMem(mem);
-	if (updatedMem) {
-		return json({ mem: memToJson(updatedMem) });
+	const result = await firestoreUpdate(db, userId, memId, mem);
+	if (!result) {
+		return error(500, JSON.stringify({ error: 'Error updating mem' }));
 	}
-	return error(500, JSON.stringify({ error: 'Error annotating mem' }));
+
+	return json({ mem: memToJson(mem) });
 };

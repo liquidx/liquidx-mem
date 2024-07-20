@@ -22,7 +22,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const result = await firestoreDelete(db, userId, memId);
 	if (result) {
-		return json({ status: 'OK' });
+		return json({ memId });
 	}
 	return error(500, JSON.stringify({ error: 'Error deleting mem' }));
 };

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Mem } from './common/mems';
+import { memFromJson, type Mem } from './common/mems';
 import { extractEntities } from './common/parser';
 import { CollectionReference, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore';
@@ -19,7 +19,7 @@ export async function addMem(
 	mem: Mem,
 	collection: CollectionReference<DocumentData>,
 	user: User
-): Promise<any> {
+): Promise<Mem | undefined> {
 	// API
 	if (clientImpl) {
 		// Firebase client
@@ -34,11 +34,19 @@ export async function addMem(
 			Authorization: `Bearer ${authToken}`
 		};
 
-		return axios.post(url, body, { headers });
+		return axios.post(url, body, { headers }).then((response) => {
+			if (response.status != 200) {
+				return;
+			}
+			if (!response.data.mem) {
+				return;
+			}
+			return memFromJson(response.data.mem);
+		});
 	}
 }
 
-export async function deleteMem(mem: Mem, user: User): Promise<any> {
+export async function deleteMem(mem: Mem, user: User): Promise<string | undefined> {
 	console.log('deleteMem', mem);
 	const url = `${serverUrl}/mem/del`;
 	const body = { memId: mem.id };
@@ -47,10 +55,17 @@ export async function deleteMem(mem: Mem, user: User): Promise<any> {
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, body, { headers }).then((response) => console.log('deleteMem', response));
+	return axios.post(url, body, { headers }).then((response) => {
+		if (response.status != 200) {
+			return;
+		}
+		if (response.data) {
+			return mem.id;
+		}
+	});
 }
 
-export async function annotateMem(mem: Mem, user: User): Promise<any> {
+export async function annotateMem(mem: Mem, user: User): Promise<Mem | undefined> {
 	const url = `${serverUrl}/mem/annotate`;
 	const body = { userId: user.uid, memId: mem.id };
 	const authToken = await user.getIdToken();
@@ -58,32 +73,63 @@ export async function annotateMem(mem: Mem, user: User): Promise<any> {
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
+	return axios.post(url, body, { headers }).then((response) => {
+		if (response.status != 200) {
+			return;
+		}
+
+		if (!response.data.mem) {
+			return;
+		}
+		return memFromJson(response.data.mem);
+	});
 }
 
-export async function archiveMem(mem: Mem, user: User): Promise<any> {
-	const url = `${serverUrl}/mem/archive`;
+export async function archiveMem(mem: Mem, user: User): Promise<Mem | undefined> {
+	const url = `${serverUrl}/mem/flag`;
 	const body = { userId: user.uid, memId: mem.id, new: false };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
+	return axios.post(url, body, { headers }).then((response) => {
+		if (response.status != 200) {
+			return;
+		}
+
+		if (!response.data.mem) {
+			return;
+		}
+		return memFromJson(response.data.mem);
+	});
 }
 
-export async function unarchiveMem(mem: Mem, user: User): Promise<any> {
-	const url = `${serverUrl}/mem/archive`;
+export async function unarchiveMem(mem: Mem, user: User): Promise<Mem | undefined> {
+	const url = `${serverUrl}/mem/flag`;
 	const body = { userId: user.uid, memId: mem.id, new: true };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
+	return axios.post(url, body, { headers }).then((response) => {
+		if (response.status != 200) {
+			return;
+		}
+
+		if (!response.data.mem) {
+			return;
+		}
+		return memFromJson(response.data.mem);
+	});
 }
 
-export async function updateNoteForMem(mem: Mem, note: string, user: User): Promise<void> {
+export async function updateNoteForMem(
+	mem: Mem,
+	note: string,
+	user: User
+): Promise<Mem | undefined> {
 	const url = `${serverUrl}/mem/edit`;
 	const body = { userId: user.uid, memId: mem.id, updates: { note: note } };
 	const authToken = await user.getIdToken();
@@ -91,10 +137,23 @@ export async function updateNoteForMem(mem: Mem, note: string, user: User): Prom
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
+	return axios.post(url, body, { headers }).then((response) => {
+		if (response.status != 200) {
+			return;
+		}
+
+		if (!response.data.mem) {
+			return;
+		}
+		return memFromJson(response.data.mem);
+	});
 }
 
-export async function updateTitleForMem(mem: Mem, title: string, user: User): Promise<void> {
+export async function updateTitleForMem(
+	mem: Mem,
+	title: string,
+	user: User
+): Promise<Mem | undefined> {
 	const updates = {
 		title: title
 	};
@@ -106,14 +165,23 @@ export async function updateTitleForMem(mem: Mem, title: string, user: User): Pr
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
+	return axios.post(url, body, { headers }).then((response) => {
+		if (response.status != 200) {
+			return;
+		}
+
+		if (!response.data.mem) {
+			return;
+		}
+		return memFromJson(response.data.mem);
+	});
 }
 
 export async function updateDescriptionForMem(
 	mem: Mem,
 	description: string,
 	user: User
-): Promise<void> {
+): Promise<Mem | undefined> {
 	const updates = {
 		description: description
 	};
@@ -125,7 +193,16 @@ export async function updateDescriptionForMem(
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, body, { headers }).then((response) => console.log(response.data));
+	return axios.post(url, body, { headers }).then((response) => {
+		if (response.status != 200) {
+			return;
+		}
+
+		if (!response.data.mem) {
+			return;
+		}
+		return memFromJson(response.data.mem);
+	});
 }
 
 const contentsAsBase64 = (file: File) =>
@@ -147,7 +224,7 @@ export async function uploadFilesForMem(
 	files: FileList,
 	user: User,
 	onFinish?: () => void
-): Promise<void> {
+): Promise<Mem | undefined> {
 	const authToken = await user.getIdToken();
 	if (!authToken) {
 		console.error('No auth token');
@@ -161,26 +238,30 @@ export async function uploadFilesForMem(
 
 	const firstFile: File = files[0];
 	const fileContents = await contentsAsBase64(firstFile);
+	const url = `${serverUrl}/mem/attach`;
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+	const body = {
+		image: { body: fileContents, filename: firstFile.name, mimetype: firstFile.type },
+		mem: mem.id
+	};
 
-	return axios({
-		url: `${serverUrl}/attach?mem=${mem.id}`,
-		method: 'POST',
-		data: {
-			image: {
-				body: fileContents,
-				filename: firstFile.name,
-				mimetype: firstFile.type
-			},
-			mem: mem.id
-		},
-		headers: {
-			Authorization: `Bearer ${authToken}`
-		}
-	})
-		.then(() => {
+	return axios
+		.post(url, body, { headers })
+		.then((response) => {
 			if (onFinish) onFinish();
+			if (response.status != 200) {
+				return;
+			}
+			if (!response.data.mem) {
+				return;
+			}
+			const mem = memFromJson(response.data.mem);
+			return mem;
 		})
 		.catch(() => {
 			if (onFinish) onFinish();
+			return;
 		});
 }
