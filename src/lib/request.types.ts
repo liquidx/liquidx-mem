@@ -4,6 +4,7 @@ export interface MemListRequest {
 	userId: string;
 	secretWord?: string;
 	isArchived?: boolean;
+	all?: boolean;
 	allOfTags?: string[];
 	oneOfTags?: string[];
 	pageSize?: number;

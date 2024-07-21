@@ -8,7 +8,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 
 	// TODO: Verify the user ID using a secret code
 	const userId = params.feedId;
-	const mems = await getAllMems(firestore, userId, { maxResults: 10, lookQueue: true });
+	const mems = await getAllMems(firestore, userId, { maxResults: 100, lookQueue: true });
 
 	// Output the RSS
 	let rss = `<?xml version="1.0" encoding="UTF-8" ?>\n`;
