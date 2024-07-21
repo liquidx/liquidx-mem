@@ -35,6 +35,9 @@ const ogImageToPhotos = (ogImage: any): MemPhoto[] => {
 
 const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
 	const annotated: Mem = Object.assign({}, mem);
+	const regularUserAgent =
+		'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
+	const crawlerUserAgent = 'mem.liquidx.app/@liquidx';
 	const request = {
 		url: url,
 		headers: {
@@ -42,8 +45,7 @@ const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
 				'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
 			'accept-language': 'en-US,en;q=0.9',
 			'cache-control': 'max-age=0',
-			'user-agent':
-				'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 liquidx-mem.web.app/1.0'
+			'user-agent': crawlerUserAgent
 		}
 	};
 	console.log('annotateWithOpenGraph');

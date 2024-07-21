@@ -29,13 +29,13 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const firebaseApp = getFirebaseApp();
 	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
+	const bucket = getFirebaseStorageBucket(firebaseApp);
 
 	const userId = await getUserId(firebaseApp, request);
 	if (!userId) {
 		return error(403, JSON.stringify({ error: 'Permission denied' }));
 	}
 
-	const bucket = getFirebaseStorageBucket(firebaseApp);
 	const snapshot = await db.doc(`users/${userId}/mems/${memId}`).get();
 
 	if (!snapshot.exists) {
@@ -61,11 +61,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		mem.photos.push(media);
 	}
 
-	return firestoreUpdate(db, userId, memId, mem)
-		.then(() => {
-			return json({ mem: memToJson(mem) });
-		})
-		.catch((err) => {
-			error(500, `Error saving: ${err}`);
-		});
+	const res = await firestoreUpdate(db, userId, memId, mem).catch((err) => {
+		error(500, `Error saving: ${err}`);
+	});
+	return json({ mem: memToJson(mem) });
 };

@@ -1,5 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import type { Firestore } from '@google-cloud/firestore';
+import type { Bucket } from '@google-cloud/storage';
 
 import type { RequestHandler } from './$types';
 import type { Mem } from '$lib/common/mems';
@@ -18,12 +19,12 @@ import { firestoreUpdate } from '$lib/server/firestore-update.js';
 
 const mirrorMediaInMem = async (
 	db: Firestore,
+	bucket: Bucket,
 	memId: string,
 	mem: Mem,
 	userId: string
 ): Promise<Mem | void> => {
 	const outputPath = `users/${userId}/media`;
-	const bucket = getFirebaseStorageBucket(getFirebaseApp());
 	const updatedMem = await mirrorMedia(mem, bucket, outputPath);
 	const result = await firestoreUpdate(db, userId, memId, updatedMem);
 	if (result) {
@@ -43,6 +44,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const firebaseApp = getFirebaseApp();
 	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
+	const bucket = getFirebaseStorageBucket(firebaseApp);
 
 	const userId = await getUserId(firebaseApp, request);
 	if (!userId) {
@@ -57,7 +59,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const mem = memSnap.data() as unknown as Mem;
 
 	let updatedMem = await annotateMem(mem);
-	const updatedMemWithMedia = await mirrorMediaInMem(db, memId, updatedMem, userId);
+	const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, memId, updatedMem, userId);
 	if (updatedMemWithMedia) {
 		updatedMem = updatedMemWithMedia;
 	}
