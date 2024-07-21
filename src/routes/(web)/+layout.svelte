@@ -3,7 +3,7 @@
 	import { sharedFirebaseApp } from '$lib/firebase-shared';
 	import { initializeFirebase } from '$lib/firebase-init';
 	import SignIn from '$lib/svelte/SignIn.svelte';
-	import '../app.css';
+	import '../../app.css';
 
 	$sharedFirebaseApp = initializeFirebase();
 </script>
