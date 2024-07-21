@@ -10,10 +10,7 @@
 	import { orderBy } from 'lodash-es';
 
 	export let filter: string = '';
-	export let showTags = true;
 
-	let pageSize = 30;
-	let visiblePages = 1;
 	let selectedMem: Mem | undefined;
 	let mems: Mem[] = [];
 

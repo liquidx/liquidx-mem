@@ -1,4 +1,3 @@
-import { annotateMem } from '$lib/server/annotator.js';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getFirebaseApp, getFirestoreClient, FIREBASE_PROJECT_ID } from '$lib/firebase.server.js';
@@ -11,6 +10,8 @@ import { firestoreUpdate } from '$lib/server/firestore-update.js';
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json();
 	const memId = body['memId'] || '';
+
+	console.log('/_api/mem/flag:', body);
 
 	if (!memId) {
 		return error(400, JSON.stringify({ error: 'No mem id' }));

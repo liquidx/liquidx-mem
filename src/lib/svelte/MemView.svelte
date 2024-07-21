@@ -5,11 +5,12 @@
 
 	import type { Mem } from '$lib/common/mems';
 	import { sharedFirebaseApp } from '$lib/firebase-shared';
-	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
 	import Archive from 'lucide-svelte/icons/archive';
 	import PenLine from 'lucide-svelte/icons/pen-line';
 	import Trash2 from 'lucide-svelte/icons/trash-2';
 	import ImageUp from 'lucide-svelte/icons/image-up';
+	import Eye from 'lucide-svelte/icons/eye';
 
 	type MediaUrl = {
 		url: string;
@@ -30,6 +31,7 @@
 	const dispatch = createEventDispatcher();
 
 	function onArchive() {
+		console.log('onArchive');
 		dispatch('archive', { mem });
 	}
 
@@ -43,6 +45,10 @@
 
 	function onDelete() {
 		dispatch('delete', { mem });
+	}
+
+	function onSeen() {
+		dispatch('seen', { mem });
 	}
 
 	$: {
@@ -124,11 +130,12 @@
 	}
 
 	function noteDidChange(e: FocusEvent): void {
-		const target: HTMLElement = e.target as HTMLElement;
+		const target: HTMLInputElement = e.target as HTMLInputElement;
 		if (!target) {
 			return;
 		}
-		const noteValue = target.innerText;
+		const noteValue = target.value;
+		console.log('noteDidChange', noteValue);
 		if (noteValue != mem.note) {
 			dispatch('noteChanged', { mem, text: noteValue });
 			target.innerText = noteValue;
@@ -261,7 +268,7 @@
 >
 	<div>
 		<textarea
-			class="my-2 p-2 rounded-xl bg-input px-4 min-h-[1rem] w-full"
+			class="my-2 py-2 rounded-xl bg-input px-4 min-h-[1rem] h-8 w-full"
 			on:blur={noteDidChange}
 			value={mem.note}
 		/>
@@ -335,30 +342,36 @@
 
 	<div class="flex flex-row flex-wrap gap-1 md:gap-2">
 		{#if mem.new}
-			<Badge class="flex flex-row gap-2" variant="outline" on:click={onArchive}>
+			<Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onArchive}>
 				<Archive class="align-middle" size="12" />
 				Archive
-			</Badge>
+			</Button>
 		{/if}
 
 		{#if !mem.new}
-			<Badge class="flex flex-row gap-2" variant="outline" on:click={onUnarchive}>
+			<Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onUnarchive}>
 				<Archive class="align-middle" size="12" />
 				Unarchive
-			</Badge>
+			</Button>
 		{/if}
 
-		<Badge class="flex flex-row gap-2" variant="outline" on:click={onAnnotate}>
+		<Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onSeen}>
+			<Eye class="align-middle" size="12" />
+			Seen
+		</Button>
+
+		<Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onAnnotate}>
 			<PenLine class="align-middle" size="12" />
 			Annotate
-		</Badge>
+		</Button>
 
-		<Badge class="flex flex-row gap-2" variant="outline" on:click={onDelete}>
+		<Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onDelete}>
 			<Trash2 class="align-middle" size="12" />
 			Delete
-		</Badge>
+		</Button>
 
-		<Badge class="" variant="outline">
+		<Button class="flex flex-row gap-2" variant="outline" size="sm">
+			<ImageUp class="align-middle" size="12" />
 			<form enctype="multipart/form-data">
 				<input
 					type="file"
@@ -369,11 +382,8 @@
 					accept="image/*"
 					on:change={fileDidChange}
 				/>
-				<label for="fileInput" class="flex flex-row gap-2">
-					<ImageUp class="align-middle" size="12" />
-					Upload
-				</label>
+				<label for="fileInput"> Upload </label>
 			</form>
-		</Badge>
+		</Button>
 	</div>
 </div>

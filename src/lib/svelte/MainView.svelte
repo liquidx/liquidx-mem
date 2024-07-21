@@ -109,8 +109,20 @@
 
 	const archiveMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
+		console.log('archiveMem');
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.archiveMem(mem, $sharedUser);
+			if (updatedMem) {
+				loadMems(filter, false);
+			}
+		}
+	};
+
+	const seenMem = async (e: CustomEvent) => {
+		let mem: Mem = e.detail.mem;
+		console.log('seenMem');
+		if (mem && $sharedUser) {
+			const updatedMem = await memModifiers.seenMem(mem, $sharedUser);
 			if (updatedMem) {
 				loadMems(filter, false);
 			}
@@ -199,6 +211,7 @@
 			on:noteChanged={updateNoteForMem}
 			on:titleChanged={updateTitleForMem}
 			on:fileUpload={uploadFilesForMem}
+			on:seen={seenMem}
 		/>
 		<MoreMem moreAvailable={moreMemsAvailable} on:loadMore={loadMore} />
 	</main>

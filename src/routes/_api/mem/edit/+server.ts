@@ -15,7 +15,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const memId = body['memId'] || '';
 	const updates = body['updates'];
 
-	console.log('edit:', body);
+	console.log('/_api/mem/edit:', body);
 
 	if (!updates) {
 		return error(400, JSON.stringify({ error: 'No mem' }));

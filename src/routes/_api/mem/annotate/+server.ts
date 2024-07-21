@@ -41,7 +41,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		return error(400, JSON.stringify({ error: 'No mem id' }));
 	}
 
-	console.log('annotate mem', memId);
+	console.log('/_api/mem/annotate', body);
 
 	const firebaseApp = getFirebaseApp();
 	const db = getFirestoreClient(FIREBASE_PROJECT_ID);

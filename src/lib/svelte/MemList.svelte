@@ -11,6 +11,7 @@
 			on:annotate
 			on:archive
 			on:delete
+			on:seen
 			on:descriptionChanged
 			on:fileUpload
 			on:noteChanged
