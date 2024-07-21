@@ -6,6 +6,10 @@
 	import type { Mem } from '$lib/common/mems';
 	import { sharedFirebaseApp } from '$lib/firebase-shared';
 	import { Badge } from '$lib/components/ui/badge';
+	import Archive from 'lucide-svelte/icons/archive';
+	import PenLine from 'lucide-svelte/icons/pen-line';
+	import Trash2 from 'lucide-svelte/icons/trash-2';
+	import ImageUp from 'lucide-svelte/icons/image-up';
 
 	type MediaUrl = {
 		url: string;
@@ -268,7 +272,7 @@
 					<span class="title-text" bind:this={titleEl}>{getPrettyTitle(mem)}</span>
 				</a>
 				<button class="text-primary hover:text-secondary" on:click={startEdit}>
-					<span class="material-icons mx-2 text-sm">&#xe3c9;</span>
+					<PenLine class="align-middle" size="16" />
 				</button>
 			</div>
 		{/if}
@@ -329,32 +333,32 @@
 		</div>
 	</div>
 
-	<div class="text-accent-foreground flex flex-row flex-wrap gap-1 md:gap-2">
+	<div class="flex flex-row flex-wrap gap-1 md:gap-2">
 		{#if mem.new}
 			<Badge class="flex flex-row gap-2" variant="outline" on:click={onArchive}>
-				<span class="material-icons text-sm align-middle">&#xe149;</span>
+				<Archive class="align-middle" size="12" />
 				Archive
 			</Badge>
 		{/if}
 
 		{#if !mem.new}
 			<Badge class="flex flex-row gap-2" variant="outline" on:click={onUnarchive}>
-				<span class="material-icons text-sm align-middle">&#xe169;</span>
+				<Archive class="align-middle" size="12" />
 				Unarchive
 			</Badge>
 		{/if}
 
 		<Badge class="flex flex-row gap-2" variant="outline" on:click={onAnnotate}>
-			<span class="material-icons text-sm align-middle">&#xf071;</span>
+			<PenLine class="align-middle" size="12" />
 			Annotate
 		</Badge>
 
 		<Badge class="flex flex-row gap-2" variant="outline" on:click={onDelete}>
-			<span class="material-icons text-sm align-middle">&#xE872;</span>
+			<Trash2 class="align-middle" size="12" />
 			Delete
 		</Badge>
 
-		<Badge class="flex flex-row gap-2" variant="outline">
+		<Badge class="" variant="outline">
 			<form enctype="multipart/form-data">
 				<input
 					type="file"
@@ -365,8 +369,8 @@
 					accept="image/*"
 					on:change={fileDidChange}
 				/>
-				<label for="fileInput">
-					<span class="material-icons text-sm align-middle">&#xf071;</span>
+				<label for="fileInput" class="flex flex-row gap-2">
+					<ImageUp class="align-middle" size="12" />
 					Upload
 				</label>
 			</form>

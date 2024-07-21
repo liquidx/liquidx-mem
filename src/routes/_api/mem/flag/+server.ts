@@ -38,6 +38,25 @@ export const POST: RequestHandler = async ({ request }) => {
 		mem.new = body.new;
 	}
 
+	if (body.seen !== undefined) {
+		// Remove or add the '#look' tag dependeing on the 'seen' value.
+		if (body.seen) {
+			if (mem.tags) {
+				mem.tags = mem.tags.filter((tag) => tag !== '#look');
+			}
+			if (mem.note) {
+				mem.note = mem.note.replace(/#look/g, '');
+			}
+		} else {
+			if (mem.tags) {
+				mem.tags.push('#look');
+			} else {
+				mem.tags = ['#look'];
+			}
+			mem.note += ' #look';
+		}
+	}
+
 	const result = await firestoreUpdate(db, userId, memId, mem);
 	if (!result) {
 		return error(500, JSON.stringify({ error: 'Error updating mem' }));

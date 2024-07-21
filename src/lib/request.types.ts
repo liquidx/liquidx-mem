@@ -34,3 +34,8 @@ export interface MemAnnotateResponse {
 	mem: Mem;
 	memId: string;
 }
+
+export interface MemFlagRequest {
+	new?: boolean;
+	seen?: boolean;
+}
