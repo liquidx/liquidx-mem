@@ -45,12 +45,15 @@
 	<a href="/" class="block p-0.5 whitespace-nowrap hover:underline">New </a>
 	<a href="/tag/*" class="block p-0.5 whitespace-nowrap hover:underline">Archive</a>
 	{#each views as view}
-		<a href={pathForView(view)} class="block p-0.5 whitespace-nowrap hover:underline">
+		<a href={pathForView(view)} class="block md:px-2 px-1 py-0.5 whitespace-nowrap hover:underline">
 			{view}
 		</a>
 	{/each}
 	{#each visibleTags as tag (tag.tag)}
-		<a href={pathForView(tag.tag)} class="block p-0.5 whitespace-nowrap hover:underline">
+		<a
+			href={pathForView(tag.tag)}
+			class="block md:px-2 px-1 py-0.5 whitespace-nowrap hover:underline"
+		>
 			{tag.icon}
 			{tag.tag} ({tag.count})
 		</a>
@@ -58,7 +61,7 @@
 	{#if !showAll}
 		<button
 			on:click|preventDefault={showAllDidClick}
-			class="block p-0.5 whitespace-nowrap hover:underline"
+			class="block md:px-2 px-1 py-1 whitespace-nowrap hover:underline text-left hover:bg-gray-200 rounded-md"
 		>
 			More..
 		</button>
