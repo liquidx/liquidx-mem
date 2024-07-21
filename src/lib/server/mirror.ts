@@ -10,7 +10,7 @@ export const writeToCloudStorage = async (
 	bucket: Bucket,
 	storagePath: string,
 	contents: ArrayBuffer
-) => {
+): Promise<string> => {
 	return new Promise((resolve, reject) => {
 		const storageFile = bucket.file(storagePath);
 		const stream = storageFile.createWriteStream();
@@ -26,7 +26,11 @@ export const writeToCloudStorage = async (
 };
 
 // Downloads and writes media to cloud storage.
-const writeMediaToCloudStorage = async (bucket: Bucket, storagePath: string, imageUrl: string) => {
+const writeMediaToCloudStorage = async (
+	bucket: Bucket,
+	storagePath: string,
+	imageUrl: string
+): Promise<string | void> => {
 	return axios
 		.get(imageUrl, { responseType: 'arraybuffer' })
 		.then((response) => {
@@ -38,7 +42,7 @@ const writeMediaToCloudStorage = async (bucket: Bucket, storagePath: string, ima
 			} else {
 				console.log(err.message);
 			}
-			return null;
+			return;
 		});
 };
 
@@ -95,8 +99,10 @@ export const mirrorMedia = async (mem: Mem, bucket: Bucket, outputPath: string):
 				const destinationPath = `${outputPath}/${destinationSubpath}/${destinationFilename}.${extension}`;
 
 				const request = writeMediaToCloudStorage(bucket, destinationPath, media.mediaUrl).then(
-					() => {
-						media.cachedMediaPath = destinationPath;
+					(outputPath) => {
+						if (outputPath) {
+							media.cachedMediaPath = destinationPath;
+						}
 						return media;
 					}
 				);
@@ -117,7 +123,9 @@ export const mirrorMedia = async (mem: Mem, bucket: Bucket, outputPath: string):
 						const destinationPath = `${outputPath}/${destinationSubpath}/${destinationFilename}.${extension}`;
 						const request = writeMediaToCloudStorage(bucket, destinationPath, media.mediaUrl).then(
 							() => {
-								media.cachedMediaPath = destinationPath;
+								if (outputPath) {
+									media.cachedMediaPath = destinationPath;
+								}
 								return media;
 							}
 						);
@@ -131,7 +139,6 @@ export const mirrorMedia = async (mem: Mem, bucket: Bucket, outputPath: string):
 	if (requests.length) {
 		await Promise.all(requests).catch((err) => {
 			console.log('Error caching media: ', err.message);
-			return null;
 		});
 		return mem;
 	} else {

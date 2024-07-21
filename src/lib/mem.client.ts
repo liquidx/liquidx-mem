@@ -5,6 +5,7 @@ import { memFromJson, type Mem } from './common/mems';
 import type { TagListItem } from './server/tags.server';
 import { iconForTag } from './tags';
 import type { PrefsViews, PrefsSecrets } from './common/prefs';
+import type { MemAnnotateResponse } from './request.types';
 
 const serverUrl = '/_api';
 // For debugging.
@@ -72,7 +73,7 @@ export async function deleteMem(mem: Mem, user: User): Promise<string | undefine
 	});
 }
 
-export async function annotateMem(mem: Mem, user: User): Promise<Mem | undefined> {
+export async function annotateMem(mem: Mem, user: User): Promise<MemAnnotateResponse | undefined> {
 	const url = `${serverUrl}/mem/annotate`;
 	const body = { userId: user.uid, memId: mem.id };
 	const authToken = await user.getIdToken();
@@ -88,7 +89,11 @@ export async function annotateMem(mem: Mem, user: User): Promise<Mem | undefined
 		if (!response.data.mem) {
 			return;
 		}
-		return memFromJson(response.data.mem);
+
+		// TODO: Use zod to verify.
+		const annotateResponse: MemAnnotateResponse = response.data;
+
+		return { mem: memFromJson(annotateResponse.mem), memId: annotateResponse.memId };
 	});
 }
 

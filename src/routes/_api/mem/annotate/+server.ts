@@ -16,6 +16,7 @@ import { getUserId } from '$lib/server/api.server.js';
 import { annotateMem } from '$lib/server/annotator.js';
 import { mirrorMedia } from '$lib/server/mirror.js';
 import { firestoreUpdate } from '$lib/server/firestore-update.js';
+import type { MemAnnotateResponse } from '$lib/request.types';
 
 const mirrorMediaInMem = async (
 	db: Firestore,
@@ -65,7 +66,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 	console.log('updatedMem', updatedMem);
 	if (updatedMem) {
-		return json({ mem: memToJson(updatedMem) });
+		const annotateResponse: MemAnnotateResponse = { mem: memToJson(updatedMem), memId: memId };
+		return json(annotateResponse);
 	}
 	return error(500, JSON.stringify({ error: 'Error annotating mem' }));
 };

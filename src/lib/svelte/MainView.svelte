@@ -9,7 +9,7 @@
 	import MemAdd from '$lib/svelte/MemAdd.svelte';
 	import MoreMem from '$lib/svelte/MoreMem.svelte';
 	import MemTagList from '$lib/svelte/MemTagList.svelte';
-	import type { MemListRequest } from '$lib/request.types';
+	import type { MemAnnotateResponse, MemListRequest } from '$lib/request.types';
 
 	export let filter: string = '';
 	export let showTags = true;
@@ -67,10 +67,11 @@
 		console.log('loadMore', visiblePages);
 	};
 
-	const updateVisibleMems = (mems: Mem[], updatedMem: Mem) => {
+	const updateVisibleMems = (mems: Mem[], updatedMem: Mem, updatedMemId: string | undefined) => {
 		console.log(updatedMem);
+		let replacedMemId = updatedMemId || updatedMem.id;
 		let replacedMems = mems.map((mem) => {
-			if (mem.id === updatedMem.id) {
+			if (mem.id === replacedMemId) {
 				return updatedMem;
 			}
 			return mem;
@@ -85,9 +86,12 @@
 	const annotateMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
 		if (mem && $sharedUser) {
-			const updatedMem = await memModifiers.annotateMem(mem, $sharedUser);
-			if (updatedMem) {
-				updateVisibleMems(mems, updatedMem);
+			const response: MemAnnotateResponse | undefined = await memModifiers.annotateMem(
+				mem,
+				$sharedUser
+			);
+			if (response) {
+				updateVisibleMems(mems, response.mem, response.memId);
 			}
 		}
 	};
@@ -129,7 +133,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.updateNoteForMem(mem, text, $sharedUser);
 			if (updatedMem) {
-				updateVisibleMems(mems, updatedMem);
+				updateVisibleMems(mems, updatedMem, mem.id);
 			}
 		}
 	};
@@ -140,7 +144,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.updateTitleForMem(mem, text, $sharedUser);
 			if (updatedMem) {
-				updateVisibleMems(mems, updatedMem);
+				updateVisibleMems(mems, updatedMem, mem.id);
 			}
 		}
 	};
@@ -151,7 +155,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.updateDescriptionForMem(mem, text, $sharedUser);
 			if (updatedMem) {
-				updateVisibleMems(mems, updatedMem);
+				updateVisibleMems(mems, updatedMem, mem.id);
 			}
 		}
 	};
@@ -162,7 +166,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.uploadFilesForMem(mem, files, $sharedUser);
 			if (updatedMem) {
-				updateVisibleMems(mems, updatedMem);
+				updateVisibleMems(mems, updatedMem, mem.id);
 			}
 		}
 	};
