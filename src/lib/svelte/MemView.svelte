@@ -5,6 +5,7 @@
 
 	import type { Mem } from '$lib/common/mems';
 	import { sharedFirebaseApp } from '$lib/firebase-shared';
+	import { Badge } from '$lib/components/ui/badge';
 
 	type MediaUrl = {
 		url: string;
@@ -246,7 +247,7 @@
 </script>
 
 <div
-	class={'mem flex flex-col rounded-xl my-4 mx-2 py-4 px-6 bg-gray-50' +
+	class={'mem flex flex-col rounded-xl my-4 mx-2 py-4 px-6 bg-muted text-muted-foreground' +
 		(isDragging ? ' bg-green-100' : '')}
 	on:dragover={ondragover}
 	on:dragleave={ondragleave}
@@ -256,7 +257,7 @@
 >
 	<div>
 		<textarea
-			class="my-2 p-2 rounded-xl bg-white px-4 min-h-[1rem] w-full"
+			class="my-2 p-2 rounded-xl bg-input px-4 min-h-[1rem] w-full"
 			on:blur={noteDidChange}
 			value={mem.note}
 		/>
@@ -266,14 +267,14 @@
 				<a href={mem.url} target="_blank" class="font-bold">
 					<span class="title-text" bind:this={titleEl}>{getPrettyTitle(mem)}</span>
 				</a>
-				<button class="text-gray-500 hover:text-gray-800" on:click={startEdit}>
+				<button class="text-primary hover:text-secondary" on:click={startEdit}>
 					<span class="material-icons mx-2 text-sm">&#xe3c9;</span>
 				</button>
 			</div>
 		{/if}
 
 		<div
-			class="my-2 p-4 text-gray-400 bg-gray-100 rounded-xl"
+			class="my-2 p-4 text-secondary-foreground bg-input rounded-xl"
 			contenteditable="true"
 			on:blur={descriptionDidChange}
 		>
@@ -307,7 +308,7 @@
 			<ul class="my-2 py-2">
 				{#each mem.links as link (link.url)}
 					<li>
-						<a href={link.url} target="_blank" class="text-gray-500">
+						<a href={link.url} target="_blank" class="text-primary-foreground">
 							{#if link.description}
 								{link.description}
 							{:else}
@@ -319,41 +320,41 @@
 			</ul>
 		{/if}
 
-		<div class="my-2 text-gray-400" title={mem.id}>
+		<div class="my-2 text-muted-foreground text-xs" title={mem.id}>
 			<div>{getPrettyDate(mem)}</div>
-			<div class="text-gray-200">
+			<div>
 				<a href={`/mem/${mem.id}`}>{mem.id}</a>
 			</div>
-			<div class="text-xs text-gray-300"><a href={mem.url} target="_blank">{mem.url}</a></div>
+			<div class=""><a href={mem.url} target="_blank">{mem.url}</a></div>
 		</div>
 	</div>
 
-	<div class="text-gray-400 flex flex-row flex-nowrap gap-1">
+	<div class="text-accent-foreground flex flex-row flex-nowrap gap-2">
 		{#if mem.new}
-			<button class="pr-2 py-1 hover:text-gray-500" on:click={onArchive}>
+			<Badge class="flex flex-row gap-2" variant="outline" on:click={onArchive}>
 				<span class="material-icons text-sm align-middle">&#xe149;</span>
 				Archive
-			</button>
+			</Badge>
 		{/if}
 
 		{#if !mem.new}
-			<button class="pr-2 py-1 hover:text-gray-500" on:click={onUnarchive}>
+			<Badge class="flex flex-row gap-2" variant="outline" on:click={onUnarchive}>
 				<span class="material-icons text-sm align-middle">&#xe169;</span>
 				Unarchive
-			</button>
+			</Badge>
 		{/if}
 
-		<button class="pr-2 py-1 hover:text-gray-500" on:click={onAnnotate}>
+		<Badge class="flex flex-row gap-2" variant="outline" on:click={onAnnotate}>
 			<span class="material-icons text-sm align-middle">&#xf071;</span>
 			Annotate
-		</button>
+		</Badge>
 
-		<button class="pr-2 py-1 hover:text-red-400" on:click={onDelete}>
+		<Badge class="flex flex-row gap-2" variant="outline" on:click={onDelete}>
 			<span class="material-icons text-sm align-middle">&#xE872;</span>
 			Delete
-		</button>
+		</Badge>
 
-		<div class="pr-2 py-1 hover:text-gray-500">
+		<Badge class="flex flex-row gap-2" variant="outline">
 			<form enctype="multipart/form-data">
 				<input
 					type="file"
@@ -369,6 +370,6 @@
 					Upload
 				</label>
 			</form>
-		</div>
+		</Badge>
 	</div>
 </div>

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { getSavedViews, updateSavedViews, getSecrets, updateSecrets } from '$lib/mem.client.js';
 	import { sharedUser } from '$lib/firebase-shared';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 
 	let writeSecret: string = '';
 	let views: string[] = [];
@@ -73,31 +75,23 @@
 <div class="p-4">
 	<div class="mb-4">
 		<div class="font-bold">Shared Secret:</div>
-		<div>
-			<input type="text" bind:value={writeSecret} class="my-1 px-2 py-1 border border-gray-200" />
-			<button class="mx-2 px-2 py-1 bg-gray-200 active:bg-gray-400" on:click={saveWriteSecret}>
-				Save
-			</button>
+		<div class="flex items-center justify-between space-x-4">
+			<Input type="text" bind:value={writeSecret} />
+			<Button variant="secondary" on:click={saveWriteSecret}>Save</Button>
 		</div>
 	</div>
 
 	<div class="mb-4">
 		<div class="font-bold">Views</div>
 		{#each views as view, index}
-			<div>
-				<input type="text" value={view} class="my-1 px-2 py-1 border border-gray-200" />
-				<button
-					class="mx-2 px-2 py-1 bg-gray-200 active:bg-gray-400"
-					data-index={index}
-					on:click={deleteView}
-				>
-					Delete
-				</button>
+			<div class="flex items-center justify-between space-x-4 my-1">
+				<Input type="text" value={view} />
+				<Button variant="secondary" data-index={index} on:click={deleteView}>Delete</Button>
 			</div>
 		{/each}
 	</div>
-	<div class="flex flex-row">
-		<input type="text" bind:value={newView} class="my-1 px-2 py-1 border border-gray-200" />
-		<button class="mx-2 px-2 py-1 bg-gray-200 active:bg-gray-400" on:click={addView}>Add</button>
+	<div class="flex items-center justify-between space-x-4">
+		<Input type="text" bind:value={newView} />
+		<Button variant="secondary" on:click={addView}>Add</Button>
 	</div>
 </div>

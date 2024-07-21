@@ -20,9 +20,15 @@ importers:
       axios:
         specifier: ^1.7.2
         version: 1.7.2
+      bits-ui:
+        specifier: ^0.21.12
+        version: 0.21.12(svelte@4.2.18)
       body-parser:
         specifier: ^1.20.2
         version: 1.20.2
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       commander:
         specifier: ^12.1.0
         version: 12.1.0
@@ -62,6 +68,9 @@ importers:
       md5:
         specifier: ^2.3.0
         version: 2.3.0
+      mode-watcher:
+        specifier: ^0.4.0
+        version: 0.4.0(svelte@4.2.18)
       mongodb:
         specifier: ^6.8.0
         version: 6.8.0(gcp-metadata@5.3.0(encoding@0.1.13))(socks@2.8.3)
@@ -71,6 +80,15 @@ importers:
       open-graph-scraper:
         specifier: ^6.6.3
         version: 6.6.3
+      svelte-sonner:
+        specifier: ^0.3.27
+        version: 0.3.27(svelte@4.2.18)
+      tailwind-merge:
+        specifier: ^2.4.0
+        version: 2.4.0
+      tailwind-variants:
+        specifier: ^0.2.1
+        version: 0.2.1(tailwindcss@3.4.6)
       url-regex-safe:
         specifier: ^4.0.0
         version: 4.0.0
@@ -656,6 +674,15 @@ packages:
   '@firebase/webchannel-wrapper@1.0.1':
     resolution: {integrity: sha512-jmEnr/pk0yVkA7mIlHNnxCi+wWzOFUg0WyIotgkKAb2u1J7fAeDBcVNSTjTihbAYNusCLQdW5s9IJ5qwnEufcQ==}
 
+  '@floating-ui/core@1.6.4':
+    resolution: {integrity: sha512-a4IowK4QkXl4SCWTGUR0INAfEOX3wtsYw3rKK5InQEHMGObkR8Xk44qYQD9P4r6HHw0iIfK6GUKECmY8sTkqRA==}
+
+  '@floating-ui/dom@1.6.7':
+    resolution: {integrity: sha512-wmVfPG5o2xnKDU4jx/m4w5qva9FWHcnZ8BvzEe90D/RpwsJaTAVYPEPdQ8sbr/N8zZTAHlZUTQdqg8ZUbzHmng==}
+
+  '@floating-ui/utils@0.2.4':
+    resolution: {integrity: sha512-dWO2pw8hhi+WrXq1YJy2yCuWoL20PddgGaqTgVe4cOS9Q6qklXCiA1tJEqX6BEwRNSCP84/afac9hd4MS+zEUA==}
+
   '@google-cloud/firestore@7.9.0':
     resolution: {integrity: sha512-c4ALHT3G08rV7Zwv8Z2KG63gZh66iKdhCBeDfCpIkLrjX6EAjTD/szMdj14M+FnQuClZLFfW5bAgoOjfNmLtJg==}
     engines: {node: '>=14.0.0'}
@@ -696,6 +723,9 @@ packages:
   '@humanwhocodes/retry@0.3.0':
     resolution: {integrity: sha512-d2CGZR2o7fS6sWB7DG/3a95bGKQyHMACZ5aW8qGkkqQpUoZV6C0X7Pc7l4ZNMZkfNBf4VWNe9E1jRsf0G146Ew==}
     engines: {node: '>=18.18'}
+
+  '@internationalized/date@3.5.4':
+    resolution: {integrity: sha512-qoVJVro+O0rBaw+8HPjUB1iH8Ihf8oziEnqMnvhJUSuVIrHOuZ6eNLHNvzXJKUvAtaDiqMnRlg8Z2mgh09BlUw==}
 
   '@jest/expect-utils@29.5.0':
     resolution: {integrity: sha512-fmKzsidoXQT2KwnrwE0SQq3uj8Z763vzR8LnLBwC2qYWEFpjX8daRsk6rHUM1QvNlEW/UJXNXm59ztmJJWs2Mg==}
@@ -756,6 +786,11 @@ packages:
   '@mapbox/node-pre-gyp@1.0.11':
     resolution: {integrity: sha512-Yhlar6v9WQgUp/He7BdgzOz8lqMQ8sU+jkCq7Wx8Myc5YFJLbEe7lgui/V7G1qB1DJykHSGwreceSaD60Y0PUQ==}
     hasBin: true
+
+  '@melt-ui/svelte@0.76.2':
+    resolution: {integrity: sha512-7SbOa11tXUS95T3fReL+dwDs5FyJtCEqrqG3inRziDws346SYLsxOQ6HmX+4BkIsQh1R8U3XNa+EMmdMt38lMA==}
+    peerDependencies:
+      svelte: '>=3 <5'
 
   '@mongodb-js/saslprep@1.1.7':
     resolution: {integrity: sha512-dCHW/oEX0KJ4NjDULBo3JiOaK5+6axtpBbS+ao2ZInoAL9/YRQLhXzSNAFz7hP4nzLkIqsfYAK/PDE3+XHny0Q==}
@@ -1110,6 +1145,9 @@ packages:
       svelte: ^4.0.0 || ^5.0.0-next.0
       vite: ^5.0.0
 
+  '@swc/helpers@0.5.12':
+    resolution: {integrity: sha512-KMZNXiGibsW9kvZAO1Pam2JPTDBm+KSHMMHWdsyI/1DbIZjT2A6Gy3hblVXUMEDvUAKq+e0vL0X0o54owWji7g==}
+
   '@tootallnate/once@2.0.0':
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
     engines: {node: '>= 10'}
@@ -1440,6 +1478,11 @@ packages:
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
 
+  bits-ui@0.21.12:
+    resolution: {integrity: sha512-Cf0iB+ZKwA0ZjkpixrhrZK9PC6pGPFleW/65Xc/z0lpGvWaFtdOhiYEntCHHxZ0VihP3aJaG0OBhUBIbmAePaA==}
+    peerDependencies:
+      svelte: ^4.0.0 || ^5.0.0-next.118
+
   body-parser@1.20.2:
     resolution: {integrity: sha512-ml9pReCu3M61kGlqoTm2umSXTlRTuGTx0bfYj+uIUKKYycG5NtSbeetV3faSU6R7ajOPw0g/J1PvK4qNy7s5bA==}
     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
@@ -1545,6 +1588,10 @@ packages:
   cliui@8.0.1:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
     engines: {node: '>=12'}
+
+  clsx@2.1.1:
+    resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
+    engines: {node: '>=6'}
 
   code-red@1.0.3:
     resolution: {integrity: sha512-kVwJELqiILQyG5aeuyKFbdsI1fmQy1Cmf7dQ8eGmVuJoaRVdwey7WaMknr2ZFeVSYSKT0rExsa8EGw0aoI/1QQ==}
@@ -1942,6 +1989,9 @@ packages:
 
   flatted@3.3.1:
     resolution: {integrity: sha512-X8cqMLLie7KsNUDSdzeN8FYK9rEt4Dt67OsG/DNGnYTSDBG4uFAJFBnUeiV+zCVAvwFy56IjM9sH51jVaEhNxw==}
+
+  focus-trap@7.5.4:
+    resolution: {integrity: sha512-N7kHdlgsO/v+iD/dMoJKtsSqs5Dz/dXZVebRgJw23LDk+jMi/974zyiOYDziY2JPp8xivq9BmUGwIJMiuSBi7w==}
 
   follow-redirects@1.15.6:
     resolution: {integrity: sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA==}
@@ -2513,6 +2563,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  mode-watcher@0.4.0:
+    resolution: {integrity: sha512-zuHYgY7Cq4NAB1JHj0NpxTKfx6RMH3A2yAoDfjF1UTaIbgWzRyCQRcK/uE9EuVt2PqAGZZbqxRC0h9eB1hfyJQ==}
+    peerDependencies:
+      svelte: ^4.0.0 || ^5.0.0-next.1
+
   mongodb-connection-string-url@3.0.1:
     resolution: {integrity: sha512-XqMGwRX0Lgn05TDB4PyG2h2kKO/FfWJyCzYQbIhXUxz7ETt0I/FqHjUeqj37irJ+Dl1ZtU82uYyj14u2XsZKfg==}
 
@@ -2563,6 +2618,11 @@ packages:
   nanoid@3.3.7:
     resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
+
+  nanoid@5.0.7:
+    resolution: {integrity: sha512-oLxFY2gd2IqnjcYyOXD8XGCftpGtZP2AbHbOkthDkvRywH5ayNtPVy9YlOPcHckXzbLTCHpkb7FB+yuxKV13pQ==}
+    engines: {node: ^18 || >=20}
     hasBin: true
 
   natural-compare@1.4.0:
@@ -3134,9 +3194,26 @@ packages:
       typescript:
         optional: true
 
+  svelte-sonner@0.3.27:
+    resolution: {integrity: sha512-+PvbuePNTyTNCepCWqKcFeu+Lo27yYuwfSc7zJvrWjCRMJrWAmccPg3j7jO1W13QoN3TySXU5Trb956VBQiM5Q==}
+    peerDependencies:
+      svelte: ^3.0.0 || ^4.0.0 || ^5.0.0-next.1
+
   svelte@4.2.18:
     resolution: {integrity: sha512-d0FdzYIiAePqRJEb90WlJDkjUEx42xhivxN8muUBmfZnP+tzUgz12DJ2hRJi8sIHCME7jeK1PTMgKPSfTd8JrA==}
     engines: {node: '>=16'}
+
+  tabbable@6.2.0:
+    resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
+
+  tailwind-merge@2.4.0:
+    resolution: {integrity: sha512-49AwoOQNKdqKPd9CViyH5wJoSKsCDjUlzL8DxuGp3P1FsGY36NJDAa18jLZcaHAUUuTj+JB8IAo8zWgBNvBF7A==}
+
+  tailwind-variants@0.2.1:
+    resolution: {integrity: sha512-2xmhAf4UIc3PijOUcJPA1LP4AbxhpcHuHM2C26xM0k81r0maAO6uoUSHl3APmvHZcY5cZCY/bYuJdfFa4eGoaw==}
+    engines: {node: '>=16.x', pnpm: '>=7.x'}
+    peerDependencies:
+      tailwindcss: '*'
 
   tailwindcss@3.4.6:
     resolution: {integrity: sha512-1uRHzPB+Vzu57ocybfZ4jh5Q3SdlH7XW23J5sQoM9LhE9eIOlzxer/3XPSsycvih3rboRsvt0QCmzSrqyOYUIA==}
@@ -4069,6 +4146,17 @@ snapshots:
 
   '@firebase/webchannel-wrapper@1.0.1': {}
 
+  '@floating-ui/core@1.6.4':
+    dependencies:
+      '@floating-ui/utils': 0.2.4
+
+  '@floating-ui/dom@1.6.7':
+    dependencies:
+      '@floating-ui/core': 1.6.4
+      '@floating-ui/utils': 0.2.4
+
+  '@floating-ui/utils@0.2.4': {}
+
   '@google-cloud/firestore@7.9.0(encoding@0.1.13)':
     dependencies:
       fast-deep-equal: 3.1.3
@@ -4129,6 +4217,10 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.3.0': {}
+
+  '@internationalized/date@3.5.4':
+    dependencies:
+      '@swc/helpers': 0.5.12
 
   '@jest/expect-utils@29.5.0':
     dependencies:
@@ -4206,6 +4298,16 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  '@melt-ui/svelte@0.76.2(svelte@4.2.18)':
+    dependencies:
+      '@floating-ui/core': 1.6.4
+      '@floating-ui/dom': 1.6.7
+      '@internationalized/date': 3.5.4
+      dequal: 2.0.3
+      focus-trap: 7.5.4
+      nanoid: 5.0.7
+      svelte: 4.2.18
 
   '@mongodb-js/saslprep@1.1.7':
     dependencies:
@@ -4493,6 +4595,10 @@ snapshots:
       vitefu: 0.2.5(vite@5.3.4(@types/node@20.14.11)(terser@5.19.0))
     transitivePeerDependencies:
       - supports-color
+
+  '@swc/helpers@0.5.12':
+    dependencies:
+      tslib: 2.6.3
 
   '@tootallnate/once@2.0.0': {}
 
@@ -4881,6 +4987,13 @@ snapshots:
     dependencies:
       file-uri-to-path: 1.0.0
 
+  bits-ui@0.21.12(svelte@4.2.18):
+    dependencies:
+      '@internationalized/date': 3.5.4
+      '@melt-ui/svelte': 0.76.2(svelte@4.2.18)
+      nanoid: 5.0.7
+      svelte: 4.2.18
+
   body-parser@1.20.2:
     dependencies:
       bytes: 3.1.2
@@ -5014,6 +5127,8 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
+
+  clsx@2.1.1: {}
 
   code-red@1.0.3:
     dependencies:
@@ -5472,6 +5587,10 @@ snapshots:
       keyv: 4.5.4
 
   flatted@3.3.1: {}
+
+  focus-trap@7.5.4:
+    dependencies:
+      tabbable: 6.2.0
 
   follow-redirects@1.15.6: {}
 
@@ -6094,6 +6213,10 @@ snapshots:
 
   mkdirp@1.0.4: {}
 
+  mode-watcher@0.4.0(svelte@4.2.18):
+    dependencies:
+      svelte: 4.2.18
+
   mongodb-connection-string-url@3.0.1:
     dependencies:
       '@types/whatwg-url': 11.0.5
@@ -6123,6 +6246,8 @@ snapshots:
       thenify-all: 1.6.0
 
   nanoid@3.3.7: {}
+
+  nanoid@5.0.7: {}
 
   natural-compare@1.4.0: {}
 
@@ -6673,6 +6798,10 @@ snapshots:
       postcss-load-config: 4.0.1(postcss@8.4.39)
       typescript: 5.5.3
 
+  svelte-sonner@0.3.27(svelte@4.2.18):
+    dependencies:
+      svelte: 4.2.18
+
   svelte@4.2.18:
     dependencies:
       '@ampproject/remapping': 2.2.1
@@ -6689,6 +6818,15 @@ snapshots:
       locate-character: 3.0.0
       magic-string: 0.30.10
       periscopic: 3.1.0
+
+  tabbable@6.2.0: {}
+
+  tailwind-merge@2.4.0: {}
+
+  tailwind-variants@0.2.1(tailwindcss@3.4.6):
+    dependencies:
+      tailwind-merge: 2.4.0
+      tailwindcss: 3.4.6
 
   tailwindcss@3.4.6:
     dependencies:

@@ -165,7 +165,7 @@
 		{#each mems as mem}
 			<div>
 				<a href={mem.url} target="_blank">{mem.url}</a>
-				<span class="text-gray-300">
+				<span class="text-secondary-foreground">
 					(<button
 						on:click={() => {
 							selectedMem = mem;

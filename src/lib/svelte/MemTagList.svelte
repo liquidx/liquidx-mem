@@ -39,9 +39,7 @@
 	};
 </script>
 
-<section
-	class="w-screen p-2 md:w-48 text-gray-500 flex flex-row flex-wrap md:flex-col justify-start"
->
+<section class="w-screen p-2 md:w-48 flex flex-row flex-wrap md:flex-col justify-start">
 	<a href="/" class="block p-0.5 whitespace-nowrap hover:underline">New </a>
 	<a href="/tag/*" class="block p-0.5 whitespace-nowrap hover:underline">Archive</a>
 	{#each views as view}
@@ -61,7 +59,7 @@
 	{#if !showAll}
 		<button
 			on:click|preventDefault={showAllDidClick}
-			class="block md:px-2 px-1 py-1 whitespace-nowrap hover:underline text-left hover:bg-gray-200 rounded-md"
+			class="block md:px-2 px-1 py-1 whitespace-nowrap hover:underline text-left rounded-md"
 		>
 			More..
 		</button>

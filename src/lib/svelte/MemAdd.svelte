@@ -4,6 +4,7 @@
 	import { sharedUser } from '$lib/firebase-shared';
 	import { addMem } from '$lib/mem.client';
 	import { createEventDispatcher } from 'svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 
 	let rawInput: string = '';
 	const dispatch = createEventDispatcher();
@@ -30,12 +31,7 @@
 	<textarea
 		bind:value={rawInput}
 		placeholder="Enter text, urls, #tags here."
-		class="p-2 m-0.5 rounded-xl border border-gray-200 w-full h-16"
+		class="p-3 m-0.5 rounded-xl bg-input text-input-foreground w-full h-16"
 	/>
-	<input
-		type="button"
-		class="rounded-xl bg-gray-200 hover:bg-gray-300 active:bg-gray-400 my-2 p-2 text-gray-600"
-		value="Add"
-		on:click={addNewMem}
-	/>
+	<Button class="my-2" on:click={addNewMem}>Add</Button>
 </div>

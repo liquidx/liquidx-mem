@@ -25,7 +25,9 @@
 		"@google-cloud/storage": "^7.12.0",
 		"@lucia-auth/adapter-mongodb": "^1.0.3",
 		"axios": "^1.7.2",
+		"bits-ui": "^0.21.12",
 		"body-parser": "^1.20.2",
+		"clsx": "^2.1.1",
 		"commander": "^12.1.0",
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.5",
@@ -39,9 +41,13 @@
 		"m3u8-parser": "^7.1.0",
 		"m3u8stream": "^0.8.6",
 		"md5": "^2.3.0",
+		"mode-watcher": "^0.4.0",
 		"mongodb": "^6.8.0",
 		"needle": "^3.3.1",
 		"open-graph-scraper": "^6.6.3",
+		"svelte-sonner": "^0.3.27",
+		"tailwind-merge": "^2.4.0",
+		"tailwind-variants": "^0.2.1",
 		"url-regex-safe": "^4.0.0"
 	},
 	"devDependencies": {
