@@ -2,7 +2,7 @@
 	import axios from 'axios';
 
 	import { sharedUser } from '$lib/firebase-shared';
-	import type { Mem } from '$lib/common/mems';
+	import type { Mem, MemPhoto } from '$lib/common/mems';
 	import * as memModifiers from '$lib/mem.client';
 
 	import MemList from '$lib/svelte/MemList.svelte';
@@ -103,6 +103,18 @@
 			const deleteMemId = await memModifiers.deleteMem(mem, $sharedUser);
 			if (deleteMemId) {
 				mems = mems.filter((mem) => mem.id !== deleteMemId);
+			}
+		}
+	};
+
+	const deletePhotoForMem = async (e: CustomEvent) => {
+		let mem: Mem = e.detail.mem;
+		let photo: MemPhoto = e.detail.photo;
+		console.log(photo);
+		if (mem && $sharedUser) {
+			const updatedMem = await memModifiers.deletePhotoForMem(mem, photo, $sharedUser);
+			if (updatedMem) {
+				updateVisibleMems(mems, updatedMem, mem.id);
 			}
 		}
 	};
@@ -212,6 +224,7 @@
 			on:titleChanged={updateTitleForMem}
 			on:fileUpload={uploadFilesForMem}
 			on:seen={seenMem}
+			on:deletePhoto={deletePhotoForMem}
 		/>
 		<MoreMem moreAvailable={moreMemsAvailable} on:loadMore={loadMore} />
 	</main>

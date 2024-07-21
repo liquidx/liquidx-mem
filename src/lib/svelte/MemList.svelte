@@ -17,6 +17,7 @@
 			on:noteChanged
 			on:titleChanged
 			on:unarchive
+			on:deletePhoto
 		/>
 	{/each}
 </div>

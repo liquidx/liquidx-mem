@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { User } from 'firebase/auth';
 
-import { memFromJson, type Mem } from './common/mems';
+import { memFromJson, type Mem, type MemPhoto } from './common/mems';
 import type { TagListItem } from './server/tags.server';
 import { iconForTag } from './tags';
 import type { PrefsViews, PrefsSecrets } from './common/prefs';
@@ -297,6 +297,30 @@ export async function uploadFilesForMem(
 			return undefined;
 		});
 }
+
+export const deletePhotoForMem = async (
+	mem: Mem,
+	photo: MemPhoto,
+	user: User
+): Promise<Mem | undefined> => {
+	const url = `${serverUrl}/mem/media-del`;
+	const body = { userId: user.uid, memId: mem.id, mediaUrl: photo.mediaUrl };
+	const authToken = await user.getIdToken();
+	const headers = {
+		Authorization: `Bearer ${authToken}`
+	};
+
+	return axios.post(url, body, { headers }).then((response) => {
+		if (response.status != 200) {
+			return;
+		}
+
+		if (!response.data.mem) {
+			return;
+		}
+		return memFromJson(response.data.mem);
+	});
+};
 
 export const getSavedViews = async (user: User): Promise<PrefsViews | undefined> => {
 	const url = `${serverUrl}/prefs?key=views`;

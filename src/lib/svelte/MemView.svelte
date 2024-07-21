@@ -2,17 +2,20 @@
 	import { DateTime } from 'luxon';
 	import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 	import { createEventDispatcher } from 'svelte';
-
-	import type { Mem } from '$lib/common/mems';
-	import { sharedFirebaseApp } from '$lib/firebase-shared';
-	import { Button } from '$lib/components/ui/button';
 	import Archive from 'lucide-svelte/icons/archive';
 	import PenLine from 'lucide-svelte/icons/pen-line';
 	import Trash2 from 'lucide-svelte/icons/trash-2';
 	import ImageUp from 'lucide-svelte/icons/image-up';
 	import Eye from 'lucide-svelte/icons/eye';
 
+	import type { Mem, MemPhoto } from '$lib/common/mems';
+	import { sharedFirebaseApp } from '$lib/firebase-shared';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
+	import ResizingTextarea from './ResizingTextarea.svelte';
+
 	type MediaUrl = {
+		photo?: MemPhoto;
+		video?: MemPhoto;
 		url: string;
 		posterUrl?: string;
 		status?: string;
@@ -27,6 +30,7 @@
 	let isDragging = false;
 
 	let titleEl: HTMLSpanElement | null = null;
+	let uploadEl: HTMLInputElement | null = null;
 
 	const dispatch = createEventDispatcher();
 
@@ -49,6 +53,17 @@
 
 	function onSeen() {
 		dispatch('seen', { mem });
+	}
+
+	function onUploadDidClick() {
+		if (uploadEl) {
+			uploadEl.click();
+		}
+	}
+
+	function onDeletePhoto(photo: MemPhoto | undefined) {
+		console.log('onDeletePhoto', photo);
+		dispatch('deletePhoto', { mem, photo });
 	}
 
 	$: {
@@ -101,7 +116,7 @@
 			return;
 		}
 
-		console.log('Upload Files', target.files);
+		console.log('fileDidChange for mem', mem);
 		dispatch('fileUpload', { mem, files: target.files });
 		// TODO: Check if there are issues if we clear this too early?
 		// target.value = '';
@@ -208,14 +223,14 @@
 					const storageRef = ref(storage, photo.cachedMediaPath);
 					try {
 						const url = await getDownloadURL(storageRef);
-						photos.push({ url: url, status: 'cached' });
+						photos.push({ url: url, status: 'cached', photo: photo });
 					} catch (e) {
 						// Silent fail
 						console.log('Error getting cached image', e);
 					}
 				} else {
 					if (photo.mediaUrl) {
-						photos.push({ url: photo.mediaUrl, status: 'live' });
+						photos.push({ photo: photo, url: photo.mediaUrl, status: 'live' });
 					}
 				}
 			}
@@ -243,6 +258,7 @@
 				} else {
 					if (video.mediaUrl) {
 						videos.push({
+							video: video,
 							url: video.mediaUrl,
 							posterUrl: video.posterUrl,
 							status: 'live'
@@ -267,8 +283,9 @@
 	tabindex="0"
 >
 	<div>
-		<textarea
+		<ResizingTextarea
 			class="my-2 py-2 rounded-xl bg-input px-4 min-h-[1rem] h-8 w-full"
+			maxRows={4}
 			on:blur={noteDidChange}
 			value={mem.note}
 		/>
@@ -304,7 +321,15 @@
 		{#if displayPhotos}
 			<div class="photos">
 				{#each displayPhotos as photo (photo.url)}
-					<img src={photo.url} alt={photo.status} title={photo.status} class="my-4" />
+					<div>
+						<img src={photo.url} alt={photo.status} title={photo.status} class="mt-4 rounded-md" />
+						<button
+							class="text-xs text-right text-muted-foreground w-full"
+							on:click={() => onDeletePhoto(photo.photo)}
+						>
+							Delete
+						</button>
+					</div>
 				{/each}
 			</div>
 		{/if}
@@ -370,20 +395,22 @@
 			Delete
 		</Button>
 
-		<Button class="flex flex-row gap-2" variant="outline" size="sm">
+		<Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onUploadDidClick}>
 			<ImageUp class="align-middle" size="12" />
-			<form enctype="multipart/form-data">
-				<input
-					type="file"
-					class="hidden"
-					multiple
-					name="images[]"
-					id="fileInput"
-					accept="image/*"
-					on:change={fileDidChange}
-				/>
-				<label for="fileInput"> Upload </label>
-			</form>
+			Upload
 		</Button>
+
+		<form enctype="multipart/form-data">
+			<input
+				type="file"
+				class="hidden"
+				multiple
+				name="images[]"
+				id="fileInput"
+				accept="image/*"
+				bind:this={uploadEl}
+				on:change={fileDidChange}
+			/>
+		</form>
 	</div>
 </div>
