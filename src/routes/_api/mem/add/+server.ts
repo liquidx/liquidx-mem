@@ -1,5 +1,7 @@
 import { DateTime } from 'luxon';
 import { error, json } from '@sveltejs/kit';
+import type { Firestore } from '@google-cloud/firestore';
+import type { Bucket } from '@google-cloud/storage';
 
 import type { RequestHandler } from './$types';
 import { parseText } from '$lib/common/parser.js';
@@ -13,6 +15,25 @@ import {
 } from '$lib/firebase.server.js';
 import { memToJson } from '$lib/common/mems';
 import { refreshTagCounts } from '$lib/server/tags.server.js';
+import { annotateMem } from '$lib/server/annotator.js';
+import { mirrorMedia } from '$lib/server/mirror.js';
+import { firestoreUpdate } from '$lib/server/firestore-update.js';
+import type { Mem } from '$lib/common/mems';
+
+const mirrorMediaInMem = async (
+	db: Firestore,
+	bucket: Bucket,
+	memId: string,
+	mem: Mem,
+	userId: string
+): Promise<Mem | void> => {
+	const outputPath = `users/${userId}/media`;
+	const updatedMem = await mirrorMedia(mem, bucket, outputPath);
+	const result = await firestoreUpdate(db, userId, memId, updatedMem);
+	if (result) {
+		return updatedMem;
+	}
+};
 
 export const fallback: RequestHandler = async ({ url, request }) => {
 	let text: string = '';
@@ -41,6 +62,7 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 
 	const firebaseApp = getFirebaseApp();
 	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
+	const bucket = getFirebaseStorageBucket(firebaseApp);
 	const userId = await getUserId(firebaseApp, request);
 
 	if (!userId) {
@@ -57,7 +79,6 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 		//const imageDataBuffer = Buffer.from(image, "base64");
 		const dateString = DateTime.utc().toFormat('yyyyMMddhhmmss');
 		const path = `users/${userId}/${dateString}`;
-		const bucket = getFirebaseStorageBucket(firebaseApp);
 		const file = bucket.file(path);
 
 		const writable = file.createWriteStream();
@@ -72,13 +93,17 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 	mem.new = true;
 	mem.addedMs = DateTime.utc().toMillis();
 
-	return firestoreAdd(db, userId, mem)
-		.then(async () => {
-			await refreshTagCounts(db, userId);
-			return json({ mem: memToJson(mem) });
-		})
-		.catch((err) => {
-			console.error('Unable to save', err);
-			return error(500, JSON.stringify({ error: 'Unable to save' }));
-		});
+	const ref = await firestoreAdd(db, userId, mem).catch((err) => {
+		console.error('Unable to save', err);
+		return error(500, JSON.stringify({ error: 'Unable to save' }));
+	});
+
+	const memId = ref.id;
+	await refreshTagCounts(db, userId);
+	let updatedMem = await annotateMem(mem);
+	const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, memId, updatedMem, userId);
+	if (updatedMemWithMedia) {
+		updatedMem = updatedMemWithMedia;
+	}
+	return json({ mem: memToJson(updatedMem) });
 };
