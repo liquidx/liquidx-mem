@@ -324,6 +324,7 @@
 			<div class="text-gray-200">
 				<a href={`/mem/${mem.id}`}>{mem.id}</a>
 			</div>
+			<div class="text-xs text-gray-300"><a href={mem.url} target="_blank">{mem.url}</a></div>
 		</div>
 	</div>
 
