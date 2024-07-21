@@ -234,17 +234,17 @@
 </script>
 
 <div
-	class={'mem flex flex-col border-l-2 m-0.5 py-2 px-6 hover:border-l-gray-800' +
-		(isDragging ? ' border-l-green-400' : '')}
+	class={'mem flex flex-col rounded-xl my-4 mx-2 py-4 px-6 bg-gray-50' +
+		(isDragging ? ' bg-green-100' : '')}
 	on:dragover={ondragover}
 	on:dragleave={ondragleave}
 	on:drop={ondrop}
 	role="button"
 	tabindex="0"
 >
-	<div class="grow">
+	<div>
 		<div
-			class="p-2 bg-gray-50 border border-gray-200 min-h-[1rem]"
+			class="my-2 p-2 rounded-xl bg-white px-4 min-h-[1rem]"
 			contenteditable="true"
 			on:blur={noteDidChange}
 		>
