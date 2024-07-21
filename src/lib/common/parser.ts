@@ -1,5 +1,5 @@
 import urlRegexSafe from 'url-regex-safe';
-
+import { removeUrlTrackingParams } from '../url.js';
 import type { Mem } from './mems.js';
 
 const tagRegex = new RegExp('#[^\\s,]+', 'g');
@@ -56,7 +56,7 @@ export const parseText = (text: string): Mem => {
 	// TODO: deal with multiple matches.
 	if (matches && matches.length > 0) {
 		const first = matches[0];
-		mem.url = first.toString();
+		mem.url = removeUrlTrackingParams(first.toString());
 		mem.note = text.replace(urlRegexSafe(), '').trim();
 	} else {
 		mem.note = text;
