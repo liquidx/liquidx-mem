@@ -247,7 +247,7 @@
 </script>
 
 <div
-	class={'mem flex flex-col rounded-xl my-4 mx-2 py-4 px-6 bg-muted text-muted-foreground' +
+	class={'mem flex flex-col rounded-xl my-4 md:mx-2 py-4 px-4 md:px-6 bg-muted text-muted-foreground' +
 		(isDragging ? ' bg-green-100' : '')}
 	on:dragover={ondragover}
 	on:dragleave={ondragleave}
@@ -329,7 +329,7 @@
 		</div>
 	</div>
 
-	<div class="text-accent-foreground flex flex-row flex-nowrap gap-2">
+	<div class="text-accent-foreground flex flex-row flex-wrap gap-1 md:gap-2">
 		{#if mem.new}
 			<Badge class="flex flex-row gap-2" variant="outline" on:click={onArchive}>
 				<span class="material-icons text-sm align-middle">&#xe149;</span>
