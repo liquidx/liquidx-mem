@@ -19,6 +19,7 @@ import { annotateMem } from '$lib/server/annotator.js';
 import { mirrorMedia } from '$lib/server/mirror.js';
 import { firestoreUpdate } from '$lib/server/firestore-update.js';
 import type { Mem } from '$lib/common/mems';
+import { userForSharedSecret } from '$lib/server/firestore-user-secrets.js';
 
 const mirrorMediaInMem = async (
 	db: Firestore,
@@ -63,7 +64,13 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 	const firebaseApp = getFirebaseApp();
 	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
 	const bucket = getFirebaseStorageBucket(firebaseApp);
-	const userId = await getUserId(firebaseApp, request);
+
+	let userId: string | undefined;
+	if (token) {
+		userId = await getUserId(firebaseApp, request);
+	} else if (secret) {
+		userId = await userForSharedSecret(db, secret);
+	}
 
 	if (!userId) {
 		return error(403, JSON.stringify({ error: 'Permission denied' }));
