@@ -15,31 +15,34 @@ import type { MemListRequest, MemListResponse } from '$lib/request.types';
 import { getUserId } from '$lib/server/api.server.js';
 
 const getMems = async (db: Firestore, request: MemListRequest) => {
-	let ref: CollectionReference<DocumentData> | Query<DocumentData> = db.collection(
+	let query: CollectionReference<DocumentData> | Query<DocumentData> = db.collection(
 		`users/${request.userId}/mems`
 	);
 
-	if (request.isArchived) {
-		ref = ref.where('new', '==', false);
+	if (request.all) {
+		query = query;
+	} else if (request.isArchived) {
+		query = query.where('new', '==', false);
 	} else if (request.allOfTags) {
 		// Limitation of Firestore is that we can't combined multple array-contains conditions.
 		// So we have to take the first tag and query for that, then filter the results.
 		const firstTag = request.allOfTags[0];
-		ref = ref.where('tags', 'array-contains', firstTag);
+		query = query.where('tags', 'array-contains', firstTag);
 	} else if (request.oneOfTags) {
-		ref = ref.where('tags', 'array-contains-any', request.oneOfTags);
+		query = query.where('tags', 'array-contains-any', request.oneOfTags);
 	} else {
-		ref = ref.where('new', '==', true);
+		query = query.where('new', '==', true);
 	}
 
-	// TODO: ref.limit(request.pageSize)
-	const pageSize = request.pageSize ?? 100;
-	const page = request.page ?? 0;
+	if (request.pageSize) {
+		const pageSize = parseInt(request.pageSize);
+		query = query.limit(pageSize);
+		const page = request.page ? parseInt(request.page) : 0;
+		query = query.offset(page * parseInt(request.pageSize));
+	}
 
-	return ref
+	return query
 		.orderBy('addedMs', 'desc')
-		.limit(pageSize)
-		.offset(pageSize * page)
 		.get()
 		.then((snap: QuerySnapshot<DocumentData>) => {
 			const mems: Mem[] = [];

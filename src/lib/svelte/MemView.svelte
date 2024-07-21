@@ -47,37 +47,37 @@
 		}
 	}
 
-	function getPrettyDate() {
-		if (!mem.addedMs) {
+	function getPrettyDate(mem_: Mem) {
+		if (!mem_.addedMs) {
 			return '';
 		}
 
-		const date = new Date(mem.addedMs);
+		const date = new Date(mem_.addedMs);
 		return DateTime.fromJSDate(date).toFormat('yyyy-MM-dd hh:mm');
 	}
 
-	function getPrettyTitle() {
-		if (!mem) {
+	function getPrettyTitle(mem_: Mem) {
+		if (!mem_) {
 			return '';
 		}
 
-		if (mem.title) {
-			return mem.title;
-		} else if (mem.url) {
-			return mem.url.replace(/http[s]:\/\//, '');
+		if (mem_.title) {
+			return mem_.title;
+		} else if (mem_.url) {
+			return mem_.url.replace(/http[s]:\/\//, '');
 		} else {
 			return '';
 		}
 	}
 
-	function getShortDescription() {
-		if (!mem.description) {
+	function getShortDescription(mem_: Mem) {
+		if (!mem_.description) {
 			return '';
 		}
-		if (mem.description.length > maxChars) {
-			return mem.description.substring(0, maxChars) + '...';
+		if (mem_.description.length > maxChars) {
+			return mem_.description.substring(0, maxChars) + '...';
 		}
-		return mem.description;
+		return mem_.description;
 	}
 
 	function fileDidChange(e: Event): void {
@@ -176,12 +176,19 @@
 			} catch (e) {
 				// Silent fail
 			}
+		} else {
+			mediaImageUrl = '';
 		}
-		return mediaImageUrl;
 	}
 
 	async function getMediaUrls() {
-		if (mem && mem.photos) {
+		if (!mem) {
+			displayPhotos = [];
+			displayVideos = [];
+			return;
+		}
+
+		if (mem.photos) {
 			const photos: MediaUrl[] = [];
 			const storage = getStorage($sharedFirebaseApp);
 			for (let photo of mem.photos) {
@@ -201,8 +208,11 @@
 				}
 			}
 			displayPhotos = photos;
+		} else {
+			displayPhotos = [];
 		}
-		if (mem && mem.videos) {
+
+		if (mem.videos) {
 			const videos: MediaUrl[] = [];
 			const storage = getStorage($sharedFirebaseApp);
 			for (let video of mem.videos) {
@@ -229,6 +239,8 @@
 				}
 			}
 			displayVideos = videos;
+		} else {
+			displayVideos = [];
 		}
 	}
 </script>
@@ -243,18 +255,16 @@
 	tabindex="0"
 >
 	<div>
-		<div
-			class="my-2 p-2 rounded-xl bg-white px-4 min-h-[1rem]"
-			contenteditable="true"
+		<textarea
+			class="my-2 p-2 rounded-xl bg-white px-4 min-h-[1rem] w-full"
 			on:blur={noteDidChange}
-		>
-			{mem.note}
-		</div>
+			value={mem.note}
+		/>
 
 		{#if mem.url}
 			<div class="text-lg px-1 py-1">
 				<a href={mem.url} target="_blank" class="font-bold">
-					<span class="title-text" bind:this={titleEl}>{getPrettyTitle()}</span>
+					<span class="title-text" bind:this={titleEl}>{getPrettyTitle(mem)}</span>
 				</a>
 				<button class="text-gray-500 hover:text-gray-800" on:click={startEdit}>
 					<span class="material-icons mx-2 text-sm">&#xe3c9;</span>
@@ -267,7 +277,7 @@
 			contenteditable="true"
 			on:blur={descriptionDidChange}
 		>
-			{getShortDescription()}
+			{getShortDescription(mem)}
 		</div>
 
 		{#if displayVideos}
@@ -310,7 +320,7 @@
 		{/if}
 
 		<div class="my-2 text-gray-400" title={mem.id}>
-			<div>{getPrettyDate()}</div>
+			<div>{getPrettyDate(mem)}</div>
 			<div class="text-gray-200">
 				<a href={`/mem/${mem.id}`}>{mem.id}</a>
 			</div>

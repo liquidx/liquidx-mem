@@ -26,5 +26,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		await refreshTagCounts(db, userId);
 		return json({ memId });
 	}
+
+	console.log('Failed to delete mem: ', memId);
 	return error(500, JSON.stringify({ error: 'Error deleting mem' }));
 };
