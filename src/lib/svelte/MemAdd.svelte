@@ -26,15 +26,15 @@
 	};
 </script>
 
-<div class="flex flex-col w-full py-1 px-0 md:px-1 m-1">
+<div class="flex flex-col w-full py-1 px-0 md:px-1">
 	<textarea
 		bind:value={rawInput}
 		placeholder="Enter text, urls, #tags here."
-		class="p-2 m-0.5 rounded-md border border-gray-200 w-full h-16"
+		class="p-2 m-0.5 rounded-xl border border-gray-200 w-full h-16"
 	/>
 	<input
 		type="button"
-		class="bg-gray-200 hover:bg-gray-300 active:bg-gray-400 m-1 p-2 text-gray-700"
+		class="rounded-xl bg-gray-200 hover:bg-gray-300 active:bg-gray-400 my-2 p-2 text-gray-600"
 		value="Add"
 		on:click={addNewMem}
 	/>
