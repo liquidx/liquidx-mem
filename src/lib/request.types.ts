@@ -29,3 +29,8 @@ export interface SettingsReadResponse {
 	key: string;
 	settings: any;
 }
+
+export interface MemAnnotateResponse {
+	mem: Mem;
+	memId: string;
+}
