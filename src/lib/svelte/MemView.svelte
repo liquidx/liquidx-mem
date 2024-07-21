@@ -273,7 +273,7 @@
 		{/if}
 
 		<div
-			class="my-2 p-4 text-gray-400 bg-gray-50 rounded-xl"
+			class="my-2 p-4 text-gray-400 bg-gray-100 rounded-xl"
 			contenteditable="true"
 			on:blur={descriptionDidChange}
 		>

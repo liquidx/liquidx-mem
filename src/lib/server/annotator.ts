@@ -6,7 +6,7 @@ import { isResultBlocked } from './annotator-og-blocklist.js';
 // TODO: Type not exporting properly.
 const getOpenGraph = openGraphScraper as any;
 
-const ogImageToPhotos = (ogImage: any): MemPhoto[] => {
+const ogImageToPhotos = (ogImage: any, url: string): MemPhoto[] => {
 	let ogImages = [];
 	if (Array.isArray(ogImage)) {
 		ogImages = ogImage;
@@ -15,8 +15,12 @@ const ogImageToPhotos = (ogImage: any): MemPhoto[] => {
 	}
 
 	return ogImages.map((image: any) => {
+		let absoluteUrl = image.url;
+		if (!image.url.startsWith('http')) {
+			absoluteUrl = new URL(image.url, url).toString();
+		}
 		const photo: MemPhoto = {
-			mediaUrl: image.url
+			mediaUrl: absoluteUrl
 		};
 		if (
 			'width' in image &&
@@ -66,7 +70,7 @@ const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
 					annotated.description = result.ogDescription;
 				}
 				if (result.ogImage) {
-					annotated.photos = ogImageToPhotos(result.ogImage);
+					annotated.photos = ogImageToPhotos(result.ogImage, url);
 				}
 			}
 			return annotated;
