@@ -27,6 +27,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	const memId = body.mem || '';
 	const files = [body.image];
 
+	console.log('/_api/mem/attach', memId);
+
 	const firebaseApp = getFirebaseApp();
 	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
 	const bucket = getFirebaseStorageBucket(firebaseApp);
@@ -64,5 +66,6 @@ export const POST: RequestHandler = async ({ request }) => {
 	const res = await firestoreUpdate(db, userId, memId, mem).catch((err) => {
 		error(500, `Error saving: ${err}`);
 	});
+	console.log('updatedMem', mem);
 	return json({ mem: memToJson(mem) });
 };
