@@ -60,7 +60,7 @@ export async function addMem(mem: Mem, user: User): Promise<Mem | void> {
 		});
 }
 
-export async function deleteMem(mem: Mem, user: User): Promise<string | undefined> {
+export async function deleteMem(mem: Mem, user: User): Promise<string | void> {
 	console.log('deleteMem', mem);
 	const url = `${serverUrl}/mem/del`;
 	const body = { memId: mem._id };
@@ -73,9 +73,10 @@ export async function deleteMem(mem: Mem, user: User): Promise<string | undefine
 		if (response.status != 200) {
 			return;
 		}
-		if (response.data) {
-			return mem._id;
+		if (!response.data) {
+			return;
 		}
+		return mem._id;
 	});
 }
 
@@ -378,9 +379,7 @@ export const updateSecrets = async (user: User, settings: UserWriteSecret): Prom
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, { key: 'secrets', settings }, { headers }).then((response) => {
-		return;
-	});
+	return axios.post(url, { key: 'secrets', settings }, { headers });
 };
 
 export const getTags = async (user: User) => {

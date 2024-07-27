@@ -4,8 +4,6 @@ import type { Bucket } from '@google-cloud/storage';
 
 // @ts-expect-error $env actually exists
 import { PUBLIC_MEM_FIREBASE_WEB_SECRETS } from '$env/static/public';
-// @ts-expect-error $env actually exists
-import { MEM_FIREBASE_ADMIN_KEY } from '$env/static/private';
 
 export const FIREBASE_PROJECT_ID = 'liquidx-mem';
 
