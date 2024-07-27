@@ -1,15 +1,16 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-import { getFirebaseApp, getFirestoreClient, FIREBASE_PROJECT_ID } from '$lib/firebase.server.js';
-import { getMem } from '$lib/server/mem';
+import { getFirebaseApp } from '$lib/firebase.server.js';
+import { getMem } from '$lib/mem.db.server';
 import { memToJson } from '$lib/common/mems';
-import type { Mem, MemPhoto } from '$lib/common/mems';
+import type { MemPhoto } from '$lib/common/mems';
 import { getUserId } from '$lib/server/api.server.js';
-import { firestoreUpdate } from '$lib/server/firestore-update.js';
-import { refreshTagCounts } from '$lib/server/tags.server.js';
+import { refreshTagCounts } from '$lib/tags.server.js';
+import { getDb } from '$lib/db';
+import { updateMem } from '$lib/mem.db.server';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	const body = await request.json();
 	const memId = body['memId'] || '';
 	const mediaUrl = body['mediaUrl'] || '';
@@ -25,19 +26,14 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	const firebaseApp = getFirebaseApp();
-	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
+	const db = getDb(locals.dbClient);
 
 	const userId = await getUserId(firebaseApp, request);
 	if (!userId) {
 		return error(403, JSON.stringify({ error: 'Permission denied' }));
 	}
 
-	const memSnap = await getMem(db, userId, memId);
-	if (!memSnap) {
-		return error(500, JSON.stringify({ error: 'Error getting mem' }));
-	}
-
-	const mem = memSnap.data() as unknown as Mem;
+	const mem = await getMem(db, userId, memId);
 	if (!mem) {
 		return error(404, JSON.stringify({ error: 'Mem not found' }));
 	}
@@ -53,7 +49,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 	}
 
-	const result = await firestoreUpdate(db, userId, memId, mem);
+	const result = await updateMem(db, mem);
 	if (!result) {
 		return error(500, JSON.stringify({ error: 'Error updating mem' }));
 	}

@@ -1,16 +1,11 @@
-import axios from 'axios';
-import type { PageLoad } from './$types';
-import { getAllMems } from '$lib/server/mem';
+import { getMems } from '$lib/mem.db.server';
 
-import { getFirebaseApp, getFirestoreClient, FIREBASE_PROJECT_ID } from '$lib/firebase.server.js';
+import { getDb } from '$lib/db';
 
-export const load: PageLoad = async ({ params, request }) => {
-	//const firebaseApp = getFirebaseApp();
-	const firestore = getFirestoreClient(FIREBASE_PROJECT_ID);
-
+export const load = async ({ params, locals }) => {
 	// TODO: Verify the user ID using a secret code
 	const userId = params.feedId;
-	const mems = await getAllMems(firestore, userId);
-	console.log(request);
+	const db = getDb(locals.dbClient);
+	const mems = await getMems(db, userId);
 	return { mems };
 };

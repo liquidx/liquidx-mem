@@ -2,11 +2,12 @@
 	import { getTags, getSavedViews } from '$lib/mem.client.js';
 	import type { TagListItem } from '$lib/common/tags';
 	import { sharedUser } from '$lib/firebase-shared';
+	import type { UserView } from '$lib/user.types';
 
 	let showAll = false;
 	let initialVisibleCount = 30;
 	let tags: TagListItem[] = [];
-	let views: string[] = [];
+	let views: UserView[] = [];
 	let visibleTags: TagListItem[] = [];
 
 	$: {
@@ -22,9 +23,9 @@
 	const getData = async () => {
 		if ($sharedUser) {
 			tags = await getTags($sharedUser);
-			let result = await getSavedViews($sharedUser);
-			if (result && result.views) {
-				views = result.views;
+			const fetchedViews = await getSavedViews($sharedUser);
+			if (fetchedViews && fetchedViews.length > 0) {
+				views = fetchedViews;
 			}
 		}
 	};
@@ -40,11 +41,18 @@
 </script>
 
 <section class="w-screen p-2 md:w-48 flex flex-row flex-wrap md:flex-col justify-start">
-	<a href="/" class="block p-0.5 whitespace-nowrap hover:underline">New </a>
-	<a href="/tag/*" class="block p-0.5 whitespace-nowrap hover:underline">Archive</a>
+	<a href="/" class="block md:px-2 px-1 py-0.5 whitespace-nowrap hover:underline font-bold"
+		>🆕 New
+	</a>
+	<a href="/tag/*" class="block md:px-2 px-1 py-0.5 whitespace-nowrap hover:underline font-bold"
+		>📦 Archive</a
+	>
 	{#each views as view}
-		<a href={pathForView(view)} class="block md:px-2 px-1 py-0.5 whitespace-nowrap hover:underline">
-			{view}
+		<a
+			href={pathForView(view.tags)}
+			class="block md:px-2 px-1 py-0.5 whitespace-nowrap hover:underline"
+		>
+			⭐️ {view.tags}
 		</a>
 	{/each}
 	{#each visibleTags as tag (tag.tag)}

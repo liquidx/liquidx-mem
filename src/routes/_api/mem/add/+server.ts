@@ -1,42 +1,23 @@
 import { DateTime } from 'luxon';
 import { error, json } from '@sveltejs/kit';
-import type { Firestore } from '@google-cloud/firestore';
-import type { Bucket } from '@google-cloud/storage';
 
 import type { RequestHandler } from './$types';
 import { parseText } from '$lib/common/parser.js';
-import { firestoreAdd } from '$lib/server/firestore-add.js';
 import { getUserId } from '$lib/server/api.server.js';
-import {
-	FIREBASE_PROJECT_ID,
-	getFirebaseApp,
-	getFirebaseStorageBucket,
-	getFirestoreClient
-} from '$lib/firebase.server.js';
+import { getFirebaseApp } from '$lib/firebase.server.js';
+import { getS3Client, writeFileToS3 } from '$lib/s3.server';
+import { S3_BUCKET } from '$env/static/private';
+
 import { memToJson } from '$lib/common/mems';
-import { refreshTagCounts } from '$lib/server/tags.server.js';
+import { refreshTagCounts } from '$lib/tags.server.js';
 import { annotateMem } from '$lib/server/annotator.js';
-import { mirrorMedia } from '$lib/server/mirror.js';
-import { firestoreUpdate } from '$lib/server/firestore-update.js';
-import type { Mem } from '$lib/common/mems';
-import { userForSharedSecret } from '$lib/server/firestore-user-secrets.js';
 
-const mirrorMediaInMem = async (
-	db: Firestore,
-	bucket: Bucket,
-	memId: string,
-	mem: Mem,
-	userId: string
-): Promise<Mem | void> => {
-	const outputPath = `users/${userId}/media`;
-	const updatedMem = await mirrorMedia(mem, bucket, outputPath);
-	const result = await firestoreUpdate(db, userId, memId, updatedMem);
-	if (result) {
-		return updatedMem;
-	}
-};
+import { getDb } from '$lib/db';
+import { addMem } from '$lib/mem.db.server';
+import { userForSharedSecret } from '$lib/user.db.server';
+import { mirrorMediaInMem } from '$lib/mem.db.server';
 
-export const fallback: RequestHandler = async ({ url, request }) => {
+export const fallback: RequestHandler = async ({ url, request, locals }) => {
 	let text: string = '';
 	let image: string = '';
 	let secret: string = '';
@@ -62,14 +43,17 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 	}
 
 	const firebaseApp = getFirebaseApp();
-	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
-	const bucket = getFirebaseStorageBucket(firebaseApp);
+	const s3client = getS3Client();
+	const db = getDb(locals.dbClient);
 
 	let userId: string | undefined;
 	if (token) {
 		userId = await getUserId(firebaseApp, request);
 	} else if (secret) {
-		userId = await userForSharedSecret(db, secret);
+		const user = await userForSharedSecret(db, secret);
+		if (user) {
+			userId = user._id;
+		}
 	}
 
 	if (!userId) {
@@ -86,29 +70,24 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 		//const imageDataBuffer = Buffer.from(image, "base64");
 		const dateString = DateTime.utc().toFormat('yyyyMMddhhmmss');
 		const path = `users/${userId}/${dateString}`;
-		const file = bucket.file(path);
 
-		const writable = file.createWriteStream();
-		writable.write(image, 'base64');
-		writable.end();
-
+		const finalPath = writeFileToS3(s3client, S3_BUCKET, path, Buffer.from(image, 'base64'));
+		if (!finalPath) {
+			return error(500, JSON.stringify({ error: 'Error uploading image' }));
+		}
 		mem = { media: { path: path } };
 	} else {
 		return error(500, JSON.stringify({ error: 'No text or image' }));
 	}
 
-	mem.new = true;
-	mem.addedMs = DateTime.utc().toMillis();
+	let updatedMem = await addMem(db, userId, mem);
+	if (!updatedMem) {
+		return error(500, JSON.stringify({ error: 'Error adding mem' }));
+	}
 
-	const ref = await firestoreAdd(db, userId, mem).catch((err) => {
-		console.error('Unable to save', err);
-		return error(500, JSON.stringify({ error: 'Unable to save' }));
-	});
-
-	const memId = ref.id;
 	await refreshTagCounts(db, userId);
-	let updatedMem = await annotateMem(mem);
-	const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, memId, updatedMem, userId);
+	updatedMem = await annotateMem(updatedMem);
+	const updatedMemWithMedia = await mirrorMediaInMem(db, s3client, updatedMem, userId);
 	if (updatedMemWithMedia) {
 		updatedMem = updatedMemWithMedia;
 	}

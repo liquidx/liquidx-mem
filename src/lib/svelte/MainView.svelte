@@ -19,8 +19,6 @@
 	let mems: Mem[] = [];
 	let moreMemsAvailable = true;
 
-	// Firestore
-
 	$: {
 		if ($sharedUser) {
 			loadMems(filter, false);
@@ -69,9 +67,9 @@
 
 	const updateVisibleMems = (mems: Mem[], updatedMem: Mem, updatedMemId: string | undefined) => {
 		console.log(updatedMem);
-		let replacedMemId = updatedMemId || updatedMem.id;
+		let replacedMemId = updatedMemId || updatedMem._id;
 		let replacedMems = mems.map((mem) => {
-			if (mem.id === replacedMemId) {
+			if (mem._id === replacedMemId) {
 				return updatedMem;
 			}
 			return mem;
@@ -102,7 +100,7 @@
 		if (mem && $sharedUser) {
 			const deleteMemId = await memModifiers.deleteMem(mem, $sharedUser);
 			if (deleteMemId) {
-				mems = mems.filter((mem) => mem.id !== deleteMemId);
+				mems = mems.filter((mem) => mem._id !== deleteMemId);
 			}
 		}
 	};
@@ -114,7 +112,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.deletePhotoForMem(mem, photo, $sharedUser);
 			if (updatedMem) {
-				updateVisibleMems(mems, updatedMem, mem.id);
+				updateVisibleMems(mems, updatedMem, mem._id);
 			}
 		}
 	};
@@ -157,7 +155,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.updateNoteForMem(mem, text, $sharedUser);
 			if (updatedMem) {
-				updateVisibleMems(mems, updatedMem, mem.id);
+				updateVisibleMems(mems, updatedMem, mem._id);
 			}
 		}
 	};
@@ -168,7 +166,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.updateTitleForMem(mem, text, $sharedUser);
 			if (updatedMem) {
-				updateVisibleMems(mems, updatedMem, mem.id);
+				updateVisibleMems(mems, updatedMem, mem._id);
 			}
 		}
 	};
@@ -179,7 +177,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.updateDescriptionForMem(mem, text, $sharedUser);
 			if (updatedMem) {
-				updateVisibleMems(mems, updatedMem, mem.id);
+				updateVisibleMems(mems, updatedMem, mem._id);
 			}
 		}
 	};
@@ -190,7 +188,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.uploadFilesForMem(mem, files, $sharedUser);
 			if (updatedMem) {
-				updateVisibleMems(mems, updatedMem, mem.id);
+				updateVisibleMems(mems, updatedMem, mem._id);
 			}
 		}
 	};

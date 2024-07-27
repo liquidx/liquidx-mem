@@ -1,11 +1,17 @@
 <script lang="ts">
-	import { getSavedViews, updateSavedViews, getSecrets, updateSecrets } from '$lib/mem.client.js';
+	import {
+		getSavedViews,
+		updateSavedViews,
+		getWriteSecret,
+		updateSecrets
+	} from '$lib/mem.client.js';
 	import { sharedUser } from '$lib/firebase-shared';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import type { UserView, UserWriteSecret } from '$lib/user.types';
 
-	let writeSecret: string = '';
-	let views: string[] = [];
+	let writeSecret: UserWriteSecret = '';
+	let views: UserView[] = [];
 	let newView = '';
 
 	$: {
@@ -20,9 +26,10 @@
 			return;
 		}
 
-		let settings = await getSavedViews($sharedUser);
-		if (settings) {
-			views = settings.views;
+		let savedViews = await getSavedViews($sharedUser);
+		console.log('savedViews', savedViews);
+		if (savedViews && savedViews.length > 0) {
+			views = savedViews;
 			console.log('views', views);
 		}
 	};
@@ -32,11 +39,12 @@
 		if (!$sharedUser) {
 			return;
 		}
-		updateSavedViews($sharedUser, { views: views });
+		updateSavedViews($sharedUser, views);
 	};
 
 	const addView = () => {
-		views.push(newView);
+		views.push({ tags: newView });
+		views = views; // force reactivity
 		newView = '';
 		saveViews();
 	};
@@ -49,6 +57,7 @@
 				return;
 			}
 			views.splice(parseInt(index), 1);
+			views = views; // force reactivity
 			saveViews();
 		}
 	};
@@ -58,9 +67,9 @@
 			return;
 		}
 
-		let settings = await getSecrets($sharedUser);
-		if (settings && settings.writeSecret) {
-			writeSecret = settings.writeSecret;
+		let savedSecret = await getWriteSecret($sharedUser);
+		if (savedSecret) {
+			writeSecret = savedSecret;
 		}
 	};
 
@@ -68,7 +77,7 @@
 		if (!$sharedUser) {
 			return;
 		}
-		updateSecrets($sharedUser, { writeSecret });
+		updateSecrets($sharedUser, writeSecret);
 	};
 </script>
 
@@ -85,7 +94,7 @@
 		<div class="font-bold">Views</div>
 		{#each views as view, index}
 			<div class="flex items-center justify-between space-x-4 my-1">
-				<Input type="text" value={view} />
+				<Input type="text" value={view.tags} />
 				<Button variant="secondary" data-index={index} on:click={deleteView}>Delete</Button>
 			</div>
 		{/each}

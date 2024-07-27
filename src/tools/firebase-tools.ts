@@ -1,10 +1,10 @@
 import process from 'process';
 import fs from 'fs';
+import type { Command } from 'commander';
 
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import type { Command } from 'commander';
 
 import { mirrorMedia } from '../lib/server/mirror.js';
 import { annotateMem } from '../lib/server/annotator.js';
@@ -96,12 +96,12 @@ export const addFirebaseCommands = (program: Command) => {
 						? mem.videos.filter((video: any) => !video.cachedMediaPath)
 						: [];
 					if (uncachedPhotos.length > 0 || uncachedVideos.length > 0) {
-						console.log(`- ${mem.id} ${mem.url}`);
+						console.log(`- ${mem._id} ${mem.url}`);
 						await mirrorMedia(mem, bucket, `users/${userId}/media`)
 							.then(async (mem) => {
 								const writable = Object.assign({}, mem);
-								delete writable.id;
-								const memId = mem.id;
+								delete writable._id;
+								const memId = mem._id;
 								if (memId) {
 									await firestore
 										.collection('users')
@@ -123,7 +123,7 @@ export const addFirebaseCommands = (program: Command) => {
 
 	// Add a command in commander
 	program
-		.command('get-all')
+		.command('export-mems')
 		.option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
 		.option('-o --output <output>', 'Output file')
 		.action(async (options) => {
