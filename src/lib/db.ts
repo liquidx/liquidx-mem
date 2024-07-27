@@ -4,6 +4,8 @@ import { EJSON } from 'bson';
 const MONGO_DB_SERVER = 'cluster0.uakqn3b.mongodb.net';
 const MONGO_DB_CLUSTER_NAME = 'Cluster0';
 const MONGO_DB_MEM_DB = 'mem';
+const MONGO_DB_MEM_COLLECTION = 'mems';
+const MONGO_DB_USER_COLLECTION = 'users';
 
 export const getDbUrl = (user: string, password: string): string => {
 	const params = new URLSearchParams({
@@ -16,6 +18,14 @@ export const getDbUrl = (user: string, password: string): string => {
 
 export const getDbName = () => {
 	return MONGO_DB_MEM_DB;
+};
+
+export const getMemCollection = (db: Db) => {
+	return db.collection(MONGO_DB_MEM_COLLECTION);
+};
+
+export const getUserCollection = (db: Db) => {
+	return db.collection(MONGO_DB_USER_COLLECTION);
 };
 
 export const getDbClient = async (user: string, password: string) => {

@@ -24,7 +24,7 @@ export interface MemLink {
 }
 
 export interface Mem {
-	id?: string;
+	_id?: string;
 	raw?: string;
 
 	media?: {

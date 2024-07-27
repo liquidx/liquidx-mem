@@ -5,7 +5,7 @@
 </script>
 
 <div>
-	{#each mems as mem (mem.id)}
+	{#each mems as mem (mem._id)}
 		<MemView
 			{mem}
 			on:annotate

@@ -2,7 +2,7 @@ import type { UserRecord } from 'firebase-admin/auth';
 import { getAuth } from 'firebase-admin/auth';
 import { type App } from 'firebase-admin/app';
 
-import { USER_NOT_FOUND } from './firestore-user-secrets';
+import { USER_NOT_FOUND } from '../user.db.server';
 
 export const getUserId = async (
 	firebaseApp: App,
