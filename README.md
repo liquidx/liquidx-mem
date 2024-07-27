@@ -82,6 +82,14 @@ MEM_FIREBASE_ADMIN_KEY='{
 }'
 MONGO_DB_USERNAME='...'
 MONGO_DB_PASSWORD='...'
+
+S3_ACCESS_KEY="..."
+S3_SECRET_KEY="..."
+S3_BUCKET="..."
+S3_REGION="..."
+S3_SERVICE_URL="https://s3.ap-northeast-1...."
+
+
 ```
 
 # Development
