@@ -4,7 +4,9 @@ import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { parseText } from '$lib/common/parser.js';
 import { getUserId } from '$lib/server/api.server.js';
-import { getFirebaseApp, getFirebaseStorageBucket } from '$lib/firebase.server.js';
+import { getFirebaseApp } from '$lib/firebase.server.js';
+import { getS3Client, writeFileToS3 } from '$lib/s3.server';
+import { S3_BUCKET } from '$env/static/private';
 
 import { memToJson } from '$lib/common/mems';
 import { refreshTagCounts } from '$lib/tags.server.js';
@@ -41,7 +43,7 @@ export const fallback: RequestHandler = async ({ url, request, locals }) => {
 	}
 
 	const firebaseApp = getFirebaseApp();
-	const bucket = getFirebaseStorageBucket(firebaseApp);
+	const s3client = getS3Client();
 	const db = getDb(locals.dbClient);
 
 	let userId: string | undefined;
@@ -68,12 +70,11 @@ export const fallback: RequestHandler = async ({ url, request, locals }) => {
 		//const imageDataBuffer = Buffer.from(image, "base64");
 		const dateString = DateTime.utc().toFormat('yyyyMMddhhmmss');
 		const path = `users/${userId}/${dateString}`;
-		const file = bucket.file(path);
 
-		const writable = file.createWriteStream();
-		writable.write(image, 'base64');
-		writable.end();
-
+		const finalPath = writeFileToS3(s3client, S3_BUCKET, path, Buffer.from(image, 'base64'));
+		if (!finalPath) {
+			return error(500, JSON.stringify({ error: 'Error uploading image' }));
+		}
 		mem = { media: { path: path } };
 	} else {
 		return error(500, JSON.stringify({ error: 'No text or image' }));
@@ -86,7 +87,7 @@ export const fallback: RequestHandler = async ({ url, request, locals }) => {
 
 	await refreshTagCounts(db, userId);
 	updatedMem = await annotateMem(updatedMem);
-	const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, updatedMem, userId);
+	const updatedMemWithMedia = await mirrorMediaInMem(db, s3client, updatedMem, userId);
 	if (updatedMemWithMedia) {
 		updatedMem = updatedMemWithMedia;
 	}

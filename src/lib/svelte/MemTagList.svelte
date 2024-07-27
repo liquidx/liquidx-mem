@@ -24,7 +24,6 @@
 		if ($sharedUser) {
 			tags = await getTags($sharedUser);
 			const fetchedViews = await getSavedViews($sharedUser);
-			console.log('fetchedViews', fetchedViews);
 			if (fetchedViews && fetchedViews.length > 0) {
 				views = fetchedViews;
 			}

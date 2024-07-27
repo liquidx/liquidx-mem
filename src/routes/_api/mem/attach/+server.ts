@@ -3,12 +3,14 @@ import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import { getUserId } from '$lib/server/api.server.js';
 
-import { getFirebaseApp, getFirebaseStorageBucket } from '$lib/firebase.server.js';
+import { getFirebaseApp } from '$lib/firebase.server.js';
 import { writeToCloudStorage } from '$lib/server/mirror.js';
 import { memToJson } from '$lib/common/mems';
 import { getMem } from '$lib/mem.db.server';
 import { getDb } from '$lib/db';
 import { updateMem } from '$lib/mem.db.server';
+import { STORAGE_BASE_URL } from '$lib/storage';
+import { getS3Client } from '$lib/s3.server';
 
 const getFileExtension = (fileType: string | null): string => {
 	switch (fileType) {
@@ -31,7 +33,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	console.log('/_api/mem/attach', memId);
 
 	const firebaseApp = getFirebaseApp();
-	const bucket = getFirebaseStorageBucket(firebaseApp);
+	const s3client = getS3Client();
 	const db = getDb(locals.dbClient);
 
 	const userId = await getUserId(firebaseApp, request);
@@ -48,7 +50,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const dateString = DateTime.utc().toFormat('yyyyMMddhhmmss');
 		const extension = getFileExtension(file.mimetype);
 		const path = `users/${userId}/attachments/${dateString}/${file.filename}.${extension}`;
-		await writeToCloudStorage(bucket, path, Buffer.from(file.body, 'base64'));
+		await writeToCloudStorage(s3client, path, Buffer.from(file.body, 'base64'));
 
 		if (!mem.photos) {
 			mem.photos = [];
@@ -56,7 +58,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		const media = {
 			cachedMediaPath: path,
-			mediaUrl: `https://storage.googleapis.com/${bucket.name}/${path}`
+			mediaUrl: `${STORAGE_BASE_URL}/${path}`
 		};
 		mem.photos.push(media);
 	}

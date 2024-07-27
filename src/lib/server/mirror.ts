@@ -1,40 +1,31 @@
 import axios from 'axios';
-import { Bucket } from '@google-cloud/storage';
+import type { S3Client } from '@aws-sdk/client-s3';
 import md5 from 'md5';
 import m3u8 from 'm3u8';
+import { S3_BUCKET } from '$env/static/private';
 
 import type { Mem } from '../common/mems.js';
+import { writeFileToS3 } from '$lib/s3.server.js';
 
 // Writes a file to cloud storage.
 export const writeToCloudStorage = async (
-	bucket: Bucket,
+	s3client: S3Client,
 	storagePath: string,
 	contents: ArrayBuffer
 ): Promise<string> => {
-	return new Promise((resolve, reject) => {
-		const storageFile = bucket.file(storagePath);
-		const stream = storageFile.createWriteStream();
-		stream.on('finish', () => {
-			resolve(storagePath);
-		});
-		stream.on('error', (err) => {
-			reject(err);
-		});
-		stream.write(contents);
-		stream.end();
-	});
+	return writeFileToS3(s3client, S3_BUCKET, storagePath, Buffer.from(contents));
 };
 
 // Downloads and writes media to cloud storage.
 const writeMediaToCloudStorage = async (
-	bucket: Bucket,
+	s3client: S3Client,
 	storagePath: string,
 	imageUrl: string
 ): Promise<string | void> => {
 	return axios
 		.get(imageUrl, { responseType: 'arraybuffer' })
 		.then((response) => {
-			return writeToCloudStorage(bucket, storagePath, response.data);
+			return writeFileToS3(s3client, S3_BUCKET, storagePath, response.data);
 		})
 		.catch((err) => {
 			if (err.response) {
@@ -84,7 +75,11 @@ const getBestStreamUrl = async (streamUrl: string) => {
 	return bestStreamUrl;
 };
 
-export const mirrorMedia = async (mem: Mem, bucket: Bucket, outputPath: string): Promise<Mem> => {
+export const mirrorMedia = async (
+	mem: Mem,
+	s3client: S3Client,
+	outputPath: string
+): Promise<Mem> => {
 	const requests = [];
 
 	if (mem.photos) {
@@ -98,7 +93,7 @@ export const mirrorMedia = async (mem: Mem, bucket: Bucket, outputPath: string):
 				const extension = mediaUrl.pathname.split('.').pop();
 				const destinationPath = `${outputPath}/${destinationSubpath}/${destinationFilename}.${extension}`;
 
-				const request = writeMediaToCloudStorage(bucket, destinationPath, media.mediaUrl).then(
+				const request = writeMediaToCloudStorage(s3client, destinationPath, media.mediaUrl).then(
 					(outputPath) => {
 						if (outputPath) {
 							media.cachedMediaPath = destinationPath;
@@ -121,14 +116,16 @@ export const mirrorMedia = async (mem: Mem, bucket: Bucket, outputPath: string):
 					const extension = mediaUrl.pathname.split('.').pop();
 					if (media.contentType != 'application/x-mpegURL') {
 						const destinationPath = `${outputPath}/${destinationSubpath}/${destinationFilename}.${extension}`;
-						const request = writeMediaToCloudStorage(bucket, destinationPath, media.mediaUrl).then(
-							() => {
-								if (outputPath) {
-									media.cachedMediaPath = destinationPath;
-								}
-								return media;
+						const request = writeMediaToCloudStorage(
+							s3client,
+							destinationPath,
+							media.mediaUrl
+						).then(() => {
+							if (outputPath) {
+								media.cachedMediaPath = destinationPath;
 							}
-						);
+							return media;
+						});
 						requests.push(request);
 					}
 				}

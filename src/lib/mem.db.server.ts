@@ -1,8 +1,9 @@
 import { type Db, type DeleteResult } from 'mongodb';
 import { DateTime } from 'luxon';
+import type { S3Client } from '@aws-sdk/client-s3';
+
 import { mirrorMedia } from '$lib/server/mirror.js';
 import type { Mem } from '$lib/common/mems';
-import type { Bucket } from '@google-cloud/storage';
 import type { MemListRequest } from './request.types';
 
 import { getMemCollection } from '$lib/db';
@@ -37,12 +38,12 @@ export const addMem = async (db: Db, userId: string, mem: Mem): Promise<Mem | vo
 
 export const mirrorMediaInMem = async (
 	db: Db,
-	bucket: Bucket,
+	s3client: S3Client,
 	mem: Mem,
 	userId: string
 ): Promise<Mem | void> => {
 	const outputPath = `users/${userId}/media`;
-	const updatedMem = await mirrorMedia(mem, bucket, outputPath);
+	const updatedMem = await mirrorMedia(mem, s3client, outputPath);
 	const result = await updateMem(db, updatedMem);
 	if (result) {
 		return updatedMem;

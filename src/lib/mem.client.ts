@@ -337,7 +337,6 @@ export const getSavedViews = async (user: User): Promise<UserView[] | undefined>
 	};
 
 	return axios.get(url, { headers }).then((response) => {
-		console.log('getSavedViews', response);
 		if (!response.data) {
 			return [];
 		}

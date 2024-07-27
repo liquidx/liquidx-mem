@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 
 import type { RequestHandler } from './$types';
-import { getFirebaseApp, getFirebaseStorageBucket } from '$lib/firebase.server.js';
+import { getFirebaseApp } from '$lib/firebase.server.js';
 import { getMem } from '$lib/mem.db.server';
 import { memToJson } from '$lib/common/mems';
 import { getUserId } from '$lib/server/api.server.js';
@@ -9,6 +9,7 @@ import { annotateMem } from '$lib/server/annotator.js';
 import type { MemAnnotateResponse } from '$lib/request.types';
 import { getDb } from '$lib/db';
 import { mirrorMediaInMem } from '$lib/mem.db.server';
+import { getS3Client } from '$lib/s3.server';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	const body = await request.json();
@@ -21,7 +22,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	console.log('/_api/mem/annotate', body);
 
 	const firebaseApp = getFirebaseApp();
-	const bucket = getFirebaseStorageBucket(firebaseApp);
+	const s3client = getS3Client();
 	const db = getDb(locals.dbClient);
 
 	const userId = await getUserId(firebaseApp, request);
@@ -35,7 +36,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	let updatedMem = await annotateMem(mem);
-	const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, updatedMem, userId);
+	const updatedMemWithMedia = await mirrorMediaInMem(db, s3client, updatedMem, userId);
 	if (updatedMemWithMedia) {
 		updatedMem = updatedMemWithMedia;
 	}

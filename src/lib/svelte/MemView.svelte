@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { DateTime } from 'luxon';
-	import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 	import { createEventDispatcher } from 'svelte';
 	import Archive from 'lucide-svelte/icons/archive';
 	import PenLine from 'lucide-svelte/icons/pen-line';
@@ -9,9 +8,10 @@
 	import Eye from 'lucide-svelte/icons/eye';
 
 	import type { Mem, MemPhoto } from '$lib/common/mems';
-	import { sharedFirebaseApp } from '$lib/firebase-shared';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import ResizingTextarea from './ResizingTextarea.svelte';
+
+	import { getCachedStorageUrl } from '$lib/storage';
 
 	type MediaUrl = {
 		photo?: MemPhoto;
@@ -194,12 +194,9 @@
 	async function getMediaImageUrl() {
 		if (mem && mem.media && mem.media.path) {
 			console.log('Getting url', mem.media.path);
-			const storage = getStorage($sharedFirebaseApp);
-			const storageRef = ref(storage, mem.media.path);
 			try {
-				const url = await getDownloadURL(storageRef);
 				console.log('Got url', mem.media.path);
-				mediaImageUrl = url;
+				mediaImageUrl = getCachedStorageUrl(mem.media.path);
 			} catch (e) {
 				// Silent fail
 			}
@@ -217,17 +214,13 @@
 
 		if (mem.photos) {
 			const photos: MediaUrl[] = [];
-			const storage = getStorage($sharedFirebaseApp);
 			for (let photo of mem.photos) {
 				if (photo.cachedMediaPath) {
-					const storageRef = ref(storage, photo.cachedMediaPath);
-					try {
-						const url = await getDownloadURL(storageRef);
-						photos.push({ url: url, status: 'cached', photo: photo });
-					} catch (e) {
-						// Silent fail
-						console.log('Error getting cached image', e);
-					}
+					photos.push({
+						url: getCachedStorageUrl(photo.cachedMediaPath),
+						status: 'cached',
+						photo: photo
+					});
 				} else {
 					if (photo.mediaUrl) {
 						photos.push({ photo: photo, url: photo.mediaUrl, status: 'live' });
@@ -241,12 +234,10 @@
 
 		if (mem.videos) {
 			const videos: MediaUrl[] = [];
-			const storage = getStorage($sharedFirebaseApp);
 			for (let video of mem.videos) {
 				if (video.cachedMediaPath) {
-					const storageRef = ref(storage, video.cachedMediaPath);
 					try {
-						const url = await getDownloadURL(storageRef);
+						const url = getCachedStorageUrl(video.cachedMediaPath);
 						videos.push({
 							url: url,
 							posterUrl: video.posterUrl,
