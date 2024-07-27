@@ -1,4 +1,5 @@
 import { MongoClient, type Db, ServerApiVersion } from 'mongodb';
+import { EJSON } from 'bson';
 
 const MONGO_DB_SERVER = 'cluster0.uakqn3b.mongodb.net';
 const MONGO_DB_CLUSTER_NAME = 'Cluster0';
@@ -47,4 +48,8 @@ export const executeQuery = async (
 	} finally {
 		await client.close();
 	}
+};
+
+export const toJSON = (doc: { [key: string]: any }) => {
+	return EJSON.deserialize(EJSON.serialize(doc));
 };
