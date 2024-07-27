@@ -4,7 +4,7 @@ import type { User } from 'firebase/auth';
 import { memFromJson, type Mem, type MemPhoto } from './common/mems';
 import type { TagListItem } from './tags.server';
 import { iconForTag } from './tags';
-import type { PrefsViews, PrefsSecrets } from './common/prefs';
+import type { UserView, UserWriteSecret } from './user.types';
 import type { MemAnnotateResponse } from './request.types';
 
 const serverUrl = '/_api';
@@ -322,7 +322,7 @@ export const deletePhotoForMem = async (
 	});
 };
 
-export const getSavedViews = async (user: User): Promise<PrefsViews | undefined> => {
+export const getSavedViews = async (user: User): Promise<UserView[] | undefined> => {
 	const url = `${serverUrl}/prefs?key=views`;
 	const authToken = await user.getIdToken();
 	const headers = {
@@ -330,12 +330,19 @@ export const getSavedViews = async (user: User): Promise<PrefsViews | undefined>
 	};
 
 	return axios.get(url, { headers }).then((response) => {
-		const views = response.data.settings as PrefsViews;
+		console.log('getSavedViews', response);
+		if (!response.data) {
+			return [];
+		}
+		if (!response.data.settings) {
+			return [];
+		}
+		const views = response.data.settings as UserView[];
 		return views;
 	});
 };
 
-export const updateSavedViews = async (user: User, settings: PrefsViews): Promise<void> => {
+export const updateSavedViews = async (user: User, settings: UserView[]): Promise<void> => {
 	const url = `${serverUrl}/prefs`;
 	const authToken = await user.getIdToken();
 	const headers = {
@@ -347,20 +354,20 @@ export const updateSavedViews = async (user: User, settings: PrefsViews): Promis
 	});
 };
 
-export const getSecrets = async (user: User): Promise<PrefsSecrets> => {
-	const url = `${serverUrl}/prefs?key=secrets`;
+export const getWriteSecret = async (user: User): Promise<UserWriteSecret> => {
+	const url = `${serverUrl}/prefs?key=writeSecret`;
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
 	};
 
 	return axios.get(url, { headers }).then((response) => {
-		const views = response.data.settings as PrefsSecrets;
-		return views;
+		const secret = response.data.settings as UserWriteSecret;
+		return secret;
 	});
 };
 
-export const updateSecrets = async (user: User, settings: PrefsSecrets): Promise<void> => {
+export const updateSecrets = async (user: User, settings: UserWriteSecret): Promise<void> => {
 	const url = `${serverUrl}/prefs`;
 	const authToken = await user.getIdToken();
 	const headers = {

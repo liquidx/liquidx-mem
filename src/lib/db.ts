@@ -51,6 +51,12 @@ export const getDbClient = async (user: string, password: string) => {
 
 export type DbCommand = (db: Db) => Promise<any>;
 
+export const getDb = (client: MongoClient) => {
+	const name = getDbName();
+	const db = client.db(name);
+	return db;
+};
+
 export const executeQuery = async (
 	client: MongoClient,
 	command: DbCommand,

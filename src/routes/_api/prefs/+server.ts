@@ -1,59 +1,50 @@
 import { error, json } from '@sveltejs/kit';
-import { getFirebaseApp, getFirestoreClient, FIREBASE_PROJECT_ID } from '$lib/firebase.server.js';
+import { getFirebaseApp } from '$lib/firebase.server.js';
 import type { RequestHandler } from './$types';
 import { getUserId } from '$lib/server/api.server.js';
-import { Firestore } from '@google-cloud/firestore';
 import type { SettingsWriteRequest, SettingsReadResponse } from '$lib/request.types.js';
+import { getDb, getUserCollection } from '$lib/db';
 
-const getPrefsCollection = (db: Firestore, userId: string) => {
-	return db.collection('users').doc(userId).collection('prefs');
-};
-
-export const GET: RequestHandler = async ({ request, url }) => {
-	const docId = url.searchParams.get('key') || '';
-	if (!docId) {
-		return error(400, 'Missing docId');
+export const GET: RequestHandler = async ({ request, url, locals }) => {
+	const prefKey = url.searchParams.get('key') || '';
+	if (!prefKey) {
+		return error(400, 'Missing key');
 	}
 
 	const firebaseApp = getFirebaseApp();
-	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
+	const db = getDb(locals.dbClient);
 
 	const userId = await getUserId(firebaseApp, request);
 	if (!userId) {
 		return error(403, JSON.stringify({ error: 'Permission denied' }));
 	}
-
-	const prefs = getPrefsCollection(db, userId);
-	const doc = await prefs.doc(docId).get();
-	if (!doc) {
-		return error(500, 'Error: No tags');
+	const user = await getUserCollection(db).findOne({ _id: userId });
+	if (!user) {
+		return error(500, 'Error: No user');
 	}
 
-	let response: SettingsReadResponse = { key: docId, settings: null };
-
-	if (!doc.exists) {
-		return json(response);
-	}
-
-	response = { key: docId, settings: doc.data() };
+	const response: SettingsReadResponse = { key: prefKey, settings: user[prefKey] };
 	return json(response);
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	const body = (await request.json()) as SettingsWriteRequest;
-	const docId = body.key || '';
+	const prefKey = body.key || '';
 	const settings = body.settings || '';
-
 	const firebaseApp = getFirebaseApp();
-	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
+	const db = getDb(locals.dbClient);
 
 	const userId = await getUserId(firebaseApp, request);
 	if (!userId) {
 		return error(403, JSON.stringify({ error: 'Permission denied' }));
 	}
-
-	const prefs = getPrefsCollection(db, userId);
-	await prefs.doc(docId).set(settings);
-
-	return json({ key: docId, settings });
+	const user = await getUserCollection(db).findOneAndUpdate(
+		{ _id: userId },
+		{ $set: { [prefKey]: settings } }
+	);
+	if (!user) {
+		return error(500, 'Error: No user');
+	}
+	const response = { key: prefKey, settings };
+	return json(response);
 };

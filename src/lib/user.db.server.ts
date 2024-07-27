@@ -1,24 +1,17 @@
-import type { MongoClient, Db } from 'mongodb';
-import { executeQuery, getUserCollection } from './db';
-
+import { type Db } from 'mongodb';
+import { getUserCollection } from './db';
+import { type User } from './user.types';
 export const USER_NOT_FOUND = '';
 
 export const userForSharedSecret = async (
-	mongo: MongoClient,
+	db: Db,
 	writeSecret: string
-): Promise<string> => {
-	const result = await executeQuery(mongo, async (db: Db) => {
-		const userCollection = getUserCollection(db);
-		const user = await userCollection.findOne({ writeSecret: writeSecret });
-		if (user) {
-			return user;
-		}
-		return;
-	});
-
-	if (result) {
-		return result.userId;
+): Promise<User | undefined> => {
+	const user = (await getUserCollection(db).findOne({
+		writeSecret: writeSecret
+	})) as unknown as User;
+	if (user) {
+		return user;
 	}
-
-	return USER_NOT_FOUND;
+	return;
 };

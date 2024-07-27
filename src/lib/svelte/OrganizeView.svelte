@@ -14,8 +14,6 @@
 	let selectedMem: Mem | undefined;
 	let mems: Mem[] = [];
 
-	// Firestore
-
 	$: {
 		if ($sharedUser) {
 			loadMems(filter, false);

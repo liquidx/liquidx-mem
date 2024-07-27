@@ -1,5 +1,4 @@
 import { DateTime } from 'luxon';
-import type { Db } from 'mongodb';
 import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import { getUserId } from '$lib/server/api.server.js';
@@ -8,8 +7,7 @@ import { getFirebaseApp, getFirebaseStorageBucket } from '$lib/firebase.server.j
 import { writeToCloudStorage } from '$lib/server/mirror.js';
 import { memToJson } from '$lib/common/mems';
 import { getMem } from '$lib/mem.db.server';
-import { executeQuery, getDbClient } from '$lib/db';
-import { MONGO_DB_USERNAME, MONGO_DB_PASSWORD } from '$env/static/private';
+import { getDb } from '$lib/db';
 import { updateMem } from '$lib/mem.db.server';
 
 const getFileExtension = (fileType: string | null): string => {
@@ -25,7 +23,7 @@ const getFileExtension = (fileType: string | null): string => {
 	}
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	const body = await request.json();
 	const memId = body.mem || '';
 	const files = [body.image];
@@ -34,41 +32,39 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const firebaseApp = getFirebaseApp();
 	const bucket = getFirebaseStorageBucket(firebaseApp);
-	const mongo = await getDbClient(MONGO_DB_USERNAME, MONGO_DB_PASSWORD);
+	const db = getDb(locals.dbClient);
 
 	const userId = await getUserId(firebaseApp, request);
 	if (!userId) {
 		return error(403, JSON.stringify({ error: 'Permission denied' }));
 	}
 
-	return await executeQuery(mongo, async (db: Db) => {
-		const mem = await getMem(db, userId, memId);
-		if (!mem) {
-			return error(404, 'Mem not found');
+	const mem = await getMem(db, userId, memId);
+	if (!mem) {
+		return error(404, 'Mem not found');
+	}
+
+	for (const file of files) {
+		const dateString = DateTime.utc().toFormat('yyyyMMddhhmmss');
+		const extension = getFileExtension(file.mimetype);
+		const path = `users/${userId}/attachments/${dateString}/${file.filename}.${extension}`;
+		await writeToCloudStorage(bucket, path, Buffer.from(file.body, 'base64'));
+
+		if (!mem.photos) {
+			mem.photos = [];
 		}
 
-		for (const file of files) {
-			const dateString = DateTime.utc().toFormat('yyyyMMddhhmmss');
-			const extension = getFileExtension(file.mimetype);
-			const path = `users/${userId}/attachments/${dateString}/${file.filename}.${extension}`;
-			await writeToCloudStorage(bucket, path, Buffer.from(file.body, 'base64'));
+		const media = {
+			cachedMediaPath: path,
+			mediaUrl: `https://storage.googleapis.com/${bucket.name}/${path}`
+		};
+		mem.photos.push(media);
+	}
 
-			if (!mem.photos) {
-				mem.photos = [];
-			}
-
-			const media = {
-				cachedMediaPath: path,
-				mediaUrl: `https://storage.googleapis.com/${bucket.name}/${path}`
-			};
-			mem.photos.push(media);
-		}
-
-		const res = await updateMem(db, mem);
-		if (!res) {
-			return error(500, 'Unable to update mem');
-		}
-		console.log('updatedMem', mem);
-		return json({ mem: memToJson(mem) });
-	});
+	const res = await updateMem(db, mem);
+	if (!res) {
+		return error(500, 'Unable to update mem');
+	}
+	console.log('updatedMem', mem);
+	return json({ mem: memToJson(mem) });
 };

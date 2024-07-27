@@ -19,8 +19,6 @@
 	let mems: Mem[] = [];
 	let moreMemsAvailable = true;
 
-	// Firestore
-
 	$: {
 		if ($sharedUser) {
 			loadMems(filter, false);

@@ -1,5 +1,4 @@
 import { error, json } from '@sveltejs/kit';
-import type { Db } from 'mongodb';
 
 import type { RequestHandler } from './$types';
 import { getFirebaseApp, getFirebaseStorageBucket } from '$lib/firebase.server.js';
@@ -8,11 +7,10 @@ import { memToJson } from '$lib/common/mems';
 import { getUserId } from '$lib/server/api.server.js';
 import { annotateMem } from '$lib/server/annotator.js';
 import type { MemAnnotateResponse } from '$lib/request.types';
-import { getDbClient } from '$lib/db';
-import { MONGO_DB_USERNAME, MONGO_DB_PASSWORD } from '$env/static/private';
+import { getDb } from '$lib/db';
 import { mirrorMediaInMem } from '$lib/mem.db.server';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	const body = await request.json();
 	const memId = body['memId'] || '';
 
@@ -24,29 +22,27 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const firebaseApp = getFirebaseApp();
 	const bucket = getFirebaseStorageBucket(firebaseApp);
-	const mongo = await getDbClient(MONGO_DB_USERNAME, MONGO_DB_PASSWORD);
+	const db = getDb(locals.dbClient);
 
-	return await executeQuery(mongo, async (db: Db) => {
-		const userId = await getUserId(firebaseApp, request);
-		if (!userId) {
-			return error(403, JSON.stringify({ error: 'Permission denied' }));
-		}
+	const userId = await getUserId(firebaseApp, request);
+	if (!userId) {
+		return error(403, JSON.stringify({ error: 'Permission denied' }));
+	}
 
-		const mem = await getMem(db, userId, memId);
-		if (!mem) {
-			return error(500, JSON.stringify({ error: 'Error getting mem' }));
-		}
+	const mem = await getMem(db, userId, memId);
+	if (!mem) {
+		return error(500, JSON.stringify({ error: 'Error getting mem' }));
+	}
 
-		let updatedMem = await annotateMem(mem);
-		const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, updatedMem, userId);
-		if (updatedMemWithMedia) {
-			updatedMem = updatedMemWithMedia;
-		}
-		console.log('updatedMem', updatedMem);
-		if (updatedMem) {
-			const annotateResponse: MemAnnotateResponse = { mem: memToJson(updatedMem), memId: memId };
-			return json(annotateResponse);
-		}
-		return error(500, JSON.stringify({ error: 'Error annotating mem' }));
-	});
+	let updatedMem = await annotateMem(mem);
+	const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, updatedMem, userId);
+	if (updatedMemWithMedia) {
+		updatedMem = updatedMemWithMedia;
+	}
+	console.log('updatedMem', updatedMem);
+	if (updatedMem) {
+		const annotateResponse: MemAnnotateResponse = { mem: memToJson(updatedMem), memId: memId };
+		return json(annotateResponse);
+	}
+	return error(500, JSON.stringify({ error: 'Error annotating mem' }));
 };

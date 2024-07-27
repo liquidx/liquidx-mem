@@ -11,13 +11,12 @@ import { memToJson } from '$lib/common/mems';
 import { refreshTagCounts } from '$lib/tags.server.js';
 import { annotateMem } from '$lib/server/annotator.js';
 
-import { getDbClient, executeQuery } from '$lib/db';
-import { MONGO_DB_USERNAME, MONGO_DB_PASSWORD } from '$env/static/private';
+import { getDb } from '$lib/db';
 import { addMem } from '$lib/mem.db.server';
 import { userForSharedSecret } from '$lib/user.db.server';
 import { mirrorMediaInMem } from '$lib/mem.db.server';
 
-export const fallback: RequestHandler = async ({ url, request }) => {
+export const fallback: RequestHandler = async ({ url, request, locals }) => {
 	let text: string = '';
 	let image: string = '';
 	let secret: string = '';
@@ -44,49 +43,50 @@ export const fallback: RequestHandler = async ({ url, request }) => {
 
 	const firebaseApp = getFirebaseApp();
 	const bucket = getFirebaseStorageBucket(firebaseApp);
-	const mongo = await getDbClient(MONGO_DB_USERNAME, MONGO_DB_PASSWORD);
+	const db = getDb(locals.dbClient);
 
-	return await executeQuery(mongo, async (db: Db) => {
-		let userId: string | undefined;
-		if (token) {
-			userId = await getUserId(firebaseApp, request);
-		} else if (secret) {
-			userId = await userForSharedSecret(db, secret);
+	let userId: string | undefined;
+	if (token) {
+		userId = await getUserId(firebaseApp, request);
+	} else if (secret) {
+		const user = await userForSharedSecret(db, secret);
+		if (user) {
+			userId = user._id;
 		}
+	}
 
-		if (!userId) {
-			return error(403, JSON.stringify({ error: 'Permission denied' }));
+	if (!userId) {
+		return error(403, JSON.stringify({ error: 'Permission denied' }));
+	}
+
+	let mem = null;
+	if (text) {
+		mem = parseText(text.toString());
+		if (!mem) {
+			return error(500, JSON.stringify({ error: 'Invalid text' }));
 		}
+	} else if (image) {
+		//const imageDataBuffer = Buffer.from(image, "base64");
+		const dateString = DateTime.utc().toFormat('yyyyMMddhhmmss');
+		const path = `users/${userId}/${dateString}`;
+		const file = bucket.file(path);
 
-		let mem = null;
-		if (text) {
-			mem = parseText(text.toString());
-			if (!mem) {
-				return error(500, JSON.stringify({ error: 'Invalid text' }));
-			}
-		} else if (image) {
-			//const imageDataBuffer = Buffer.from(image, "base64");
-			const dateString = DateTime.utc().toFormat('yyyyMMddhhmmss');
-			const path = `users/${userId}/${dateString}`;
-			const file = bucket.file(path);
+		const writable = file.createWriteStream();
+		writable.write(image, 'base64');
+		writable.end();
 
-			const writable = file.createWriteStream();
-			writable.write(image, 'base64');
-			writable.end();
+		mem = { media: { path: path } };
+	} else {
+		return error(500, JSON.stringify({ error: 'No text or image' }));
+	}
 
-			mem = { media: { path: path } };
-		} else {
-			return error(500, JSON.stringify({ error: 'No text or image' }));
-		}
+	addMem(db, mem);
 
-		addMem(db, mem);
-
-		await refreshTagCounts(db, userId);
-		let updatedMem = await annotateMem(mem);
-		const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, mem._id, updatedMem, userId);
-		if (updatedMemWithMedia) {
-			updatedMem = updatedMemWithMedia;
-		}
-		return json({ mem: memToJson(updatedMem) });
-	});
+	await refreshTagCounts(db, userId);
+	let updatedMem = await annotateMem(mem);
+	const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, mem._id, updatedMem, userId);
+	if (updatedMemWithMedia) {
+		updatedMem = updatedMemWithMedia;
+	}
+	return json({ mem: memToJson(updatedMem) });
 };
