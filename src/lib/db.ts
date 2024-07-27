@@ -25,14 +25,21 @@ export const getDbClient = async (user: string, password: string) => {
 			deprecationErrors: true
 		}
 	};
-	const client = new MongoClient(getDbUrl(user, password), options);
+	console.log('  >> Connecting');
+	const url = getDbUrl(user, password);
+	const client = new MongoClient(url, options);
 	await client.connect();
+	console.log('  << Database Connected');
 	return client;
 };
 
 export type DbCommand = (db: Db) => Promise<any>;
 
-export const executeQuery = async (client: MongoClient, command: DbCommand, dbName?: string) => {
+export const executeQuery = async (
+	client: MongoClient,
+	command: DbCommand,
+	dbName?: string
+): Promise<any> => {
 	const name = dbName ?? getDbName();
 	const db = client.db(name);
 	try {

@@ -45,4 +45,15 @@ export const addMongoCommands = (program: Command, dbUser: string, dbPassword: s
 
 			importMems(mems, memUser, dbUser, dbPassword);
 		});
+
+	program
+		.command('ping')
+		.description('ping')
+		.action(async (options: any) => {
+			const client = await getDbClient(dbUser, dbPassword);
+			await executeQuery(client, async (db) => {
+				const res = await db.command({ ping: 1 });
+				console.log(res);
+			});
+		});
 };

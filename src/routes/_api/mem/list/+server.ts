@@ -6,7 +6,9 @@ import type {
 	Query,
 	Firestore
 } from '@google-cloud/firestore';
+import { executeQuery, getDbClient } from '$lib/db';
 import { error, json } from '@sveltejs/kit';
+import { MongoClient, type Db } from 'mongodb';
 
 import { getFirebaseApp, getFirestoreClient, FIREBASE_PROJECT_ID } from '$lib/firebase.server.js';
 import type { Mem } from '$lib/common/mems';
@@ -14,48 +16,40 @@ import type { RequestHandler } from './$types';
 import type { MemListRequest, MemListResponse } from '$lib/request.types';
 import { getUserId } from '$lib/server/api.server.js';
 
-const getMems = async (db: Firestore, request: MemListRequest) => {
-	let query: CollectionReference<DocumentData> | Query<DocumentData> = db.collection(
-		`users/${request.userId}/mems`
-	);
+import { MONGO_DB_USERNAME, MONGO_DB_PASSWORD } from '$env/static/private';
 
-	if (request.all) {
-		query = query;
-	} else if (request.isArchived) {
-		query = query.where('new', '==', false);
+const getMems = async (client: MongoClient, userId: string, request: MemListRequest) => {
+	const query: { [key: string]: any } = { userId: userId };
+
+	if (request.isArchived) {
+		query.new = false;
 	} else if (request.allOfTags) {
-		// Limitation of Firestore is that we can't combined multple array-contains conditions.
-		// So we have to take the first tag and query for that, then filter the results.
-		const firstTag = request.allOfTags[0];
-		query = query.where('tags', 'array-contains', firstTag);
+		query['tags'] = { $all: request.allOfTags };
 	} else if (request.oneOfTags) {
-		query = query.where('tags', 'array-contains-any', request.oneOfTags);
-	} else {
-		query = query.where('new', '==', true);
+		query['tags'] = { $in: request.oneOfTags };
+	} else if (!request.all) {
+		query.new = true;
 	}
 
+	const options: { [key: string]: any } = { sort: { addedMs: -1 } };
 	if (request.pageSize) {
 		const pageSize = parseInt(request.pageSize);
-		query = query.limit(pageSize);
+		options.limit = pageSize;
 		const page = request.page ? parseInt(request.page) : 0;
-		query = query.offset(page * parseInt(request.pageSize));
+		options.skip = page * pageSize;
 	}
 
-	return query
-		.orderBy('addedMs', 'desc')
-		.get()
-		.then((snap: QuerySnapshot<DocumentData>) => {
-			const mems: Mem[] = [];
-			snap.forEach((doc: DocumentSnapshot<DocumentData>) => {
-				const mem = Object.assign({}, doc.data(), { id: doc.id });
-				mems.push(mem);
-			});
+	console.log(query, options);
 
-			return mems;
-		});
+	const results = await executeQuery(client, async (db: Db) => {
+		const collection = db.collection('mems');
+		return await collection.find(query, options);
+	});
+
+	return results;
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	const body = (await request.json()) as MemListRequest;
 	const requestUserId = body.userId || '';
 
@@ -63,6 +57,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		return error(500, 'Missing user');
 	}
 
+	const mongoDb = await getDbClient(MONGO_DB_USERNAME, MONGO_DB_PASSWORD);
 	const firebaseApp = getFirebaseApp();
 	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
 
@@ -76,7 +71,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		return error(403, JSON.stringify({ error: 'Permission denied' }));
 	}
 
-	const mems = await getMems(db, body).catch((err: Error) => {
+	const mems = await getMems(mongoDb, userId, body).catch((err: Error) => {
 		console.log('Error: ' + err.toString());
 		return error(500, 'Error: ' + err.toString());
 	});
