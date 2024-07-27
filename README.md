@@ -55,11 +55,14 @@ Data is exported as a flat JSON file through a web browser, or can be imported.
 In 2024, Mem is being migrated from Firebase Firestore to MongoDB and from Firebase
 Functions to regular SvelteKit functions.
 
+We keep using Firebase Authentication, but all other functions are going to be migrated
+to S3 compatible storage and MongoDB.
+
 # Setup (Work in Progress)
 
 Instructions to set up for yourself is still work in progress, but the basics are:
 
-1. Setup a Firebase project with Firestore, Hosting and Functions enabled.
+1. Setup a Firebase project Authentication enabled.
    a. Run firebase init and select the above.
    b. Overwrite .firebaserc to use your firebase project.
 
@@ -68,7 +71,7 @@ Instructions to set up for yourself is still work in progress, but the basics ar
 3. Place credentials in `.env` that have the following :
 
 ```
-export MEM_FIREBASE_ADMIN_KEY='{
+MEM_FIREBASE_ADMIN_KEY='{
    "apiKey": "AIza...HY",
    "authDomain": "project-name.firebaseapp.com",
    "projectId": "project-name",
@@ -77,6 +80,8 @@ export MEM_FIREBASE_ADMIN_KEY='{
    "appId": "1:5...:web:62...",
    "measurementId": "G-..."
 }'
+MONGO_DB_USERNAME='...'
+MONGO_DB_PASSWORD='...'
 ```
 
 # Development
