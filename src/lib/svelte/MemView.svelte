@@ -8,9 +8,8 @@
 	import Eye from 'lucide-svelte/icons/eye';
 
 	import type { Mem, MemPhoto } from '$lib/common/mems';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import ResizingTextarea from './ResizingTextarea.svelte';
-
+	import { Button } from '$lib/components/ui/button';
+	import { AutoResizeTextarea } from 'svelte-autoresize-textarea';
 	import { getCachedStorageUrl } from '$lib/storage';
 
 	type MediaUrl = {
@@ -158,11 +157,11 @@
 	}
 
 	function descriptionDidChange(e: FocusEvent): void {
-		const target: HTMLElement = e.target as HTMLElement;
+		const target: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
 		if (!target) {
 			return;
 		}
-		const descriptionValue = target.innerText;
+		const descriptionValue = target.value;
 		if (descriptionValue != mem.description) {
 			dispatch('descriptionChanged', { mem, text: descriptionValue });
 		}
@@ -274,7 +273,7 @@
 	tabindex="0"
 >
 	<div>
-		<ResizingTextarea
+		<AutoResizeTextarea
 			class="my-2 py-2 rounded-xl bg-input px-4 min-h-[1rem] h-8 w-full"
 			maxRows={4}
 			on:blur={noteDidChange}
@@ -292,13 +291,13 @@
 			</div>
 		{/if}
 
-		<div
-			class="my-2 p-4 text-secondary-foreground bg-input rounded-xl"
-			contenteditable="true"
+		<AutoResizeTextarea
+			class="my-2 py-2 rounded-xl bg-input px-4 h-8 w-full"
+			minRows={2}
+			maxRows={10}
 			on:blur={descriptionDidChange}
-		>
-			{getShortDescription(mem)}
-		</div>
+			value={getShortDescription(mem)}
+		/>
 
 		{#if displayVideos}
 			<div class="videos">

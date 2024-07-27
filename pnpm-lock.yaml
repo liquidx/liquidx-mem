@@ -86,6 +86,9 @@ importers:
       open-graph-scraper:
         specifier: ^6.6.3
         version: 6.6.3
+      svelte-autoresize-textarea:
+        specifier: ^0.0.6
+        version: 0.0.6(svelte@4.2.18)
       svelte-sonner:
         specifier: ^0.3.27
         version: 0.3.27(svelte@4.2.18)
@@ -3261,6 +3264,13 @@ packages:
     resolution: {integrity: sha512-7jRj+yXO0W7e4/tSJKoR7HRIHLPPjtNaUGG2xxKQnGvPNRkgWcQ0AZX6P4KBRJN4FcTBWb3sa7DVUJmocYuoog==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
+  prism-svelte@0.5.0:
+    resolution: {integrity: sha512-db91Bf3pRGKDPz1lAqLFSJXeW13mulUJxhycysFpfXV5MIK7RgWWK2E5aPAa71s8TCzQUXxF5JOV42/iOs6QkA==}
+
+  prismjs@1.29.0:
+    resolution: {integrity: sha512-Kx/1w86q/epKcmte75LNrEoT+lX8pBpavuAbvJWRXar7Hz8jrtF+e3vY751p0R8H9HdArwaCTNDDzHg/ScJK1Q==}
+    engines: {node: '>=6'}
+
   process@0.11.10:
     resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
     engines: {node: '>= 0.6.0'}
@@ -3523,6 +3533,11 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  svelte-autoresize-textarea@0.0.6:
+    resolution: {integrity: sha512-K9KLsKCeb2iZB7U2egb2ZEJ98YDyYKycXdo0R2jtO7/zSIKkevCfNsPF1rpm7eYwJk5I4YN8ki2cHaECLgzpTA==}
+    peerDependencies:
+      svelte: ^3.54.0
 
   svelte-check@3.8.4:
     resolution: {integrity: sha512-61aHMkdinWyH8BkkTX9jPLYxYzaAAz/FK/VQqdr2FiCQQ/q04WCwDlpGbHff1GdrMYTmW8chlTFvRWL9k0A8vg==}
@@ -7720,6 +7735,10 @@ snapshots:
       ansi-styles: 5.2.0
       react-is: 18.2.0
 
+  prism-svelte@0.5.0: {}
+
+  prismjs@1.29.0: {}
+
   process@0.11.10: {}
 
   proto3-json-serializer@2.0.2:
@@ -8017,6 +8036,12 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  svelte-autoresize-textarea@0.0.6(svelte@4.2.18):
+    dependencies:
+      prism-svelte: 0.5.0
+      prismjs: 1.29.0
+      svelte: 4.2.18
 
   svelte-check@3.8.4(@babel/core@7.22.9)(postcss-load-config@4.0.1(postcss@8.4.39))(postcss@8.4.39)(svelte@4.2.18):
     dependencies:
