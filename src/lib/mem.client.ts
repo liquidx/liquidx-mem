@@ -34,7 +34,7 @@ export async function getMem(memId: string, user: User): Promise<Mem | undefined
 	});
 }
 
-export async function addMem(mem: Mem, user: User): Promise<Mem | undefined> {
+export async function addMem(mem: Mem, user: User): Promise<Mem | void> {
 	const url = `${serverUrl}/mem/add`;
 
 	const body = { text: mem.raw };
@@ -43,15 +43,21 @@ export async function addMem(mem: Mem, user: User): Promise<Mem | undefined> {
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, body, { headers }).then((response) => {
-		if (response.status != 200) {
-			return;
-		}
-		if (!response.data.mem) {
-			return;
-		}
-		return memFromJson(response.data.mem);
-	});
+	return axios
+		.post(url, body, { headers })
+		.then((response) => {
+			if (response.status != 200) {
+				return;
+			}
+
+			if (!response.data.mem) {
+				return;
+			}
+			return memFromJson(response.data.mem) as unknown as Mem;
+		})
+		.catch(() => {
+			return; // Add a return statement here to handle any errors and ensure a value is always returned.
+		});
 }
 
 export async function deleteMem(mem: Mem, user: User): Promise<string | undefined> {
@@ -349,9 +355,7 @@ export const updateSavedViews = async (user: User, settings: UserView[]): Promis
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, { key: 'views', settings }, { headers }).then((response) => {
-		return;
-	});
+	return axios.post(url, { key: 'views', settings }, { headers });
 };
 
 export const getWriteSecret = async (user: User): Promise<UserWriteSecret> => {

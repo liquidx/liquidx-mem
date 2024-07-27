@@ -1,11 +1,12 @@
 import { error, json } from '@sveltejs/kit';
 
-import { getFirebaseApp, getFirestoreClient, FIREBASE_PROJECT_ID } from '$lib/firebase.server.js';
+import { getFirebaseApp } from '$lib/firebase.server.js';
 import { refreshTagCounts } from '$lib/tags.server.js';
 import type { RequestHandler } from './$types';
 import { getUserId } from '$lib/server/api.server.js';
+import { getDb } from '$lib/db';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	const body = await request.json();
 	const requestUserId = body.userId || '';
 
@@ -14,7 +15,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	const firebaseApp = getFirebaseApp();
-	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
+	const db = getDb(locals.dbClient);
 
 	const userId = await getUserId(firebaseApp, request);
 	if (!userId) {

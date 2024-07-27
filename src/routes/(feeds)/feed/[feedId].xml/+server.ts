@@ -1,8 +1,7 @@
-import type { Db } from 'mongodb';
 import { getAllMems } from '$lib/mem.db.server';
 import { htmlEscape } from '$lib/html';
-import { getDb, getDbClient } from '$lib/db';
-import { MONGO_DB_USERNAME, MONGO_DB_PASSWORD } from '$env/static/private';
+import { getDb } from '$lib/db';
+import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ params, locals }) => {
 	// TODO: Verify the user ID using a secret code

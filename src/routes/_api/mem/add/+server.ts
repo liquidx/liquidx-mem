@@ -1,6 +1,5 @@
 import { DateTime } from 'luxon';
 import { error, json } from '@sveltejs/kit';
-import { type Db } from 'mongodb';
 
 import type { RequestHandler } from './$types';
 import { parseText } from '$lib/common/parser.js';
@@ -84,7 +83,7 @@ export const fallback: RequestHandler = async ({ url, request, locals }) => {
 
 	await refreshTagCounts(db, userId);
 	let updatedMem = await annotateMem(mem);
-	const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, mem._id, updatedMem, userId);
+	const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, updatedMem, userId);
 	if (updatedMemWithMedia) {
 		updatedMem = updatedMemWithMedia;
 	}

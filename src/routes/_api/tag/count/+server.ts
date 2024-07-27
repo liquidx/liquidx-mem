@@ -1,10 +1,12 @@
 import { error, json } from '@sveltejs/kit';
-import { getFirebaseApp, getFirestoreClient, FIREBASE_PROJECT_ID } from '$lib/firebase.server.js';
+import { getFirebaseApp } from '$lib/firebase.server.js';
 import type { RequestHandler } from './$types';
 import { getUserId } from '$lib/server/api.server.js';
+import { getDb, getTagCollection } from '$lib/db';
+import type { TagIndex } from '$lib/tags.types';
 
 // TODO: Call on tag edits and creates.
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
 	const body = await request.json();
 	const requestUserId = body.userId || '';
 
@@ -13,7 +15,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	const firebaseApp = getFirebaseApp();
-	const db = getFirestoreClient(FIREBASE_PROJECT_ID);
+	const db = getDb(locals.dbClient);
 
 	const userId = await getUserId(firebaseApp, request);
 	if (!userId) {
@@ -25,12 +27,11 @@ export const POST: RequestHandler = async ({ request }) => {
 		return error(403, JSON.stringify({ error: 'Permission denied' }));
 	}
 
-	const tags = await db.collection('users').doc(userId).collection('index').doc('tags').get();
+	const tags = (await getTagCollection(db).findOne({ userId: userId })) as unknown as TagIndex;
 	if (!tags) {
 		return error(500, 'Error: No tags');
 	}
 
-	const tagCounts = tags.data();
-
-	return json({ counts: tagCounts.counts });
+	const tagCounts = tags.counts;
+	return json({ counts: tagCounts });
 };
