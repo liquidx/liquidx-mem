@@ -1,10 +1,10 @@
 import process from 'process';
 import fs from 'fs';
+import type { Command } from 'commander';
 
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import type { Command } from 'commander';
 
 import { mirrorMedia } from '../lib/server/mirror.js';
 import { annotateMem } from '../lib/server/annotator.js';
@@ -123,7 +123,7 @@ export const addFirebaseCommands = (program: Command) => {
 
 	// Add a command in commander
 	program
-		.command('get-all')
+		.command('export-mems')
 		.option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
 		.option('-o --output <output>', 'Output file')
 		.action(async (options) => {

@@ -1,11 +1,43 @@
-export const MONGO_AUTH_DB = 'mem';
-export const MONGO_DB_URL = 'mongodb://localhost:27017';
+import { MongoClient, type Db, ServerApiVersion } from 'mongodb';
+
 const MONGO_DB_SERVER = 'cluster0.uakqn3b.mongodb.net';
+const MONGO_DB_CLUSTER_NAME = 'Cluster0';
+const MONGO_DB_MEM_DB = 'mem';
 
-import { MONGO_DB_USER, MONGO_DB_PASSWORD } from '$env/static/private';
+export const getDbUrl = (user: string, password: string): string => {
+	const params = new URLSearchParams({
+		retryWrites: 'true',
+		w: 'majority',
+		appName: MONGO_DB_CLUSTER_NAME
+	});
+	return `mongodb+srv://${user}:${password}@${MONGO_DB_SERVER}/?${params.toString()}`;
+};
 
-export const dbUrl = (user: string | undefined, password: string | undefined) => {
-	const urlUser = user ?? MONGO_DB_USER;
-	const urlPassword = password ?? MONGO_DB_PASSWORD;
-	return `mongodb+srv://${urlUser}:${urlPassword}@${MONGO_DB_SERVER}/?retryWrites=true&w=majority&appName=Cluster0`;
+export const getDbName = () => {
+	return MONGO_DB_MEM_DB;
+};
+
+export const getDbClient = async (user: string, password: string) => {
+	const options = {
+		serverApi: {
+			version: ServerApiVersion.v1,
+			strict: true,
+			deprecationErrors: true
+		}
+	};
+	const client = new MongoClient(getDbUrl(user, password), options);
+	await client.connect();
+	return client;
+};
+
+export type DbCommand = (db: Db) => Promise<any>;
+
+export const executeQuery = async (client: MongoClient, command: DbCommand, dbName?: string) => {
+	const name = dbName ?? getDbName();
+	const db = client.db(name);
+	try {
+		return await command(db);
+	} finally {
+		await client.close();
+	}
 };
