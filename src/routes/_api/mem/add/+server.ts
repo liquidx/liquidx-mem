@@ -79,10 +79,13 @@ export const fallback: RequestHandler = async ({ url, request, locals }) => {
 		return error(500, JSON.stringify({ error: 'No text or image' }));
 	}
 
-	addMem(db, mem);
+	let updatedMem = await addMem(db, userId, mem);
+	if (!updatedMem) {
+		return error(500, JSON.stringify({ error: 'Error adding mem' }));
+	}
 
 	await refreshTagCounts(db, userId);
-	let updatedMem = await annotateMem(mem);
+	updatedMem = await annotateMem(updatedMem);
 	const updatedMemWithMedia = await mirrorMediaInMem(db, bucket, updatedMem, userId);
 	if (updatedMemWithMedia) {
 		updatedMem = updatedMemWithMedia;

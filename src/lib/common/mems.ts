@@ -26,6 +26,7 @@ export interface MemLink {
 export interface Mem {
 	_id?: string;
 	raw?: string;
+	userId?: string;
 
 	media?: {
 		path?: string;

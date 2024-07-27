@@ -22,13 +22,16 @@ export const deleteMem = async (db: Db, memId: string): Promise<DeleteResult> =>
 	return await memTable.deleteOne({ _id: memId });
 };
 
-export const addMem = async (db: Db, mem: Mem): Promise<Mem | undefined> => {
+export const addMem = async (db: Db, userId: string, mem: Mem): Promise<Mem | void> => {
 	mem._id = crypto.randomUUID();
+	mem.userId = userId;
 	mem.new = true;
 	mem.addedMs = DateTime.utc().toMillis();
 
-	const memsTable = db.collection('mems');
-	await memsTable.insertOne(mem);
+	const result = await getMemCollection(db).insertOne(mem);
+	if (!result) {
+		return;
+	}
 	return mem;
 };
 
