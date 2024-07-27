@@ -96,12 +96,12 @@ export const addFirebaseCommands = (program: Command) => {
 						? mem.videos.filter((video: any) => !video.cachedMediaPath)
 						: [];
 					if (uncachedPhotos.length > 0 || uncachedVideos.length > 0) {
-						console.log(`- ${mem.id} ${mem.url}`);
+						console.log(`- ${mem._id} ${mem.url}`);
 						await mirrorMedia(mem, bucket, `users/${userId}/media`)
 							.then(async (mem) => {
 								const writable = Object.assign({}, mem);
-								delete writable.id;
-								const memId = mem.id;
+								delete writable._id;
+								const memId = mem._id;
 								if (memId) {
 									await firestore
 										.collection('users')

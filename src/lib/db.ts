@@ -6,6 +6,7 @@ const MONGO_DB_CLUSTER_NAME = 'Cluster0';
 const MONGO_DB_MEM_DB = 'mem';
 const MONGO_DB_MEM_COLLECTION = 'mems';
 const MONGO_DB_USER_COLLECTION = 'users';
+const MONGO_DB_TAG_COLLECTION = 'tags';
 
 export const getDbUrl = (user: string, password: string): string => {
 	const params = new URLSearchParams({
@@ -26,6 +27,10 @@ export const getMemCollection = (db: Db) => {
 
 export const getUserCollection = (db: Db) => {
 	return db.collection(MONGO_DB_USER_COLLECTION);
+};
+
+export const getTagCollection = (db: Db) => {
+	return db.collection(MONGO_DB_TAG_COLLECTION);
 };
 
 export const getDbClient = async (user: string, password: string) => {
@@ -56,6 +61,7 @@ export const executeQuery = async (
 	try {
 		return await command(db);
 	} finally {
+		console.log('	 >> Closing');
 		await client.close();
 	}
 };

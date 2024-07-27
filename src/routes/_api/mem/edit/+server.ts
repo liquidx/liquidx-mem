@@ -8,9 +8,9 @@ import { memToJson } from '$lib/common/mems';
 import type { Mem } from '$lib/common/mems';
 import { getUserId } from '$lib/server/api.server.js';
 import { extractEntities } from '$lib/common/parser.js';
-import { refreshTagCounts } from '$lib/server/tags.server.js';
+import { refreshTagCounts } from '$lib/tags.server.js';
 
-import { getDbClient, executeQuery } from '$lib/db';
+import { getDbClient, executeQuery, getMemCollection } from '$lib/db';
 import { MONGO_DB_USERNAME, MONGO_DB_PASSWORD } from '$env/static/private';
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -48,17 +48,18 @@ export const POST: RequestHandler = async ({ request }) => {
 			mem = Object.assign(mem, extractEntities(mem.note));
 		}
 
-		const result = await executeQuery(mongo, async (db: Db) => {
-			const memTable = db.collection('mems');
-			return await memTable.updateOne({ userId: userId, _id: mem._id }, mem);
-		});
+		const updatedMem = (await getMemCollection(db).findOneAndUpdate(
+			{ userId: userId, _id: mem._id },
+			{ $set: mem }
+		)) as unknown as Mem;
 
-		if (!result) {
+		if (!updatedMem) {
 			return error(500, JSON.stringify({ error: 'Error updating mem' }));
 		}
 
+		console.log('Updated mem:', memId);
+
 		await refreshTagCounts(db, userId);
-		const resultMem = Object.assign({}, mem, { _id: memId });
-		return json({ mem: memToJson(resultMem) });
+		return json({ mem: memToJson(updatedMem) });
 	});
 };

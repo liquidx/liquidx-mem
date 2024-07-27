@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { User } from 'firebase/auth';
 
 import { memFromJson, type Mem, type MemPhoto } from './common/mems';
-import type { TagListItem } from './server/tags.server';
+import type { TagListItem } from './tags.server';
 import { iconForTag } from './tags';
 import type { PrefsViews, PrefsSecrets } from './common/prefs';
 import type { MemAnnotateResponse } from './request.types';
@@ -57,7 +57,7 @@ export async function addMem(mem: Mem, user: User): Promise<Mem | undefined> {
 export async function deleteMem(mem: Mem, user: User): Promise<string | undefined> {
 	console.log('deleteMem', mem);
 	const url = `${serverUrl}/mem/del`;
-	const body = { memId: mem.id };
+	const body = { memId: mem._id };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
@@ -68,14 +68,14 @@ export async function deleteMem(mem: Mem, user: User): Promise<string | undefine
 			return;
 		}
 		if (response.data) {
-			return mem.id;
+			return mem._id;
 		}
 	});
 }
 
 export async function annotateMem(mem: Mem, user: User): Promise<MemAnnotateResponse | undefined> {
 	const url = `${serverUrl}/mem/annotate`;
-	const body = { userId: user.uid, memId: mem.id };
+	const body = { userId: user.uid, memId: mem._id };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
@@ -99,7 +99,7 @@ export async function annotateMem(mem: Mem, user: User): Promise<MemAnnotateResp
 
 export async function archiveMem(mem: Mem, user: User): Promise<Mem | undefined> {
 	const url = `${serverUrl}/mem/flag`;
-	const body = { userId: user.uid, memId: mem.id, new: false };
+	const body = { userId: user.uid, memId: mem._id, new: false };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
@@ -119,7 +119,7 @@ export async function archiveMem(mem: Mem, user: User): Promise<Mem | undefined>
 
 export async function unarchiveMem(mem: Mem, user: User): Promise<Mem | undefined> {
 	const url = `${serverUrl}/mem/flag`;
-	const body = { userId: user.uid, memId: mem.id, new: true };
+	const body = { userId: user.uid, memId: mem._id, new: true };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
@@ -139,7 +139,7 @@ export async function unarchiveMem(mem: Mem, user: User): Promise<Mem | undefine
 
 export async function seenMem(mem: Mem, user: User): Promise<Mem | undefined> {
 	const url = `${serverUrl}/mem/flag`;
-	const body = { userId: user.uid, memId: mem.id, seen: true };
+	const body = { userId: user.uid, memId: mem._id, seen: true };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
@@ -163,7 +163,7 @@ export async function updateNoteForMem(
 	user: User
 ): Promise<Mem | undefined> {
 	const url = `${serverUrl}/mem/edit`;
-	const body = { userId: user.uid, memId: mem.id, updates: { note: note } };
+	const body = { userId: user.uid, memId: mem._id, updates: { note: note } };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
@@ -191,7 +191,7 @@ export async function updateTitleForMem(
 	};
 
 	const url = `${serverUrl}/mem/edit`;
-	const body = { userId: user.uid, memId: mem.id, updates };
+	const body = { userId: user.uid, memId: mem._id, updates };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
@@ -219,7 +219,7 @@ export async function updateDescriptionForMem(
 	};
 
 	const url = `${serverUrl}/mem/edit`;
-	const body = { userId: user.uid, memId: mem.id, updates };
+	const body = { userId: user.uid, memId: mem._id, updates };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
@@ -276,7 +276,7 @@ export async function uploadFilesForMem(
 	};
 	const body = {
 		image: { body: fileContents, filename: firstFile.name, mimetype: firstFile.type },
-		mem: mem.id
+		mem: mem._id
 	};
 
 	return axios
@@ -304,7 +304,7 @@ export const deletePhotoForMem = async (
 	user: User
 ): Promise<Mem | undefined> => {
 	const url = `${serverUrl}/mem/media-del`;
-	const body = { userId: user.uid, memId: mem.id, mediaUrl: photo.mediaUrl };
+	const body = { userId: user.uid, memId: mem._id, mediaUrl: photo.mediaUrl };
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`

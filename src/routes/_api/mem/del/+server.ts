@@ -3,7 +3,7 @@ import type { Db } from 'mongodb';
 import type { RequestHandler } from './$types';
 import { getUserId } from '$lib/server/api.server.js';
 import { getFirebaseApp } from '$lib/firebase.server.js';
-import { refreshTagCounts } from '$lib/server/tags.server.js';
+import { refreshTagCounts } from '$lib/tags.server.js';
 import { deleteMem } from '$lib/mem.db.server';
 import { executeQuery, getDbClient } from '$lib/db';
 import { MONGO_DB_USERNAME, MONGO_DB_PASSWORD } from '$env/static/private';

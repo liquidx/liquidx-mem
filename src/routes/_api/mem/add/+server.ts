@@ -8,7 +8,7 @@ import { getUserId } from '$lib/server/api.server.js';
 import { getFirebaseApp, getFirebaseStorageBucket } from '$lib/firebase.server.js';
 
 import { memToJson } from '$lib/common/mems';
-import { refreshTagCounts } from '$lib/server/tags.server.js';
+import { refreshTagCounts } from '$lib/tags.server.js';
 import { annotateMem } from '$lib/server/annotator.js';
 
 import { getDbClient, executeQuery } from '$lib/db';

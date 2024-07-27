@@ -20,7 +20,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 		rss += `<title>${userId}</title>\n`;
 		for (const mem of mems) {
 			rss += `<item>\n`;
-			rss += `<guid isPermaLink="false">${mem.id}</guid>\n`;
+			rss += `<guid isPermaLink="false">${mem._id}</guid>\n`;
 			rss += `<title>${htmlEscape(mem.title)}</title>\n`;
 			rss += `<link>${htmlEscape(mem.url)}</link>\n`;
 			rss += `<description>${htmlEscape(mem.description)}</description>\n`;

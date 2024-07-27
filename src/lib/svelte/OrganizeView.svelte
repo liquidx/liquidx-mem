@@ -50,7 +50,7 @@
 	const updateVisibleMems = (mems: Mem[], updatedMem: Mem) => {
 		console.log(updatedMem);
 		let replacedMems = mems.map((mem) => {
-			if (mem.id === updatedMem.id) {
+			if (mem._id === updatedMem._id) {
 				return updatedMem;
 			}
 			return mem;
@@ -78,7 +78,7 @@
 		if (mem && $sharedUser) {
 			const deleteMemId = await memModifiers.deleteMem(mem, $sharedUser);
 			if (deleteMemId) {
-				mems = mems.filter((mem) => mem.id !== deleteMemId);
+				mems = mems.filter((mem) => mem._id !== deleteMemId);
 			}
 		}
 	};
@@ -166,7 +166,7 @@
 					(<button
 						on:click={() => {
 							selectedMem = mem;
-						}}>{mem.id}</button
+						}}>{mem._id}</button
 					>)
 				</span>
 			</div>

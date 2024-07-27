@@ -356,10 +356,10 @@
 			</ul>
 		{/if}
 
-		<div class="my-2 text-muted-foreground text-xs" title={mem.id}>
+		<div class="my-2 text-muted-foreground text-xs" title={mem._id}>
 			<div>{getPrettyDate(mem)}</div>
 			<div>
-				<a href={`/mem/${mem.id}`}>{mem.id}</a>
+				<a href={`/mem/${mem._id}`}>{mem._id}</a>
 			</div>
 			<div class=""><a href={mem.url} target="_blank">{mem.url}</a></div>
 		</div>

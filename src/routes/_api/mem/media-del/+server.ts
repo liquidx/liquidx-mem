@@ -6,7 +6,7 @@ import { getMem } from '$lib/mem.db.server';
 import { memToJson } from '$lib/common/mems';
 import type { MemPhoto } from '$lib/common/mems';
 import { getUserId } from '$lib/server/api.server.js';
-import { refreshTagCounts } from '$lib/server/tags.server.js';
+import { refreshTagCounts } from '$lib/tags.server.js';
 import { executeQuery, getDbClient } from '$lib/db';
 import { MONGO_DB_USERNAME, MONGO_DB_PASSWORD } from '$env/static/private';
 import { updateMem } from '$lib/mem.db.server';

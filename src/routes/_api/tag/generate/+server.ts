@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 
 import { getFirebaseApp, getFirestoreClient, FIREBASE_PROJECT_ID } from '$lib/firebase.server.js';
-import { refreshTagCounts } from '$lib/server/tags.server.js';
+import { refreshTagCounts } from '$lib/tags.server.js';
 import type { RequestHandler } from './$types';
 import { getUserId } from '$lib/server/api.server.js';
 

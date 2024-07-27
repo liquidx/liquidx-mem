@@ -1,4 +1,4 @@
-import { type Db } from 'mongodb';
+import { type Db, type DeleteResult } from 'mongodb';
 import { DateTime } from 'luxon';
 import { mirrorMedia } from '$lib/server/mirror.js';
 import type { Mem } from '$lib/common/mems';
@@ -12,17 +12,17 @@ export interface MemOptions {
 	lookQueue?: boolean;
 }
 
-export const updateMem = async (db: Db, mem: Mem) => {
+export const updateMem = async (db: Db, mem: Mem): Promise<Mem | undefined> => {
 	const memTable = db.collection('mems');
-	return await memTable.updateOne({ _id: mem._id }, mem);
+	return (await memTable.findOneAndUpdate({ _id: mem._id }, { $set: mem })) as unknown as Mem;
 };
 
-export const deleteMem = async (db: Db, memId: string) => {
+export const deleteMem = async (db: Db, memId: string): Promise<DeleteResult> => {
 	const memTable = db.collection('mems');
 	return await memTable.deleteOne({ _id: memId });
 };
 
-export const addMem = async (db: Db, mem: Mem) => {
+export const addMem = async (db: Db, mem: Mem): Promise<Mem | undefined> => {
 	mem._id = crypto.randomUUID();
 	mem.new = true;
 	mem.addedMs = DateTime.utc().toMillis();
