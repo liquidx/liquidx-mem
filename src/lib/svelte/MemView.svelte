@@ -281,7 +281,7 @@
 		/>
 
 		{#if mem.url}
-			<div class="text-lg px-1 py-1">
+			<div class="text-lg px-1 py-1 max-h-48 overflow-clip">
 				<a href={mem.url} target="_blank" class="font-bold">
 					<span class="title-text" bind:this={titleEl}>{getPrettyTitle(mem)}</span>
 				</a>
@@ -351,7 +351,7 @@
 			<div>
 				<a href={`/mem/${mem._id}`}>{mem._id}</a>
 			</div>
-			<div class=""><a href={mem.url} target="_blank">{mem.url}</a></div>
+			<div class="max-h-48 overflow-y-clip"><a href={mem.url} target="_blank">{mem.url}</a></div>
 		</div>
 	</div>
 

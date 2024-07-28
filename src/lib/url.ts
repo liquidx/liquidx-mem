@@ -12,6 +12,8 @@ export const removeUrlTrackingParams = (url: string): string => {
 	urlObj.searchParams.delete('msclkid');
 	urlObj.searchParams.delete('mc_cid');
 	urlObj.searchParams.delete('mc_eid');
+	// threads.net specific
+	urlObj.searchParams.delete('xtm');
 
 	return urlObj.toString();
 };
