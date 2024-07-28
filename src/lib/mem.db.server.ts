@@ -71,21 +71,6 @@ export const getMems = async (
 		} else if (!request.all) {
 			query.new = true;
 		}
-
-		// Need to divert to use an aggregation stage for the query using
-		// db.collection.aggregate([
-		// 	{
-		// 		$search: {
-		// 			text: {
-		// 				query: 'search terms', // The text to search for
-		// 				path: ['field1', 'field2'] // Optional: Fields to search in
-		// 			}
-		// 		}
-		// 	}
-		// ]);
-		// if (request.searchQuery) {
-		// 	query['$text'] = { $search: request.searchQuery };
-		// }
 	}
 
 	const options: { [key: string]: any } = { sort: { addedMs: -1 } };
@@ -102,9 +87,42 @@ export const getMems = async (
 
 	// console.log('Request: ', request);
 	console.log(query, options);
+	if (request && request.searchQuery) {
+		const stages: any = [];
+		stages.push({
+			$search: {
+				index: 'text',
+				text: { query: request.searchQuery, path: ['title', 'description', 'url'] }
+			}
+		});
 
-	const docs = await getMemCollection(db).find(query, options).toArray();
-	return docs;
+		stages.push({ $sort: { addedMs: -1 } });
+
+		// Convert from the query to an aggregate request.
+		if (query.tags) {
+			stages.push({ $match: { tags: query.tags } });
+		}
+
+		if (options.limit) {
+			stages.push({ $limit: options.limit });
+		}
+		if (options.skip) {
+			stages.push({ $skip: options.skip });
+		}
+
+		console.log('Stages: ');
+		console.dir(stages, { depth: null, colors: true });
+		try {
+			const docs = await getMemCollection(db).aggregate(stages).toArray();
+			return docs;
+		} catch (err: any) {
+			console.error('Error in search query', err);
+			return [];
+		}
+	} else {
+		const docs = await getMemCollection(db).find(query, options).toArray();
+		return docs;
+	}
 };
 
 export const getMem = async (db: Db, userId: string, memId: string): Promise<Mem | undefined> => {

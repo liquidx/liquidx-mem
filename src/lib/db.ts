@@ -34,16 +34,9 @@ export const getTagCollection = (db: Db) => {
 };
 
 export const getDbClient = async (user: string, password: string) => {
-	const options = {
-		serverApi: {
-			version: ServerApiVersion.v1,
-			strict: true,
-			deprecationErrors: true
-		}
-	};
 	console.log('  >> Connecting');
 	const url = getDbUrl(user, password);
-	const client = new MongoClient(url, options);
+	const client = new MongoClient(url);
 	await client.connect();
 	console.log('  << Database Connected');
 	return client;
