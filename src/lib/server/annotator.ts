@@ -1,6 +1,6 @@
 import type { Mem, MemPhoto } from '../common/mems.js';
 
-import { ANNOTATOR_URL_CONFIG } from './annotator-config.js';
+import { ANNOTATOR_URL_CONFIG, type AnnotatorUrlConfig } from './annotator-config.js';
 
 import { fetchOpenGraph, type OpenGraphTags, type OpenGraphImage } from '../opengraph.js';
 import { removeUrlTrackingParams } from '../url.js';
@@ -29,7 +29,7 @@ const ogImageToPhotos = (ogImages: OpenGraphImage[], url: string): MemPhoto[] =>
 	});
 };
 
-const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
+const annotateWithOpenGraph = (mem: Mem, url: string, config: AnnotatorUrlConfig): Promise<Mem> => {
 	const annotated: Mem = Object.assign({}, mem);
 
 	return fetchOpenGraph(url)
@@ -44,6 +44,15 @@ const annotateWithOpenGraph = (mem: Mem, url: string): Promise<Mem> => {
 			if (og.description) {
 				annotated.description = og.description;
 			}
+			if (config.useOldTitleDescription) {
+				if (og.oldTitle) {
+					annotated.title = og.oldTitle;
+				}
+				if (og.oldDescription) {
+					annotated.description = og.oldDescription;
+				}
+			}
+
 			if (og.images && (!annotated.photos || annotated.photos.length === 0)) {
 				annotated.photos = ogImageToPhotos(og.images, url);
 			}
@@ -62,6 +71,17 @@ export const annotateMem = async (mem: Mem): Promise<Mem> => {
 	// Sanitize the URL
 	mem.url = removeUrlTrackingParams(mem.url);
 
+	// Sanitize any existing image URLs
+	// if (mem.photos) {
+	// 	for (const photo of mem.photos) {
+	// 		if (photo.mediaUrl) {
+	// 			if (!photo.mediaUrl.startsWith('http')) {
+	// 				console.log('Absolute URL:', photo.mediaUrl, mem.url);
+	// 			}
+	// 		}
+	// 	}
+	// }
+
 	for (const config of ANNOTATOR_URL_CONFIG) {
 		const matched = mem.url.match(config.pattern);
 		if (matched) {
@@ -71,7 +91,7 @@ export const annotateMem = async (mem: Mem): Promise<Mem> => {
 				case 'opengraph': {
 					const content = await fetchOpenGraph(mem.url);
 					console.log('Content:', content);
-					return annotateWithOpenGraph(mem, mem.url);
+					return annotateWithOpenGraph(mem, mem.url, config);
 				}
 				case 'fetch': {
 					// TODO implement me

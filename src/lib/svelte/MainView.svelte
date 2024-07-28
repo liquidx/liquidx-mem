@@ -105,12 +105,12 @@
 		}
 	};
 
-	const deletePhotoForMem = async (e: CustomEvent) => {
+	const removePhotoFromMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
 		let photo: MemPhoto = e.detail.photo;
 		if (mem && $sharedUser) {
-			const updatedMem = await memModifiers.deletePhotoForMem(mem, photo, $sharedUser);
-			console.log('deletePhotoForMem', updatedMem);
+			const updatedMem = await memModifiers.removePhotoFromMem(mem, photo, $sharedUser);
+			console.log('removePhotoFromMem', updatedMem);
 			if (updatedMem) {
 				updateVisibleMems(mems, updatedMem, mem._id);
 			}
@@ -222,7 +222,7 @@
 			on:titleChanged={updateTitleForMem}
 			on:fileUpload={uploadFilesForMem}
 			on:seen={seenMem}
-			on:deletePhoto={deletePhotoForMem}
+			on:removePhoto={removePhotoFromMem}
 		/>
 		<MoreMem moreAvailable={moreMemsAvailable} on:loadMore={loadMore} />
 	</main>

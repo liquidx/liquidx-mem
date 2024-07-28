@@ -305,12 +305,12 @@ export async function uploadFilesForMem(
 		});
 }
 
-export const deletePhotoForMem = async (
+export const removePhotoFromMem = async (
 	mem: Mem,
 	photo: MemPhoto,
 	user: User
 ): Promise<Mem | undefined> => {
-	const url = `${serverUrl}/mem/media-del`;
+	const url = `${serverUrl}/mem/media-remove`;
 	const body = { userId: user.uid, memId: mem._id, mediaUrl: photo.mediaUrl };
 	const authToken = await user.getIdToken();
 	const headers = {

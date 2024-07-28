@@ -23,7 +23,7 @@
 			on:noteChanged
 			on:titleChanged
 			on:unarchive
-			on:deletePhoto
+			on:removePhoto
 		/>
 	{/each}
 </div>

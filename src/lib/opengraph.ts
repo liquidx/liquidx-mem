@@ -29,6 +29,8 @@ export interface OpenGraphTags {
 	locale?: string;
 	description?: string;
 	url?: string;
+	oldDescription?: string;
+	oldTitle?: string;
 	images?: OpenGraphImage[];
 	videos?: OpenGraphVideo[];
 	audios?: OpenGraphAudio[];
@@ -135,6 +137,17 @@ export const parseOpenGraph = (content: string): OpenGraphTags => {
 		ogTags.audios = audios;
 	}
 
+	// Extract any old school meta tags
+	const metaDescription = content.match(/<meta\s+name="description"\s+content="([^"]*)"/);
+	if (metaDescription) {
+		ogTags.oldDescription = he.decode(metaDescription[1]);
+	}
+
+	const metaTitle = content.match(/<title>([^<]*)<\/title>/);
+	if (metaTitle) {
+		ogTags.oldTitle = he.decode(metaTitle[1]);
+	}
+
 	return ogTags;
 };
 
@@ -155,7 +168,7 @@ export const fetchOpenGraph = async (url: string): Promise<OpenGraphTags | void>
 			return response.data;
 		})
 		.catch((err: any) => {
-			console.log('Error:', err);
+			console.log('Error:', err.code, err.response.status);
 			return null;
 		});
 

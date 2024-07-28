@@ -60,9 +60,9 @@
 		}
 	}
 
-	function onDeletePhoto(photo: MemPhoto | undefined) {
-		console.log('onDeletePhoto', photo);
-		dispatch('deletePhoto', { mem, photo });
+	function onRemovePhoto(photo: MemPhoto | undefined) {
+		console.log('onRemovePhoto', photo);
+		dispatch('removePhoto', { mem, photo });
 	}
 
 	$: {
@@ -264,8 +264,8 @@
 </script>
 
 <div
-	class={'mem flex flex-col rounded-xl my-4 md:mx-2 py-4 px-4 md:px-6 bg-muted text-muted-foreground' +
-		(isDragging ? ' bg-green-100' : '')}
+	class={'mem flex flex-col rounded-xl my-4 md:mx-2 py-4 px-4 md:px-6  text-muted-foreground ' +
+		(isDragging ? ' bg-yellow-100' : 'bg-muted')}
 	on:dragover={ondragover}
 	on:dragleave={ondragleave}
 	on:drop={ondrop}
@@ -315,9 +315,9 @@
 						<img src={photo.url} alt={photo.status} title={photo.status} class="mt-4 rounded-md" />
 						<button
 							class="text-xs text-right text-muted-foreground w-full"
-							on:click={() => onDeletePhoto(photo.photo)}
+							on:click={() => onRemovePhoto(photo.photo)}
 						>
-							Delete
+							Remove
 						</button>
 					</div>
 				{/each}

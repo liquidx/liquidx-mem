@@ -15,7 +15,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	const memId = body['memId'] || '';
 	const mediaUrl = body['mediaUrl'] || '';
 
-	console.log('/_api/mem/media-del:', body);
+	console.log('/_api/mem/media-remove:', body);
 
 	if (!mediaUrl) {
 		return error(400, JSON.stringify({ error: 'No mediaUrl' }));
