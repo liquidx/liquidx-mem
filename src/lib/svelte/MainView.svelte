@@ -291,7 +291,7 @@
 	{#if showTags}
 		<section class="md:my-4">
 			<MemSearchBox on:searchQueryDidChange={searchQueryDidChange} />
-			<MemTagList />
+			<MemTagList currentTagFilters={tagFilters} />
 		</section>
 	{/if}
 	<main class="p-2 max-w-screen flex-grow md:max-w-xl">

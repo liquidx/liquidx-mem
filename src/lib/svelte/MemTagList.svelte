@@ -3,6 +3,10 @@
 	import type { TagListItem } from '$lib/common/tags';
 	import { sharedUser } from '$lib/firebase-shared';
 	import type { UserView } from '$lib/user.types';
+	import type { TagFilters } from '$lib/filter';
+	import { cn } from '$lib/utils';
+
+	export let currentTagFilters: TagFilters | undefined = undefined;
 
 	let showAll = false;
 	let initialVisibleCount = 30;
@@ -38,19 +42,47 @@
 	const showAllDidClick = () => {
 		showAll = true;
 	};
+
+	const isSelected = (tag: string, filters_: TagFilters) => {
+		if (!filters_) {
+			return false;
+		}
+		if (filters_.matchAllTags.includes(tag) || filters_.matchAnyTags.includes(tag)) {
+			return true;
+		}
+		return false;
+	};
+
+	const isNew = (filters_: TagFilters) => {
+		return !filters_ || !filters_.onlyArchived;
+	};
+
+	const isArchive = (filters_: TagFilters) => {
+		return filters_ && filters_.onlyArchived && filters_.matchAllTags.includes('#*');
+	};
 </script>
 
 <section class="w-screen p-2 md:w-48 flex flex-row flex-wrap md:flex-col justify-start">
-	<a href="/" class="block md:px-2 px-1 py-0.5 whitespace-nowrap hover:underline font-bold"
-		>🆕 New
+	<a
+		href="/"
+		class={cn(
+			'block md:px-2 px-1 py-1 whitespace-nowrap hover:underline font-bold rounded-sm',
+			isNew(currentTagFilters) ? 'bg-primary text-white' : ''
+		)}
+	>
+		🆕 New
 	</a>
-	<a href="/tag/*" class="block md:px-2 px-1 py-0.5 whitespace-nowrap hover:underline font-bold"
-		>📦 Archive</a
+	<a
+		href="/tag/*"
+		class={cn(
+			'block md:px-2 px-1 py-1 whitespace-nowrap hover:underline font-bold rounded-sm',
+			isArchive(currentTagFilters) ? 'bg-primary text-white' : ''
+		)}>📦 Archive</a
 	>
 	{#each views as view}
 		<a
 			href={pathForView(view.tags)}
-			class="block md:px-2 px-1 py-0.5 whitespace-nowrap hover:underline"
+			class="block md:px-2 px-1 py-1 whitespace-nowrap hover:underline rounded-sm"
 		>
 			⭐️ {view.tags}
 		</a>
@@ -58,7 +90,10 @@
 	{#each visibleTags as tag (tag.tag)}
 		<a
 			href={pathForView(tag.tag)}
-			class="block md:px-2 px-1 py-0.5 whitespace-nowrap hover:underline"
+			class={cn(
+				'block md:px-2 px-1 py-1 whitespace-nowrap hover:underline  rounded-sm',
+				isSelected(tag.tag, currentTagFilters) ? 'bg-primary text-white' : ''
+			)}
 		>
 			{tag.icon}
 			{tag.tag} ({tag.count})

@@ -332,7 +332,7 @@ export const updateSecrets = async (user: User, settings: UserWriteSecret): Prom
 	return axios.post(url, { key: 'secrets', settings }, { headers });
 };
 
-export const getTags = async (user: User, filter: string | undefined): Promise<TagListItem[]> => {
+export const getTags = async (user: User, filter?: string): Promise<TagListItem[]> => {
 	const params = new URLSearchParams({ userId: user.uid });
 	if (filter) {
 		params.append('filter', filter);
