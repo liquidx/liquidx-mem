@@ -71,6 +71,21 @@ export const getMems = async (
 		} else if (!request.all) {
 			query.new = true;
 		}
+
+		// Need to divert to use an aggregation stage for the query using
+		// db.collection.aggregate([
+		// 	{
+		// 		$search: {
+		// 			text: {
+		// 				query: 'search terms', // The text to search for
+		// 				path: ['field1', 'field2'] // Optional: Fields to search in
+		// 			}
+		// 		}
+		// 	}
+		// ]);
+		// if (request.searchQuery) {
+		// 	query['$text'] = { $search: request.searchQuery };
+		// }
 	}
 
 	const options: { [key: string]: any } = { sort: { addedMs: -1 } };

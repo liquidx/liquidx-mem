@@ -1,6 +1,7 @@
 <script lang="ts">
 	import axios from 'axios';
 	import { toast } from 'svelte-sonner';
+	import { goto } from '$app/navigation';
 
 	import { sharedUser } from '$lib/firebase-shared';
 	import type { Mem, MemPhoto } from '$lib/common/mems';
@@ -14,7 +15,7 @@
 	import { stringFromTagFilters, tagFiltersByString, type TagFilters } from '$lib/filter';
 	import type { TagListItem } from '$lib/common/tags';
 	import MemListFilters from './MemListFilters.svelte';
-	import { goto } from '$app/navigation';
+	import MemSearchBox from './MemSearchBox.svelte';
 
 	export let filter: string = '';
 	export let showTags = true;
@@ -24,6 +25,7 @@
 	let mems: Mem[] = [];
 	let moreMemsAvailable = true;
 	let viewTags: TagListItem[] = [];
+	let searchQuery: string = '';
 	let tagFilters: TagFilters = {
 		matchAllTags: [],
 		matchAnyTags: [],
@@ -37,7 +39,7 @@
 
 	$: {
 		if ($sharedUser) {
-			loadMems(tagFilters, false);
+			loadMems(tagFilters, searchQuery, false);
 			loadFilters(tagFilters);
 		}
 	}
@@ -55,7 +57,7 @@
 		return [];
 	};
 
-	const loadMems = async (tagFilters: TagFilters, append: boolean) => {
+	const loadMems = async (tagFilters: TagFilters, searchQuery: string, append: boolean) => {
 		if (!$sharedUser) {
 			return;
 		}
@@ -69,6 +71,7 @@
 			isArchived: tagFilters.onlyArchived,
 			matchAllTags: tagFilters.matchAllTags,
 			matchAnyTags: tagFilters.matchAnyTags,
+			searchQuery: searchQuery,
 			pageSize: pageSize,
 			page: visiblePages - 1
 		};
@@ -89,7 +92,7 @@
 
 	const loadMore = () => {
 		visiblePages += 1;
-		loadMems(tagFilters, true);
+		loadMems(tagFilters, searchQuery, true);
 		console.log('loadMore', visiblePages);
 	};
 
@@ -162,7 +165,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.archiveMem(mem, $sharedUser);
 			if (updatedMem) {
-				loadMems(tagFilters, false);
+				loadMems(tagFilters, searchQuery, false);
 			}
 		}
 	};
@@ -173,7 +176,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.seenMem(mem, $sharedUser);
 			if (updatedMem) {
-				loadMems(tagFilters, false);
+				loadMems(tagFilters, searchQuery, false);
 			}
 		}
 	};
@@ -183,7 +186,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.unarchiveMem(mem, $sharedUser);
 			if (updatedMem) {
-				loadMems(tagFilters, false);
+				loadMems(tagFilters, searchQuery, false);
 			}
 		}
 	};
@@ -250,7 +253,7 @@
 
 	const memDidAdd = (e: CustomEvent) => {
 		//const mem = e.detail.mem;
-		loadMems(tagFilters, false);
+		loadMems(tagFilters, searchQuery, false);
 	};
 
 	const tagDidClick = (e: CustomEvent) => {
@@ -272,6 +275,12 @@
 			goto('/');
 		}
 	};
+
+	const searchQueryDidChange = (e: CustomEvent) => {
+		const query = e.detail.query;
+		searchQuery = query;
+		console.log('searchQueryDidChange', query);
+	};
 </script>
 
 <svelte:head>
@@ -280,7 +289,8 @@
 
 <div class="flex flex-col w-full overflow-x-hidden md:flex-row">
 	{#if showTags}
-		<section>
+		<section class="md:my-4">
+			<MemSearchBox on:searchQueryDidChange={searchQueryDidChange} />
 			<MemTagList />
 		</section>
 	{/if}

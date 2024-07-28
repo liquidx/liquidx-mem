@@ -7,6 +7,7 @@ export interface MemListRequest {
 	all?: boolean;
 	matchAllTags?: string[];
 	matchAnyTags?: string[];
+	searchQuery?: string;
 	pageSize?: number;
 	page?: number;
 }

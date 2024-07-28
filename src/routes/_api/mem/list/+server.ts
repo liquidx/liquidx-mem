@@ -8,8 +8,8 @@ import { getUserId } from '$lib/server/api.server.js';
 import { getMems } from '$lib/mem.db.server';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-	const body = (await request.json()) as MemListRequest;
-	const requestUserId = body.userId || '';
+	const requestBody = (await request.json()) as MemListRequest;
+	const requestUserId = requestBody.userId || '';
 
 	if (!requestUserId) {
 		return error(500, 'Missing user');
@@ -28,7 +28,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		return error(403, JSON.stringify({ error: 'Permission denied' }));
 	}
 
-	const mems = await getMems(db, userId, body);
+	const mems = await getMems(db, userId, requestBody);
 
 	const response: MemListResponse = { status: 'OK', mems: mems };
 	console.log('POST mem/list: Mems', mems.length);
