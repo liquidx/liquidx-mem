@@ -1,5 +1,6 @@
 <script lang="ts">
 	import axios from 'axios';
+	import { toast } from 'svelte-sonner';
 
 	import { sharedUser } from '$lib/firebase-shared';
 	import type { Mem, MemPhoto } from '$lib/common/mems';
@@ -66,15 +67,21 @@
 	};
 
 	const updateVisibleMems = (mems_: Mem[], updatedMem: Mem, updatedMemId: string | undefined) => {
-		console.log(updatedMem);
+		console.log('updateVisibleMems', updatedMem);
+		let didChange = false;
 		let replacedMemId = updatedMemId || updatedMem._id;
 		const replacedMems = mems_.map((mem) => {
 			if (mem._id === replacedMemId) {
+				didChange = true;
+				console.log('didChange', mem._id, updatedMem);
 				return updatedMem;
 			}
 			return mem;
 		});
-		mems = replacedMems; // trigger reactivity
+
+		if (didChange) {
+			mems = replacedMems; // trigger reactivity
+		}
 	};
 
 	////
@@ -82,14 +89,19 @@
 	////
 
 	const annotateMem = async (e: CustomEvent) => {
+		toast('Annotating...');
 		let mem: Mem = e.detail.mem;
 		if (mem && $sharedUser) {
 			const response: MemAnnotateResponse | undefined = await memModifiers.annotateMem(
 				mem,
 				$sharedUser
 			);
+			if (!response) {
+				toast.error('Failed to annotate...');
+			}
 			if (response) {
 				updateVisibleMems(mems, response.mem, response.mem._id);
+				toast.success('Done');
 			}
 		}
 	};
@@ -140,7 +152,7 @@
 	};
 
 	const unarchiveMem = async (e: CustomEvent) => {
-		let mem: Mem = e.detail.mem;
+		const mem: Mem = e.detail.mem;
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.unarchiveMem(mem, $sharedUser);
 			if (updatedMem) {
@@ -149,22 +161,33 @@
 		}
 	};
 
-	const updateNoteForMem = async (e: CustomEvent) => {
-		let mem: Mem = e.detail.mem;
-		let text = e.detail.text;
+	const updateNoteForMem = async (e: FocusEvent) => {
+		const mem: Mem = e.detail.mem;
+		const text = e.detail.text;
 		if (mem && $sharedUser) {
-			const updatedMem = await memModifiers.updateNoteForMem(mem, text, $sharedUser);
+			const updatedMem = await memModifiers.updatePropertyForMem(mem, 'note', text, $sharedUser);
 			if (updatedMem) {
 				updateVisibleMems(mems, updatedMem, mem._id);
 			}
 		}
 	};
 
-	const updateTitleForMem = async (e: CustomEvent) => {
+	const updateTitleForMem = async (e: FocusEvent) => {
 		let mem: Mem = e.detail.mem;
 		let text = e.detail.text;
 		if (mem && $sharedUser) {
-			const updatedMem = await memModifiers.updateTitleForMem(mem, text, $sharedUser);
+			const updatedMem = await memModifiers.updatePropertyForMem(mem, 'title', text, $sharedUser);
+			if (updatedMem) {
+				updateVisibleMems(mems, updatedMem, mem._id);
+			}
+		}
+	};
+
+	const updateUrlForMem = async (e: CustomEvent) => {
+		let mem: Mem = e.detail.mem;
+		let text = e.detail.url;
+		if (mem && $sharedUser) {
+			const updatedMem = await memModifiers.updatePropertyForMem(mem, 'url', text, $sharedUser);
 			if (updatedMem) {
 				updateVisibleMems(mems, updatedMem, mem._id);
 			}
@@ -175,7 +198,12 @@
 		let mem: Mem = e.detail.mem;
 		let text = e.detail.text;
 		if (mem && $sharedUser) {
-			const updatedMem = await memModifiers.updateDescriptionForMem(mem, text, $sharedUser);
+			const updatedMem = await memModifiers.updatePropertyForMem(
+				mem,
+				'description',
+				text,
+				$sharedUser
+			);
 			if (updatedMem) {
 				updateVisibleMems(mems, updatedMem, mem._id);
 			}
@@ -223,6 +251,7 @@
 			on:fileUpload={uploadFilesForMem}
 			on:seen={seenMem}
 			on:removePhoto={removePhotoFromMem}
+			on:urlChanged={updateUrlForMem}
 		/>
 		<MoreMem moreAvailable={moreMemsAvailable} on:loadMore={loadMore} />
 	</main>

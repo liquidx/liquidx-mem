@@ -47,15 +47,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	const updatedMem = (await getMemCollection(db).findOneAndUpdate(
 		{ userId: userId, _id: mem._id },
-		{ $set: mem }
+		{ $set: mem },
+		{ returnDocument: 'after' }
 	)) as unknown as Mem;
 
 	if (!updatedMem) {
 		return error(500, JSON.stringify({ error: 'Error updating mem' }));
 	}
 
-	console.log('Updated mem:', memId);
-
-	await refreshTagCounts(db, userId);
+	console.log('Updated mem:', updatedMem);
+	if (updates && (updates.tags || updates.note)) {
+		await refreshTagCounts(db, userId);
+	}
 	return json({ mem: memToJson(updatedMem) });
 };

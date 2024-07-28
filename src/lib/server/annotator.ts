@@ -29,10 +29,15 @@ const ogImageToPhotos = (ogImages: OpenGraphImage[], url: string): MemPhoto[] =>
 	});
 };
 
-const annotateWithOpenGraph = (mem: Mem, url: string, config: AnnotatorUrlConfig): Promise<Mem> => {
+const annotateWithOpenGraph = (
+	mem: Mem,
+	url: string,
+	config: AnnotatorUrlConfig | null,
+	verbose: boolean = false
+): Promise<Mem> => {
 	const annotated: Mem = Object.assign({}, mem);
 
-	return fetchOpenGraph(url)
+	return fetchOpenGraph(url, verbose)
 		.then((og: OpenGraphTags | void) => {
 			if (!og) {
 				return mem;
@@ -44,7 +49,7 @@ const annotateWithOpenGraph = (mem: Mem, url: string, config: AnnotatorUrlConfig
 			if (og.description) {
 				annotated.description = og.description;
 			}
-			if (config.useOldTitleDescription) {
+			if (config && config.useOldTitleDescription) {
 				if (og.oldTitle) {
 					annotated.title = og.oldTitle;
 				}
@@ -63,7 +68,7 @@ const annotateWithOpenGraph = (mem: Mem, url: string, config: AnnotatorUrlConfig
 		});
 };
 
-export const annotateMem = async (mem: Mem): Promise<Mem> => {
+export const annotateMem = async (mem: Mem, verbose = false): Promise<Mem> => {
 	if (!mem.url) {
 		return mem;
 	}
@@ -89,9 +94,7 @@ export const annotateMem = async (mem: Mem): Promise<Mem> => {
 				case 'ignore':
 					return mem;
 				case 'opengraph': {
-					const content = await fetchOpenGraph(mem.url);
-					console.log('Content:', content);
-					return annotateWithOpenGraph(mem, mem.url, config);
+					return annotateWithOpenGraph(mem, mem.url, config, verbose);
 				}
 				case 'fetch': {
 					// TODO implement me
@@ -102,5 +105,5 @@ export const annotateMem = async (mem: Mem): Promise<Mem> => {
 		}
 	}
 	// Default is to use opengraph
-	return annotateWithOpenGraph(mem, mem.url);
+	return annotateWithOpenGraph(mem, mem.url, null, verbose);
 };

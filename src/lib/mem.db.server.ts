@@ -16,7 +16,8 @@ export interface MemOptions {
 export const updateMem = async (db: Db, mem: Mem): Promise<Mem | undefined> => {
 	return (await getMemCollection(db).findOneAndUpdate(
 		{ _id: mem._id },
-		{ $set: mem }
+		{ $set: mem },
+		{ returnDocument: 'after' }
 	)) as unknown as Mem;
 };
 

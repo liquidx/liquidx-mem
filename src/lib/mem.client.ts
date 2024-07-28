@@ -164,66 +164,17 @@ export async function seenMem(mem: Mem, user: User): Promise<Mem | undefined> {
 	});
 }
 
-export async function updateNoteForMem(
+export async function updatePropertyForMem(
 	mem: Mem,
-	note: string,
-	user: User
-): Promise<Mem | undefined> {
-	const url = `${serverUrl}/mem/edit`;
-	const body = { userId: user.uid, memId: mem._id, updates: { note: note } };
-	const authToken = await user.getIdToken();
-	const headers = {
-		Authorization: `Bearer ${authToken}`
-	};
-
-	return axios.post(url, body, { headers }).then((response) => {
-		if (response.status != 200) {
-			return;
-		}
-
-		if (!response.data.mem) {
-			return;
-		}
-		return memFromJson(response.data.mem);
-	});
-}
-
-export async function updateTitleForMem(
-	mem: Mem,
-	title: string,
+	property: string,
+	value: string,
 	user: User
 ): Promise<Mem | undefined> {
 	const updates = {
-		title: title
+		[property]: value
 	};
 
-	const url = `${serverUrl}/mem/edit`;
-	const body = { userId: user.uid, memId: mem._id, updates };
-	const authToken = await user.getIdToken();
-	const headers = {
-		Authorization: `Bearer ${authToken}`
-	};
-
-	return axios.post(url, body, { headers }).then((response) => {
-		if (response.status != 200) {
-			return;
-		}
-
-		if (!response.data.mem) {
-			return;
-		}
-		return memFromJson(response.data.mem);
-	});
-}
-
-export async function updateDescriptionForMem(
-	mem: Mem,
-	description: string,
-	user: User
-): Promise<Mem | undefined> {
-	const updates = {
-		description: description
-	};
+	console.log('updatePropertyForMem', updates);
 
 	const url = `${serverUrl}/mem/edit`;
 	const body = { userId: user.uid, memId: mem._id, updates };

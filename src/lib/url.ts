@@ -14,6 +14,10 @@ export const removeUrlTrackingParams = (url: string): string => {
 	urlObj.searchParams.delete('mc_eid');
 	urlObj.searchParams.delete('ad_id');
 	urlObj.searchParams.delete('campaign_id');
+	urlObj.searchParams.delete('nb_aname');
+	urlObj.searchParams.delete('nb_platform');
+	// nytimes specific
+	urlObj.searchParams.delete('smid');
 	// threads.net specific
 	urlObj.searchParams.delete('xtm');
 

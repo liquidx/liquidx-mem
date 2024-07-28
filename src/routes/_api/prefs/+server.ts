@@ -40,7 +40,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 	const user = await getUserCollection(db).findOneAndUpdate(
 		{ _id: userId },
-		{ $set: { [prefKey]: settings } }
+		{ $set: { [prefKey]: settings } },
+		{ returnDocument: 'after' }
 	);
 	if (!user) {
 		return error(500, 'Error: No user');

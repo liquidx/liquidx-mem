@@ -30,5 +30,7 @@
 </script>
 
 {#if mem}
-	<MemView {mem} />
+	<div class="max-w-[600px]">
+		<MemView {mem} />
+	</div>
 {/if}

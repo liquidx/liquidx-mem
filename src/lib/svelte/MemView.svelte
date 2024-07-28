@@ -9,7 +9,10 @@
 
 	import type { Mem, MemPhoto } from '$lib/common/mems';
 	import { Button } from '$lib/components/ui/button';
-	import { AutoResizeTextarea } from 'svelte-autoresize-textarea';
+	import { Input } from '$lib/components/ui/input';
+	import * as Popover from '$lib/components/ui/popover';
+
+	import AutoResizeTextarea from '$lib/thirdparty/autoresize-textarea/AutoresizeTextarea.svelte';
 	import { getCachedStorageUrl } from '$lib/storage';
 
 	type MediaUrl = {
@@ -143,7 +146,8 @@
 		dispatch('fileUpload', { mem, files: dataTransfer.files });
 	}
 
-	function noteDidChange(e: FocusEvent): void {
+	const noteDidChange = async (e: CustomEvent) => {
+		console.log('noteDidChange', e);
 		const target: HTMLInputElement = e.target as HTMLInputElement;
 		if (!target) {
 			return;
@@ -154,9 +158,10 @@
 			dispatch('noteChanged', { mem, text: noteValue });
 			target.innerText = noteValue;
 		}
-	}
+	};
 
-	function descriptionDidChange(e: FocusEvent): void {
+	function descriptionDidChange(e: CustomEvent): void {
+		console.log('descriptionDidChange', e);
 		const target: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
 		if (!target) {
 			return;
@@ -203,6 +208,16 @@
 			mediaImageUrl = '';
 		}
 	}
+
+	const onUrlDidKeyUp = (e: KeyboardEvent) => {
+		if (e.key === 'Enter') {
+			const target = e.target as HTMLInputElement;
+			if (target) {
+				console.log('onUrlKeyUp', target.value);
+				dispatch('urlChanged', { mem, url: target.value });
+			}
+		}
+	};
 
 	async function getMediaUrls() {
 		if (!mem) {
@@ -263,19 +278,21 @@
 	}
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
 	class={'mem flex flex-col rounded-xl my-4 md:mx-2 py-4 px-4 md:px-6  text-muted-foreground ' +
 		(isDragging ? ' bg-yellow-100' : 'bg-muted')}
 	on:dragover={ondragover}
 	on:dragleave={ondragleave}
 	on:drop={ondrop}
-	role="button"
-	tabindex="0"
 >
 	<div>
 		<AutoResizeTextarea
 			class="my-2 py-2 rounded-xl bg-input px-4 min-h-[1rem] h-8 w-full"
 			maxRows={4}
+			on:change={() => {
+				console.log('chage');
+			}}
 			on:blur={noteDidChange}
 			value={mem.note}
 		/>
@@ -349,9 +366,21 @@
 		<div class="my-2 text-muted-foreground text-xs" title={mem._id}>
 			<div>{getPrettyDate(mem)}</div>
 			<div>
-				<a href={`/mem/${mem._id}`}>{mem._id}</a>
+				<a href={`/mem/${mem._id}`} class="hover:text-secondary-foreground">{mem._id}</a>
 			</div>
-			<div class="max-h-48 overflow-y-clip"><a href={mem.url} target="_blank">{mem.url}</a></div>
+
+			<Popover.Root>
+				<Popover.Trigger
+					><div class="max-h-48 overflow-y-clip">
+						<button class="text-left overflow-x-clip hover:text-secondary-foreground"
+							>{mem.url} (edit)</button
+						>
+					</div>
+				</Popover.Trigger>
+				<Popover.Content>
+					<Input type="text" value={mem.url} on:keyup={onUrlDidKeyUp} />
+				</Popover.Content>
+			</Popover.Root>
 		</div>
 	</div>
 

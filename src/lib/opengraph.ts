@@ -152,7 +152,10 @@ export const parseOpenGraph = (content: string): OpenGraphTags => {
 };
 
 // Fetch open graph tags from a URL
-export const fetchOpenGraph = async (url: string): Promise<OpenGraphTags | void> => {
+export const fetchOpenGraph = async (
+	url: string,
+	verbose = false
+): Promise<OpenGraphTags | void> => {
 	const request = {
 		method: 'GET',
 		url: url,
@@ -171,6 +174,10 @@ export const fetchOpenGraph = async (url: string): Promise<OpenGraphTags | void>
 			console.log('Error:', err.code, err.response.status);
 			return null;
 		});
+
+	if (verbose) {
+		console.log('Content:', content);
+	}
 
 	if (!content) {
 		return null;

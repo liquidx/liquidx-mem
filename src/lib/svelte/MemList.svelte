@@ -11,7 +11,7 @@
 </script>
 
 <div>
-	{#each mems as mem}
+	{#each mems as mem (mem._id)}
 		<MemView
 			{mem}
 			on:annotate
@@ -24,6 +24,7 @@
 			on:titleChanged
 			on:unarchive
 			on:removePhoto
+			on:urlChanged
 		/>
 	{/each}
 </div>

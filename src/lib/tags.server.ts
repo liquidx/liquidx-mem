@@ -42,7 +42,7 @@ export const refreshTagCounts = async (db: Db, userId: string) => {
 	return await getTagCollection(db).findOneAndUpdate(
 		{ userId: userId },
 		{ $set: { counts: counts } },
-		{ upsert: true }
+		{ upsert: true, returnDocument: 'after' }
 	);
 
 	// TODO: implement me.
