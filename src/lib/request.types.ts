@@ -5,8 +5,8 @@ export interface MemListRequest {
 	secretWord?: string;
 	isArchived?: boolean;
 	all?: boolean;
-	allOfTags?: string[];
-	oneOfTags?: string[];
+	matchAllTags?: string[];
+	matchAnyTags?: string[];
 	pageSize?: number;
 	page?: number;
 }

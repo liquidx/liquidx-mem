@@ -8,7 +8,7 @@ export type TagIndex = { [field: string]: number };
 export type TagListItem = { tag: string; count: number; icon?: string };
 export type IndexTagDocument = { counts: TagListItem[] };
 
-type MemTags = { tags: string[] };
+export type MemTags = { tags: string[]; _id?: string };
 
 export const computeTagCounts = (mems: MemTags[]): TagListItem[] => {
 	const tags: TagIndex = {};

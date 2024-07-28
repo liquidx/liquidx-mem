@@ -11,6 +11,10 @@
 	import MoreMem from '$lib/svelte/MoreMem.svelte';
 	import MemTagList from '$lib/svelte/MemTagList.svelte';
 	import type { MemAnnotateResponse, MemListRequest } from '$lib/request.types';
+	import { stringFromTagFilters, tagFiltersByString, type TagFilters } from '$lib/filter';
+	import type { TagListItem } from '$lib/common/tags';
+	import MemListFilters from './MemListFilters.svelte';
+	import { goto } from '$app/navigation';
 
 	export let filter: string = '';
 	export let showTags = true;
@@ -19,14 +23,39 @@
 	let visiblePages = 1;
 	let mems: Mem[] = [];
 	let moreMemsAvailable = true;
+	let viewTags: TagListItem[] = [];
+	let tagFilters: TagFilters = {
+		matchAllTags: [],
+		matchAnyTags: [],
+		onlyArchived: false,
+		onlyNew: true
+	};
+
+	$: {
+		tagFilters = tagFiltersByString(filter);
+	}
 
 	$: {
 		if ($sharedUser) {
-			loadMems(filter, false);
+			loadMems(tagFilters, false);
+			loadFilters(tagFilters);
 		}
 	}
 
-	const loadMems = async (withFilter: string, append: boolean) => {
+	const loadFilters = async (tagFilters: TagFilters) => {
+		if (!$sharedUser) {
+			return;
+		}
+
+		const filterString = stringFromTagFilters(tagFilters);
+		const tagsForView: TagListItem[] = await memModifiers.getTags($sharedUser, filterString);
+		if (tagsForView) {
+			viewTags = tagsForView;
+		}
+		return [];
+	};
+
+	const loadMems = async (tagFilters: TagFilters, append: boolean) => {
 		if (!$sharedUser) {
 			return;
 		}
@@ -37,14 +66,12 @@
 		};
 		const params: MemListRequest = {
 			userId: $sharedUser.uid,
-			isArchived: withFilter === '*',
+			isArchived: tagFilters.onlyArchived,
+			matchAllTags: tagFilters.matchAllTags,
+			matchAnyTags: tagFilters.matchAnyTags,
 			pageSize: pageSize,
 			page: visiblePages - 1
 		};
-
-		if (withFilter) {
-			params.allOfTags = withFilter.split(',').map((tag) => `#${tag}`);
-		}
 
 		const result = await axios.post(`/_api/mem/list`, params, { headers });
 
@@ -62,7 +89,7 @@
 
 	const loadMore = () => {
 		visiblePages += 1;
-		loadMems(filter, true);
+		loadMems(tagFilters, true);
 		console.log('loadMore', visiblePages);
 	};
 
@@ -135,7 +162,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.archiveMem(mem, $sharedUser);
 			if (updatedMem) {
-				loadMems(filter, false);
+				loadMems(tagFilters, false);
 			}
 		}
 	};
@@ -146,7 +173,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.seenMem(mem, $sharedUser);
 			if (updatedMem) {
-				loadMems(filter, false);
+				loadMems(tagFilters, false);
 			}
 		}
 	};
@@ -156,7 +183,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.unarchiveMem(mem, $sharedUser);
 			if (updatedMem) {
-				loadMems(filter, false);
+				loadMems(tagFilters, false);
 			}
 		}
 	};
@@ -223,7 +250,27 @@
 
 	const memDidAdd = (e: CustomEvent) => {
 		//const mem = e.detail.mem;
-		loadMems(filter, false);
+		loadMems(tagFilters, false);
+	};
+
+	const tagDidClick = (e: CustomEvent) => {
+		const tag = e.detail.tag;
+		console.log('tagDidClick', tag, tagFilters);
+
+		// Toggle the tag in the filters
+		if (tagFilters.matchAllTags.includes(tag)) {
+			tagFilters.matchAllTags = tagFilters.matchAllTags.filter((t) => t !== tag);
+		} else {
+			tagFilters.matchAllTags.push(tag);
+		}
+
+		// Easiest way to update the tag filters is to nav to the right URL.
+		let tagFiltersString = stringFromTagFilters(tagFilters);
+		if (tagFiltersString) {
+			goto(`/tag/${tagFiltersString}`);
+		} else {
+			goto('/');
+		}
 	};
 </script>
 
@@ -239,6 +286,9 @@
 	{/if}
 	<main class="p-2 max-w-screen flex-grow md:max-w-xl">
 		<MemAdd on:memDidAdd={memDidAdd} />
+		{#if viewTags && viewTags.length > 0}
+			<MemListFilters tags={viewTags} currentTagFilters={tagFilters} on:tagDidClick={tagDidClick} />
+		{/if}
 		<MemList
 			{mems}
 			on:annotate={annotateMem}

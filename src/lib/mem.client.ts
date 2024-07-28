@@ -332,28 +332,35 @@ export const updateSecrets = async (user: User, settings: UserWriteSecret): Prom
 	return axios.post(url, { key: 'secrets', settings }, { headers });
 };
 
-export const getTags = async (user: User) => {
-	const url = `${serverUrl}/tag/count`;
-	const body = { userId: user.uid };
+export const getTags = async (user: User, filter: string | undefined): Promise<TagListItem[]> => {
+	const params = new URLSearchParams({ userId: user.uid });
+	if (filter) {
+		params.append('filter', filter);
+	}
+	const url = `${serverUrl}/tag/list?${params.toString()}`;
 	const authToken = await user.getIdToken();
 	const headers = {
 		Authorization: `Bearer ${authToken}`
 	};
 
-	return axios.post(url, body, { headers }).then((response) => {
-		if (response.status != 200) {
-			return [];
-		}
+	const response = await axios.get(url, { headers }).catch(() => {
+		return [];
+	});
 
-		if (!response.data.counts) {
-			return [];
-		}
+	if (!response) {
+		return [];
+	}
 
-		const tags = response.data.counts;
-		tags.map((tag: TagListItem) => {
-			tag.icon = iconForTag(tag.tag);
-			return tag;
-		});
-		return tags;
+	if (response.status != 200) {
+		return [];
+	}
+
+	if (!response.data.counts) {
+		return [];
+	}
+
+	return response.data.counts.map((tag: TagListItem) => {
+		tag.icon = iconForTag(tag.tag);
+		return tag;
 	});
 };

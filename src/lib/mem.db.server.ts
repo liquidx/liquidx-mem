@@ -53,16 +53,21 @@ export const mirrorMediaInMem = async (
 	}
 };
 
-export const getMems = async (db: Db, userId: string, request?: MemListRequest) => {
+export const getMems = async (
+	db: Db,
+	userId: string,
+	request?: MemListRequest,
+	projection?: any
+) => {
 	const query: { [key: string]: any } = { userId: userId };
 
 	if (request) {
 		if (request.isArchived) {
 			query.new = false;
-		} else if (request.allOfTags) {
-			query['tags'] = { $all: request.allOfTags };
-		} else if (request.oneOfTags) {
-			query['tags'] = { $in: request.oneOfTags };
+		} else if (request.matchAllTags && request.matchAllTags.length > 0) {
+			query['tags'] = { $all: request.matchAllTags };
+		} else if (request.matchAnyTags && request.matchAnyTags.length > 0) {
+			query['tags'] = { $in: request.matchAnyTags };
 		} else if (!request.all) {
 			query.new = true;
 		}
@@ -76,15 +81,14 @@ export const getMems = async (db: Db, userId: string, request?: MemListRequest) 
 		options.skip = page * pageSize;
 	}
 
+	if (projection) {
+		options.projection = projection;
+	}
+
+	// console.log('Request: ', request);
 	console.log(query, options);
 
-	const collection = db.collection('mems');
-	const cursor = await collection.find(query, options);
-	const docs = [];
-	for await (const doc of cursor) {
-		docs.push(doc);
-		// docs.push(toJSON(doc)) // ??
-	}
+	const docs = await getMemCollection(db).find(query, options).toArray();
 	return docs;
 };
 

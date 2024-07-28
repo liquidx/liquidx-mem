@@ -1,27 +1,61 @@
-export type FilterStrategy = 'any' | 'all';
-export type FilterTags = string[];
-export type FilterCondition = {
-	filterTags: FilterTags;
-	filterStrategy: FilterStrategy;
-	archivedOnly: boolean;
+export interface TagFilters {
+	onlyNew: boolean;
+	onlyArchived: boolean;
+	matchAllTags: string[];
+	matchAnyTags: string[];
+}
+
+export const tagFiltersByString = (filterString: string | undefined): TagFilters => {
+	const filters: TagFilters = {
+		onlyNew: false,
+		onlyArchived: false,
+		matchAllTags: [],
+		matchAnyTags: []
+	};
+
+	if (!filterString) {
+		return filters;
+	}
+
+	if (filterString == '*') {
+		filters.onlyArchived = true;
+	}
+
+	// Filter strings can either be
+	// - a single tag
+	// - tags separated by '+' (match all) or ',' (match any)
+	const matchAll = filterString.split('+');
+	if (matchAll.length > 0) {
+		filters.matchAllTags = matchAll
+			.map((tag) => tag.trim())
+			.map((tag) => tag.toLowerCase())
+			.map((tag) => `#${tag}`);
+		return filters;
+	}
+
+	const matchAny = filterString.split(',');
+	if (matchAny.length > 1) {
+		filters.matchAnyTags = matchAny
+			.map((tag) => tag.trim())
+			.map((tag) => tag.toLowerCase())
+			.map((tag) => `#${tag}`);
+		return filters;
+	}
+
+	return filters;
 };
 
-export const getFilterCondition = (tags: string): FilterCondition => {
-	let filterTags = [] as string[];
-	let filterStrategy: FilterStrategy = 'any';
-	let archivedOnly = false;
-
-	if (tags === '') {
-		return { filterTags, filterStrategy, archivedOnly };
+export const stringFromTagFilters = (filters: TagFilters): string => {
+	if (filters.onlyArchived) {
+		return '*';
 	}
-
-	if (tags == '*') {
-		archivedOnly = true;
-	} else if (tags.includes('+')) {
-		filterStrategy = 'all';
-		filterTags = tags.split('+').map((t) => `#${t}`);
-	} else {
-		filterTags = tags.split('|').map((t) => `#${t}`);
+	if (filters.matchAllTags.length > 0) {
+		const matchAll = filters.matchAllTags.map((tag) => tag.replace('#', '')).join('+');
+		return matchAll;
 	}
-	return { filterTags, filterStrategy, archivedOnly };
+	if (filters.matchAnyTags.length > 0) {
+		const matchAny = filters.matchAnyTags.map((tag) => tag.replace('#', '')).join(',');
+		return matchAny;
+	}
+	return '';
 };
