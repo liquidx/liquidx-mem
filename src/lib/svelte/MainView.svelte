@@ -108,9 +108,9 @@
 	const deletePhotoForMem = async (e: CustomEvent) => {
 		let mem: Mem = e.detail.mem;
 		let photo: MemPhoto = e.detail.photo;
-		console.log(photo);
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.deletePhotoForMem(mem, photo, $sharedUser);
+			console.log('deletePhotoForMem', updatedMem);
 			if (updatedMem) {
 				updateVisibleMems(mems, updatedMem, mem._id);
 			}
