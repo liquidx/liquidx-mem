@@ -40,21 +40,21 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	// Iterate through the media to remove the item that has the mediaURl
 	if (mem.photos) {
+		const photos = [];
 		for (let i = 0; i < mem.photos.length; i++) {
 			const photo: MemPhoto = mem.photos[i];
-			if (photo.mediaUrl === mediaUrl) {
-				mem.photos.splice(i, 1);
-				break;
+			if (photo.mediaUrl !== mediaUrl) {
+				photos.push(photo);
 			}
 		}
+		mem.photos = photos;
 	}
 
-	const result = await updateMem(db, mem);
-	if (!result) {
+	const updatedMem = await updateMem(db, mem);
+	if (!updatedMem) {
 		return error(500, JSON.stringify({ error: 'Error updating mem' }));
 	}
 
 	await refreshTagCounts(db, userId);
-	const resultMem = Object.assign({}, mem, { id: memId });
-	return json({ mem: memToJson(resultMem) });
+	return json({ mem: memToJson(updatedMem) });
 };

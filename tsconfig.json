@@ -32,7 +32,8 @@
 		"src/router/index.ts",
 		"src/firebase.ts",
 		"src/main.ts",
-		"ambient.d.ts"
+		"ambient.d.ts",
+		"test/**/*.js"
 	],
 	"exclude": [
 		"node_modules",

@@ -40,7 +40,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	if (updatedMemWithMedia) {
 		updatedMem = updatedMemWithMedia;
 	}
-	console.log('updatedMem', updatedMem);
 	if (updatedMem) {
 		const annotateResponse: MemAnnotateResponse = { mem: memToJson(updatedMem), memId: memId };
 		return json(annotateResponse);

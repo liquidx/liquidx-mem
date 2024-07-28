@@ -65,16 +65,16 @@
 		console.log('loadMore', visiblePages);
 	};
 
-	const updateVisibleMems = (mems: Mem[], updatedMem: Mem, updatedMemId: string | undefined) => {
+	const updateVisibleMems = (mems_: Mem[], updatedMem: Mem, updatedMemId: string | undefined) => {
 		console.log(updatedMem);
 		let replacedMemId = updatedMemId || updatedMem._id;
-		let replacedMems = mems.map((mem) => {
+		const replacedMems = mems_.map((mem) => {
 			if (mem._id === replacedMemId) {
 				return updatedMem;
 			}
 			return mem;
 		});
-		mems = replacedMems;
+		mems = replacedMems; // trigger reactivity
 	};
 
 	////
@@ -89,7 +89,7 @@
 				$sharedUser
 			);
 			if (response) {
-				updateVisibleMems(mems, response.mem, response.memId);
+				updateVisibleMems(mems, response.mem, response.mem._id);
 			}
 		}
 	};

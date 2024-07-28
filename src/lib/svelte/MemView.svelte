@@ -310,7 +310,7 @@
 
 		{#if displayPhotos}
 			<div class="photos">
-				{#each displayPhotos as photo (photo.url)}
+				{#each displayPhotos as photo}
 					<div>
 						<img src={photo.url} alt={photo.status} title={photo.status} class="mt-4 rounded-md" />
 						<button

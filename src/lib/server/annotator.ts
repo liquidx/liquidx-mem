@@ -3,6 +3,7 @@ import type { Mem, MemPhoto } from '../common/mems.js';
 import { ANNOTATOR_URL_CONFIG } from './annotator-config.js';
 
 import { fetchOpenGraph, type OpenGraphTags, type OpenGraphImage } from '../opengraph.js';
+import { removeUrlTrackingParams } from '../url.js';
 
 const ogImageToPhotos = (ogImages: OpenGraphImage[], url: string): MemPhoto[] => {
 	return ogImages.map((image: any) => {
@@ -57,6 +58,9 @@ export const annotateMem = async (mem: Mem): Promise<Mem> => {
 	if (!mem.url) {
 		return mem;
 	}
+
+	// Sanitize the URL
+	mem.url = removeUrlTrackingParams(mem.url);
 
 	for (const config of ANNOTATOR_URL_CONFIG) {
 		const matched = mem.url.match(config.pattern);

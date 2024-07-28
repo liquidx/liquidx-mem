@@ -53,10 +53,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 	}
 
-	const result = await updateMem(db, mem);
-	if (!result) {
+	const updatedMem = await updateMem(db, mem);
+	if (!updatedMem) {
 		return error(500, JSON.stringify({ error: 'Error updating mem' }));
 	}
 
-	return json({ mem: memToJson(mem) });
+	return json({ mem: memToJson(updatedMem) });
 };

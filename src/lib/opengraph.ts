@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { parse } from 'dotenv';
 import he from 'he';
 
 export interface OpenGraphImage {
@@ -22,17 +23,122 @@ export interface OpenGraphAudio {
 }
 
 export interface OpenGraphTags {
+	site_name?: string;
 	title?: string;
 	type?: string;
 	locale?: string;
 	description?: string;
 	url?: string;
-	images: OpenGraphImage[];
-	videos: OpenGraphVideo[];
-	audios: OpenGraphAudio[];
+	images?: OpenGraphImage[];
+	videos?: OpenGraphVideo[];
+	audios?: OpenGraphAudio[];
 }
 
-// Custom implementation of the Open Graph
+// https://stackoverflow.com/questions/62526483/twitter-website-doesnt-have-open-graph-tags
+const DISCORD_BOT_USER_AGENT = 'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)';
+
+export const parseOpenGraph = (content: string): OpenGraphTags => {
+	const ogRegex = /<meta\s+(content|property)="([^"]*)"\s+(content|property)="([^"]*)"/g;
+	const ogTags: OpenGraphTags = {};
+
+	let images = [];
+	let videos = [];
+	let audios = [];
+
+	let currentImage: OpenGraphImage | null = null;
+	let currentVideo: OpenGraphVideo | null = null;
+	let currentAudio: OpenGraphAudio | null = null;
+
+	const matches = content.matchAll(ogRegex);
+	for (const match of matches) {
+		let propertyKey = '';
+		let propertyValue = '';
+
+		// Figure out which group is the property and which is the content
+		if (match[1] === 'property') {
+			propertyKey = match[2];
+			propertyValue = he.decode(match[4]);
+		} else if (match[3] === 'property') {
+			propertyKey = match[4];
+			propertyValue = he.decode(match[2]);
+		} else {
+			console.log(match.groups);
+		}
+
+		if (propertyKey.startsWith('og:')) {
+			propertyKey = propertyKey.replace('og:', '');
+		} else {
+			continue;
+		}
+
+		// Handle the content from the images.
+		if (propertyKey.startsWith('image')) {
+			if (propertyKey === 'image' || propertyKey === 'image:url') {
+				if (currentImage) {
+					images.push(currentImage);
+				}
+				currentImage = { url: propertyValue };
+			} else if (propertyKey === 'image:width' && currentImage) {
+				currentImage.width = propertyValue;
+			} else if (propertyKey === 'image:height' && currentImage) {
+				currentImage.height = propertyValue;
+			} else if (propertyKey === 'image:type' && currentImage) {
+				currentImage.type = propertyValue;
+			} else if (propertyKey === 'image:alt' && currentImage) {
+				currentImage.alt = propertyValue;
+			}
+		} else if (propertyKey.startsWith('video')) {
+			if (propertyKey === 'video' || propertyKey === 'video:url') {
+				if (currentVideo) {
+					videos.push(currentVideo);
+				}
+				currentVideo = { url: propertyValue };
+			} else if (propertyKey === 'video:width' && currentVideo) {
+				currentVideo.width = propertyValue;
+			} else if (propertyKey === 'video:height' && currentVideo) {
+				currentVideo.height = propertyValue;
+			} else if (propertyKey === 'video:type' && currentVideo) {
+				currentVideo.type = propertyValue;
+			}
+		} else if (propertyKey.startsWith('audio')) {
+			if (propertyKey === 'audio') {
+				if (currentAudio) {
+					audios.push(currentAudio);
+				}
+				currentAudio = { url: propertyValue };
+			} else if (propertyKey === 'audio:type' && currentAudio) {
+				currentAudio.type = propertyValue;
+			}
+		} else {
+			ogTags[propertyKey] = propertyValue;
+		}
+	}
+
+	// Add any remaining images
+	if (currentImage) {
+		images.push(currentImage);
+	}
+	if (currentVideo) {
+		videos.push(currentVideo);
+	}
+	if (currentAudio) {
+		audios.push(currentAudio);
+	}
+
+	if (images.length > 0) {
+		ogTags.images = images;
+	}
+	if (videos.length > 0) {
+		ogTags.videos = videos;
+	}
+	if (audios.length > 0) {
+		ogTags.audios = audios;
+	}
+
+	return ogTags;
+};
+
+// Fetch open graph tags from a URL
 export const fetchOpenGraph = async (url: string): Promise<OpenGraphTags | void> => {
 	const request = {
 		method: 'GET',
@@ -40,7 +146,7 @@ export const fetchOpenGraph = async (url: string): Promise<OpenGraphTags | void>
 		headers: {
 			accept: '*/*',
 			'accept-language': 'en-US,en;q=0.9',
-			'user-agent': 'curl/8.7.1'
+			'user-agent': DISCORD_BOT_USER_AGENT
 		}
 	};
 
@@ -56,73 +162,5 @@ export const fetchOpenGraph = async (url: string): Promise<OpenGraphTags | void>
 	if (!content) {
 		return null;
 	}
-
-	const ogRegex = /<meta property="og:([^"]+)" content="([^"]+)"/g;
-	const ogTags: OpenGraphTags = {
-		images: []
-	};
-
-	let currentImage: OpenGraphImage | null = null;
-	let currentVideo: OpenGraphVideo | null = null;
-	let currentAudio: OpenGraphAudio | null = null;
-
-	let match;
-	while ((match = ogRegex.exec(content))) {
-		const propertyKey = match[1];
-		const propertyValue = he.decode(match[2]);
-
-		if (propertyKey.startsWith('image')) {
-			if (propertyKey === 'image') {
-				if (currentImage) {
-					ogTags.images.push(currentImage);
-				}
-				currentImage = { url: propertyValue };
-			} else if (propertyKey === 'image:width') {
-				currentImage.width = propertyValue;
-			} else if (propertyKey === 'image:height') {
-				currentImage.height = propertyValue;
-			} else if (propertyKey === 'image:type') {
-				currentImage.type = propertyValue;
-			} else if (propertyKey === 'image:alt') {
-				currentImage.alt = propertyValue;
-			}
-		} else if (propertyKey.startsWith('video')) {
-			if (propertyKey === 'video') {
-				if (currentVideo) {
-					ogTags.videos.push(currentVideo);
-				}
-				currentVideo = { url: propertyValue };
-			} else if (propertyKey === 'video:width') {
-				currentVideo.width = propertyValue;
-			} else if (propertyKey === 'video:height') {
-				currentVideo.height = propertyValue;
-			} else if (propertyKey === 'video:type') {
-				currentVideo.type = propertyValue;
-			}
-		} else if (propertyKey.startsWith('audio')) {
-			if (propertyKey === 'audio') {
-				if (currentAudio) {
-					ogTags.audios.push(currentAudio);
-				}
-				currentAudio = { url: propertyValue };
-			} else if (propertyKey === 'audio:type') {
-				currentAudio.type = propertyValue;
-			}
-		} else {
-			ogTags[propertyKey] = propertyValue;
-		}
-	}
-
-	// Add any remaining images
-	if (currentImage) {
-		ogTags.images.push(currentImage);
-	}
-	if (currentVideo) {
-		ogTags.videos.push(currentVideo);
-	}
-	if (currentAudio) {
-		ogTags.audios.push(currentAudio);
-	}
-
-	return ogTags;
+	return parseOpenGraph(content);
 };

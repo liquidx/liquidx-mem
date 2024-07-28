@@ -14,8 +14,10 @@ export interface MemOptions {
 }
 
 export const updateMem = async (db: Db, mem: Mem): Promise<Mem | undefined> => {
-	const memTable = db.collection('mems');
-	return (await memTable.findOneAndUpdate({ _id: mem._id }, { $set: mem })) as unknown as Mem;
+	return (await getMemCollection(db).findOneAndUpdate(
+		{ _id: mem._id },
+		{ $set: mem }
+	)) as unknown as Mem;
 };
 
 export const deleteMem = async (db: Db, memId: string): Promise<DeleteResult> => {

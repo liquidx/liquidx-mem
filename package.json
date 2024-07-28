@@ -12,6 +12,7 @@
 		"preview": "vite preview",
 		"deploy": "firebase deploy --only hosting",
 		"test": "playwright test",
+		"vitest": "vitest",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
