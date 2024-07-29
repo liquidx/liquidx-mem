@@ -89,6 +89,9 @@ importers:
       svelte-autoresize-textarea:
         specifier: ^0.0.6
         version: 0.0.6(svelte@4.2.18)
+      svelte-radix:
+        specifier: ^1.1.0
+        version: 1.1.0(svelte@4.2.18)
       svelte-sonner:
         specifier: ^0.3.27
         version: 0.3.27(svelte@4.2.18)
@@ -3547,6 +3550,11 @@ packages:
         optional: true
       typescript:
         optional: true
+
+  svelte-radix@1.1.0:
+    resolution: {integrity: sha512-kyE9wZiJV937INGb+wiBkAjmGtQUUYRPkVL2Q+/gj+9Vog1Ewd2wNvNmpNMUd+c+euxoc5u5YZMuCUgky9EUPw==}
+    peerDependencies:
+      svelte: ^3.54.0 || ^4.0.0 || ^5.0.0
 
   svelte-sonner@0.3.27:
     resolution: {integrity: sha512-+PvbuePNTyTNCepCWqKcFeu+Lo27yYuwfSc7zJvrWjCRMJrWAmccPg3j7jO1W13QoN3TySXU5Trb956VBQiM5Q==}
@@ -7954,6 +7962,10 @@ snapshots:
       postcss: 8.4.39
       postcss-load-config: 4.0.1(postcss@8.4.39)
       typescript: 5.5.3
+
+  svelte-radix@1.1.0(svelte@4.2.18):
+    dependencies:
+      svelte: 4.2.18
 
   svelte-sonner@0.3.27(svelte@4.2.18):
     dependencies:
