@@ -8,3 +8,5 @@ export interface TagIndex {
 	userId: string;
 	counts: TagCount[];
 }
+
+export type TagListItem = { tag: string; count: number; icon?: string };

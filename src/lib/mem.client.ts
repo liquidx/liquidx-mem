@@ -344,7 +344,7 @@ export const getTags = async (user: User, filter?: string): Promise<TagListItem[
 	};
 
 	const response = await axios.get(url, { headers }).catch(() => {
-		return [];
+		return null;
 	});
 
 	if (!response) {

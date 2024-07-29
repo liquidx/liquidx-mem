@@ -73,7 +73,15 @@ export const getMems = async (
 		}
 	}
 
-	const options: { [key: string]: any } = { sort: { addedMs: -1 } };
+	const options: { [key: string]: any } = {};
+
+	// Apply order
+	if (request && request.order) {
+		options['sort'] = { addedMs: request.order === 'oldest' ? 1 : -1 };
+	} else {
+		options['sort'] = { addedMs: -1 };
+	}
+
 	if (request && request.pageSize) {
 		const pageSize = parseInt(request.pageSize);
 		options.limit = pageSize;
@@ -96,7 +104,7 @@ export const getMems = async (
 			}
 		});
 
-		stages.push({ $sort: { addedMs: -1 } });
+		stages.push({ $sort: options.sort });
 
 		// Convert from the query to an aggregate request.
 		if (query.tags) {

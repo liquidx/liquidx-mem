@@ -5,6 +5,7 @@ export interface MemListRequest {
 	secretWord?: string;
 	isArchived?: boolean;
 	all?: boolean;
+	order?: 'newest' | 'oldest';
 	matchAllTags?: string[];
 	matchAnyTags?: string[];
 	searchQuery?: string;

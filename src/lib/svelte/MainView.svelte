@@ -12,8 +12,8 @@
 	import MoreMem from '$lib/svelte/MoreMem.svelte';
 	import MemTagList from '$lib/svelte/MemTagList.svelte';
 	import type { MemAnnotateResponse, MemListRequest } from '$lib/request.types';
-	import { stringFromTagFilters, tagFiltersByString, type TagFilters } from '$lib/filter';
-	import type { TagListItem } from '$lib/common/tags';
+	import { stringFromListOptions, listOptionsByString, type MemListOptions } from '$lib/filter';
+	import type { TagListItem } from '$lib/tags.types';
 	import MemListFilters from './MemListFilters.svelte';
 	import MemSearchBox from './MemSearchBox.svelte';
 
@@ -26,7 +26,7 @@
 	let moreMemsAvailable = true;
 	let viewTags: TagListItem[] = [];
 	let searchQuery: string = '';
-	let tagFilters: TagFilters = {
+	let listOptions: MemListOptions = {
 		matchAllTags: [],
 		matchAnyTags: [],
 		onlyArchived: false,
@@ -34,22 +34,22 @@
 	};
 
 	$: {
-		tagFilters = tagFiltersByString(filter);
+		listOptions = listOptionsByString(filter);
 	}
 
 	$: {
 		if ($sharedUser) {
-			loadMems(tagFilters, searchQuery, false);
-			loadFilters(tagFilters);
+			loadMems(listOptions, searchQuery, false);
+			loadFilters(listOptions);
 		}
 	}
 
-	const loadFilters = async (tagFilters: TagFilters) => {
+	const loadFilters = async (tagFilters: MemListOptions) => {
 		if (!$sharedUser) {
 			return;
 		}
 
-		const filterString = stringFromTagFilters(tagFilters);
+		const filterString = stringFromListOptions(tagFilters);
 		const tagsForView: TagListItem[] = await memModifiers.getTags($sharedUser, filterString);
 		if (tagsForView) {
 			viewTags = tagsForView;
@@ -57,7 +57,7 @@
 		return [];
 	};
 
-	const loadMems = async (tagFilters: TagFilters, searchQuery: string, append: boolean) => {
+	const loadMems = async (tagFilters: MemListOptions, searchQuery: string, append: boolean) => {
 		if (!$sharedUser) {
 			return;
 		}
@@ -69,6 +69,7 @@
 		const params: MemListRequest = {
 			userId: $sharedUser.uid,
 			isArchived: tagFilters.onlyArchived,
+			order: tagFilters.order,
 			matchAllTags: tagFilters.matchAllTags,
 			matchAnyTags: tagFilters.matchAnyTags,
 			searchQuery: searchQuery,
@@ -92,7 +93,7 @@
 
 	const loadMore = () => {
 		visiblePages += 1;
-		loadMems(tagFilters, searchQuery, true);
+		loadMems(listOptions, searchQuery, true);
 		console.log('loadMore', visiblePages);
 	};
 
@@ -165,7 +166,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.archiveMem(mem, $sharedUser);
 			if (updatedMem) {
-				loadMems(tagFilters, searchQuery, false);
+				loadMems(listOptions, searchQuery, false);
 			}
 		}
 	};
@@ -176,7 +177,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.seenMem(mem, $sharedUser);
 			if (updatedMem) {
-				loadMems(tagFilters, searchQuery, false);
+				loadMems(listOptions, searchQuery, false);
 			}
 		}
 	};
@@ -186,7 +187,7 @@
 		if (mem && $sharedUser) {
 			const updatedMem = await memModifiers.unarchiveMem(mem, $sharedUser);
 			if (updatedMem) {
-				loadMems(tagFilters, searchQuery, false);
+				loadMems(listOptions, searchQuery, false);
 			}
 		}
 	};
@@ -253,22 +254,22 @@
 
 	const memDidAdd = (e: CustomEvent) => {
 		//const mem = e.detail.mem;
-		loadMems(tagFilters, searchQuery, false);
+		loadMems(listOptions, searchQuery, false);
 	};
 
 	const tagDidClick = (e: CustomEvent) => {
 		const tag = e.detail.tag;
-		console.log('tagDidClick', tag, tagFilters);
+		console.log('tagDidClick', tag, listOptions);
 
 		// Toggle the tag in the filters
-		if (tagFilters.matchAllTags.includes(tag)) {
-			tagFilters.matchAllTags = tagFilters.matchAllTags.filter((t) => t !== tag);
+		if (listOptions.matchAllTags.includes(tag)) {
+			listOptions.matchAllTags = listOptions.matchAllTags.filter((t) => t !== tag);
 		} else {
-			tagFilters.matchAllTags.push(tag);
+			listOptions.matchAllTags.push(tag);
 		}
 
 		// Easiest way to update the tag filters is to nav to the right URL.
-		let tagFiltersString = stringFromTagFilters(tagFilters);
+		let tagFiltersString = stringFromListOptions(listOptions);
 		if (tagFiltersString) {
 			goto(`/tag/${tagFiltersString}`);
 		} else {
@@ -281,6 +282,13 @@
 		searchQuery = query;
 		console.log('searchQueryDidChange', query);
 	};
+
+	const sortOrderDidChange = (e: CustomEvent) => {
+		const order = e.detail;
+		listOptions.order = order;
+		listOptions = listOptions;
+		console.log('sortOrderDidChange', order);
+	};
 </script>
 
 <svelte:head>
@@ -291,13 +299,18 @@
 	{#if showTags}
 		<section class="md:my-4">
 			<MemSearchBox on:searchQueryDidChange={searchQueryDidChange} />
-			<MemTagList currentTagFilters={tagFilters} />
+			<MemTagList currentTagFilters={listOptions} />
 		</section>
 	{/if}
 	<main class="p-2 max-w-screen flex-grow md:max-w-xl">
 		<MemAdd on:memDidAdd={memDidAdd} />
 		{#if viewTags && viewTags.length > 0}
-			<MemListFilters tags={viewTags} currentTagFilters={tagFilters} on:tagDidClick={tagDidClick} />
+			<MemListFilters
+				tags={viewTags}
+				{listOptions}
+				on:tagDidClick={tagDidClick}
+				on:sortOrderDidChange={sortOrderDidChange}
+			/>
 		{/if}
 		<MemList
 			{mems}

@@ -5,7 +5,7 @@ import { getUserId } from '$lib/server/api.server.js';
 import { getDb, getTagCollection } from '$lib/db';
 import type { TagIndex } from '$lib/tags.types';
 import { getMems } from '$lib/mem.db.server';
-import { tagFiltersByString } from '$lib/filter';
+import { listOptionsByString } from '$lib/filter';
 import type { MemListRequest } from '$lib/request.types';
 import { computeTagCounts, type MemTags } from '$lib/tags.server';
 
@@ -42,7 +42,7 @@ export const GET: RequestHandler = async ({ request, url, locals }) => {
 		return json({ counts: tagCounts });
 	}
 
-	const tagFilter = tagFiltersByString(filter);
+	const tagFilter = listOptionsByString(filter);
 	const memsRequest: MemListRequest = {
 		userId: userId,
 		matchAllTags: tagFilter.matchAllTags,

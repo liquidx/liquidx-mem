@@ -1,12 +1,16 @@
-export interface TagFilters {
+export interface MemListOptions {
+	// sort orders
+	order: 'newest' | 'oldest';
+	// filters
 	onlyNew: boolean;
 	onlyArchived: boolean;
 	matchAllTags: string[];
 	matchAnyTags: string[];
 }
 
-export const tagFiltersByString = (filterString: string | undefined): TagFilters => {
-	const filters: TagFilters = {
+export const listOptionsByString = (filterString: string | undefined): MemListOptions => {
+	const options: MemListOptions = {
+		order: 'newest',
 		onlyNew: false,
 		onlyArchived: false,
 		matchAllTags: [],
@@ -14,11 +18,12 @@ export const tagFiltersByString = (filterString: string | undefined): TagFilters
 	};
 
 	if (!filterString) {
-		return filters;
+		options.onlyNew = true;
+		return options;
 	}
 
 	if (filterString == '*') {
-		filters.onlyArchived = true;
+		options.onlyArchived = true;
 	}
 
 	// Filter strings can either be
@@ -26,35 +31,35 @@ export const tagFiltersByString = (filterString: string | undefined): TagFilters
 	// - tags separated by '+' (match all) or ',' (match any)
 	const matchAll = filterString.split('+');
 	if (matchAll.length > 0) {
-		filters.matchAllTags = matchAll
+		options.matchAllTags = matchAll
 			.map((tag) => tag.trim())
 			.map((tag) => tag.toLowerCase())
 			.map((tag) => `#${tag}`);
-		return filters;
+		return options;
 	}
 
 	const matchAny = filterString.split(',');
 	if (matchAny.length > 1) {
-		filters.matchAnyTags = matchAny
+		options.matchAnyTags = matchAny
 			.map((tag) => tag.trim())
 			.map((tag) => tag.toLowerCase())
 			.map((tag) => `#${tag}`);
-		return filters;
+		return options;
 	}
 
-	return filters;
+	return options;
 };
 
-export const stringFromTagFilters = (filters: TagFilters): string => {
-	if (filters.onlyArchived) {
+export const stringFromListOptions = (options: MemListOptions): string => {
+	if (options.onlyArchived) {
 		return '*';
 	}
-	if (filters.matchAllTags.length > 0) {
-		const matchAll = filters.matchAllTags.map((tag) => tag.replace('#', '')).join('+');
+	if (options.matchAllTags.length > 0) {
+		const matchAll = options.matchAllTags.map((tag) => tag.replace('#', '')).join('+');
 		return matchAll;
 	}
-	if (filters.matchAnyTags.length > 0) {
-		const matchAny = filters.matchAnyTags.map((tag) => tag.replace('#', '')).join(',');
+	if (options.matchAnyTags.length > 0) {
+		const matchAny = options.matchAnyTags.map((tag) => tag.replace('#', '')).join(',');
 		return matchAny;
 	}
 	return '';

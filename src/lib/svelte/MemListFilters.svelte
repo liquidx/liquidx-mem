@@ -1,40 +1,62 @@
 <script lang="ts">
-	import * as Collapsible from '$lib/components/ui/collapsible';
 	import { createEventDispatcher } from 'svelte';
-	import type { TagListItem } from '$lib/tags.server';
-	import Button from '$lib/components/ui/button/button.svelte';
 	import { ChevronsUpDownIcon } from 'lucide-svelte';
-	import type { TagFilters } from '$lib/filter';
+
+	import * as Collapsible from '$lib/components/ui/collapsible';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import * as Select from '$lib/components/ui/select';
+
+	import type { TagListItem } from '$lib/tags.server';
+	import type { MemListOptions } from '$lib/filter';
 	import { cn } from '$lib/utils';
 
 	export let tags: TagListItem[] = [];
-	export let currentTagFilters: TagFilters | undefined = undefined;
+	export let listOptions: MemListOptions | undefined = undefined;
+	let sortOrder = 'newest';
+
 	const dispatch = createEventDispatcher();
+
+	const sortOrders = [
+		{ value: 'newest', label: 'Newest' },
+		{ value: 'oldest', label: 'Oldest' }
+	];
 
 	const onTagDidClick = (tag: TagListItem) => {
 		dispatch('tagDidClick', tag);
 	};
 
 	const isTagSelected = (tag: TagListItem) => {
-		if (!currentTagFilters) {
+		if (!listOptions) {
 			return false;
 		}
-		if (
-			currentTagFilters.matchAllTags.includes(tag.tag) ||
-			currentTagFilters.matchAnyTags.includes(tag.tag)
-		) {
+		if (listOptions.matchAllTags.includes(tag.tag) || listOptions.matchAnyTags.includes(tag.tag)) {
 			return true;
 		}
 		return false;
 	};
+
+	const sortOrderDidChange = (e) => {
+		console.log('sortOrderDidChange', sortOrder);
+		dispatch('sortOrderDidChange', sortOrder);
+	};
 </script>
+
+<div class="w-64 bg-secondary py-2 mx-1 my-2 px-2 rounded-xl ring-0">
+	<select class="w-full bg-transparent" bind:value={sortOrder} on:change={sortOrderDidChange}>
+		{#each sortOrders as { value, label }}
+			<option {value}>{label}</option>
+		{/each}
+	</select>
+</div>
 
 <Collapsible.Root class="w-full space-y-2">
 	<Collapsible.Trigger>
-		<Button variant="ghost">
-			Filter by Tags
-			<ChevronsUpDownIcon size="16" class="transform transition-transform" />
-		</Button>
+		<div class="w-64 bg-secondary mx-1 rounded-xl items-start flex">
+			<Button variant="ghost">
+				Filter by Tags
+				<ChevronsUpDownIcon size="16" class="transform transition-transform" />
+			</Button>
+		</div>
 	</Collapsible.Trigger>
 	<Collapsible.Content>
 		<div class="flex flex-wrap gap-1 text-xs text-primary">

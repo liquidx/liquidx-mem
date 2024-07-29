@@ -66,6 +66,6 @@ export const iconForTag = (tag: string) => {
 		case '#watch':
 			return `⌚`;
 		default:
-			return '';
+			return '🏷️';
 	}
 };
