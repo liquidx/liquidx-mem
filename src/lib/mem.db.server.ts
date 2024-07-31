@@ -60,6 +60,7 @@ export const getMems = async (
 	projection?: any
 ) => {
 	const query: { [key: string]: any } = { $and: [{ userId: userId }] };
+	// TODO: Make this a user configuration.
 	const suppressedTags = ['#xxx'];
 
 	if (request) {
