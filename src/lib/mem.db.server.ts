@@ -59,17 +59,27 @@ export const getMems = async (
 	request?: MemListRequest,
 	projection?: any
 ) => {
-	const query: { [key: string]: any } = { userId: userId };
+	const query: { [key: string]: any } = { $and: [{ userId: userId }] };
+	const suppressedTags = ['#xxx'];
 
 	if (request) {
 		if (request.isArchived) {
-			query.new = false;
+			query.$and.push({ new: false });
 		} else if (request.matchAllTags && request.matchAllTags.length > 0) {
-			query['tags'] = { $all: request.matchAllTags };
+			query.$and.push({ tags: { $all: request.matchAllTags } });
 		} else if (request.matchAnyTags && request.matchAnyTags.length > 0) {
-			query['tags'] = { $in: request.matchAnyTags };
+			query.$and.push({ tags: { $in: request.matchAnyTags } });
 		} else if (!request.all) {
-			query.new = true;
+			query.$and.push({ new: true });
+		}
+
+		// Filter out suppressed tags if it is not explicitly requested.
+		if (
+			!request.matchAllTags ||
+			request.matchAllTags.length === 0 ||
+			!request.matchAllTags.some((t) => suppressedTags.includes(t))
+		) {
+			query.$and.push({ tags: { $not: { $in: suppressedTags } } });
 		}
 	}
 
@@ -93,8 +103,10 @@ export const getMems = async (
 		options.projection = projection;
 	}
 
-	// console.log('Request: ', request);
 	console.log(query, options);
+
+	// Process this request as a search query, which will require using
+	// an aggregate pipeline rather than find().
 	if (request && request.searchQuery) {
 		const stages: any = [];
 		stages.push({
@@ -107,8 +119,11 @@ export const getMems = async (
 		stages.push({ $sort: options.sort });
 
 		// Convert from the query to an aggregate request.
-		if (query.tags) {
-			stages.push({ $match: { tags: query.tags } });
+		if (query.$and) {
+			const conditions = query.$and.filter((c: any) => !c.new); // Filter out the new condition
+			if (conditions.length > 0) {
+				stages.push({ $match: { $and: conditions } });
+			}
 		}
 
 		if (options.limit) {
