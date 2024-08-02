@@ -1,20 +1,29 @@
 import { MongoClient, type Db, ServerApiVersion } from 'mongodb';
 import { EJSON } from 'bson';
 
-const MONGO_DB_SERVER = 'cluster0.uakqn3b.mongodb.net';
-const MONGO_DB_CLUSTER_NAME = 'Cluster0';
+const MONGO_DB_ATLAS_SERVER = 'cluster0.uakqn3b.mongodb.net';
+const MONGO_DB_ATLAS_CLUSTER_NAME = 'Cluster0';
+
+const MONGO_DB_ATLAS_PARAMS = {
+	retryWrites: 'true',
+	w: 'majority',
+	appName: MONGO_DB_ATLAS_CLUSTER_NAME
+};
 const MONGO_DB_MEM_DB = 'mem';
 const MONGO_DB_MEM_COLLECTION = 'mems';
 const MONGO_DB_USER_COLLECTION = 'users';
 const MONGO_DB_TAG_COLLECTION = 'tags';
 
+const MONGO_DB_SERVER = 'db-mongodb-sfo2-liquidx-bdf6d203.mongo.ondigitalocean.com';
+const MONGO_DB_PARAMS = {
+	authSource: 'admin',
+	replicaSet: 'db-mongodb-sfo2-liquidx',
+	tls: 'true'
+};
+
 export const getDbUrl = (user: string, password: string): string => {
-	const params = new URLSearchParams({
-		retryWrites: 'true',
-		w: 'majority',
-		appName: MONGO_DB_CLUSTER_NAME
-	});
-	return `mongodb+srv://${user}:${password}@${MONGO_DB_SERVER}/?${params.toString()}`;
+	const params = new URLSearchParams(MONGO_DB_PARAMS);
+	return `mongodb+srv://${user}:${password}@${MONGO_DB_SERVER}/${MONGO_DB_MEM_DB}?${params.toString()}`;
 };
 
 export const getDbName = () => {
