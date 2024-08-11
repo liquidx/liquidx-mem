@@ -11,11 +11,11 @@ let _cachedClient: MongoClient | undefined;
 
 const dbPrepare: Handle = async ({ event, resolve }) => {
 	if (_cachedClient) {
-		event.locals.dbClient = _cachedClient;
+		event.locals.mongoClient = _cachedClient;
 	} else {
 		//console.log("hooks.server.ts: dbPrepare: create new dbClient");
 		_cachedClient = await getDbClient(MONGO_DB_USERNAME, MONGO_DB_PASSWORD);
-		event.locals.dbClient = _cachedClient;
+		event.locals.mongoClient = _cachedClient;
 	}
 
 	const response = await resolve(event);

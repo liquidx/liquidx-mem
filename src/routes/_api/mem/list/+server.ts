@@ -15,7 +15,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		return error(500, 'Missing user');
 	}
 
-	const db = getDb(locals.dbClient);
+	const db = getDb(locals.mongoClient);
 	const firebaseApp = getFirebaseApp();
 
 	const userId = await getUserId(firebaseApp, request);

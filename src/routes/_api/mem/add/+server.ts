@@ -44,7 +44,7 @@ export const fallback: RequestHandler = async ({ url, request, locals }) => {
 
 	const firebaseApp = getFirebaseApp();
 	const s3client = getS3Client();
-	const db = getDb(locals.dbClient);
+	const db = getDb(locals.mongoClient);
 
 	let userId: string | undefined;
 	if (token) {

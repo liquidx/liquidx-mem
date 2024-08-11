@@ -19,7 +19,7 @@ export const GET: RequestHandler = async ({ request, url, locals }) => {
 	}
 
 	const firebaseApp = getFirebaseApp();
-	const db = getDb(locals.dbClient);
+	const db = getDb(locals.mongoClient);
 
 	const userId = await getUserId(firebaseApp, request);
 	if (!userId) {

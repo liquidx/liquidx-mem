@@ -23,7 +23,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	}
 
 	const firebaseApp = getFirebaseApp();
-	const db = getDb(locals.dbClient);
+	const db = getDb(locals.mongoClient);
 
 	const userId = await getUserId(firebaseApp, request);
 	if (!userId) {

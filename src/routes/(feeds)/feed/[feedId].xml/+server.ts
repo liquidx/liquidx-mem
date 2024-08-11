@@ -7,7 +7,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 	// TODO: Verify the user ID using a secret code
 	const userId = params.feedId;
 
-	const db = getDb(locals.dbClient);
+	const db = getDb(locals.mongoClient);
 	const mems = await getAllMems(db, userId, { maxResults: 100, lookQueue: true });
 
 	// Output the RSS

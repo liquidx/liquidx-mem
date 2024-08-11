@@ -6,7 +6,7 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			dbClient: MongoClient;
+			mongoClient: MongoClient;
 		}
 		// interface PageData {}
 		// interface Platform {}
