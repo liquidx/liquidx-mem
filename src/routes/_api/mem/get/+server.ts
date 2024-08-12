@@ -8,19 +8,19 @@ import { getUserId } from '$lib/server/api.server.js';
 import { getDb } from '$lib/db';
 
 export const GET: RequestHandler = async ({ request, url, locals }) => {
-	const memId = url.searchParams.get('memId') || '';
+  const memId = url.searchParams.get('memId') || '';
 
-	const firebaseApp = getFirebaseApp();
-	const db = getDb(locals.mongoClient);
+  const firebaseApp = getFirebaseApp();
+  const db = getDb(locals.mongoClient);
 
-	const userId = await getUserId(firebaseApp, request);
-	if (!userId) {
-		return error(403, JSON.stringify({ error: 'Permission denied' }));
-	}
+  const userId = await getUserId(firebaseApp, request);
+  if (!userId) {
+    return error(403, JSON.stringify({ error: 'Permission denied' }));
+  }
 
-	const mem = await getMem(db, userId, memId);
-	if (!mem) {
-		return error(404, JSON.stringify({ error: 'Mem not found' }));
-	}
-	return json({ mem: memToJson(mem) });
+  const mem = await getMem(db, userId, memId);
+  if (!mem) {
+    return error(404, JSON.stringify({ error: 'Mem not found' }));
+  }
+  return json({ mem: memToJson(mem) });
 };

@@ -12,37 +12,37 @@ import { mirrorMediaInMem } from '$lib/mem.db.server';
 import { getS3Client } from '$lib/s3.server';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
-	const body = await request.json();
-	const memId = body['memId'] || '';
+  const body = await request.json();
+  const memId = body['memId'] || '';
 
-	if (!memId) {
-		return error(400, JSON.stringify({ error: 'No mem id' }));
-	}
+  if (!memId) {
+    return error(400, JSON.stringify({ error: 'No mem id' }));
+  }
 
-	console.log('/_api/mem/annotate', body);
+  console.log('/_api/mem/annotate', body);
 
-	const firebaseApp = getFirebaseApp();
-	const s3client = getS3Client();
-	const db = getDb(locals.mongoClient);
+  const firebaseApp = getFirebaseApp();
+  const s3client = getS3Client();
+  const db = getDb(locals.mongoClient);
 
-	const userId = await getUserId(firebaseApp, request);
-	if (!userId) {
-		return error(403, JSON.stringify({ error: 'Permission denied' }));
-	}
+  const userId = await getUserId(firebaseApp, request);
+  if (!userId) {
+    return error(403, JSON.stringify({ error: 'Permission denied' }));
+  }
 
-	const mem = await getMem(db, userId, memId);
-	if (!mem) {
-		return error(500, JSON.stringify({ error: 'Error getting mem' }));
-	}
+  const mem = await getMem(db, userId, memId);
+  if (!mem) {
+    return error(500, JSON.stringify({ error: 'Error getting mem' }));
+  }
 
-	let updatedMem = await annotateMem(mem);
-	const updatedMemWithMedia = await mirrorMediaInMem(db, s3client, updatedMem, userId);
-	if (updatedMemWithMedia) {
-		updatedMem = updatedMemWithMedia;
-	}
-	if (updatedMem) {
-		const annotateResponse: MemAnnotateResponse = { mem: memToJson(updatedMem), memId: memId };
-		return json(annotateResponse);
-	}
-	return error(500, JSON.stringify({ error: 'Error annotating mem' }));
+  let updatedMem = await annotateMem(mem);
+  const updatedMemWithMedia = await mirrorMediaInMem(db, s3client, updatedMem, userId);
+  if (updatedMemWithMedia) {
+    updatedMem = updatedMemWithMedia;
+  }
+  if (updatedMem) {
+    const annotateResponse: MemAnnotateResponse = { mem: memToJson(updatedMem), memId: memId };
+    return json(annotateResponse);
+  }
+  return error(500, JSON.stringify({ error: 'Error annotating mem' }));
 };

@@ -6,32 +6,32 @@ import globals from 'globals';
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
-	js.configs.recommended,
-	...ts.configs.recommended,
-	...svelte.configs['flat/recommended'],
-	prettier,
-	...svelte.configs['flat/prettier'],
-	{
-		languageOptions: {
-			globals: {
-				...globals.browser,
-				...globals.node
-			}
-		},
-		rules: {
-			'@typescript-eslint/no-unused-vars': 'warn',
-			'@typescript-eslint/no-explicit-any': 0
-		}
-	},
-	{
-		files: ['**/*.svelte'],
-		languageOptions: {
-			parserOptions: {
-				parser: ts.parser
-			}
-		}
-	},
-	{
-		ignores: ['build/', '.svelte-kit/', 'dist/', 'data/', 'tests/', 'node_modules/']
-	}
+  js.configs.recommended,
+  ...ts.configs.recommended,
+  ...svelte.configs['flat/recommended'],
+  prettier,
+  ...svelte.configs['flat/prettier'],
+  {
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node
+      }
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-explicit-any': 0
+    }
+  },
+  {
+    files: ['**/*.svelte'],
+    languageOptions: {
+      parserOptions: {
+        parser: ts.parser
+      }
+    }
+  },
+  {
+    ignores: ['build/', '.svelte-kit/', 'dist/', 'data/', 'tests/', 'node_modules/']
+  }
 ];

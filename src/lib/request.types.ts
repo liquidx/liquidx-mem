@@ -1,43 +1,43 @@
 import type { Mem } from './common/mems';
 
 export interface MemListRequest {
-	userId: string;
-	secretWord?: string;
-	isArchived?: boolean;
-	all?: boolean;
-	order?: 'newest' | 'oldest';
-	matchAllTags?: string[];
-	matchAnyTags?: string[];
-	searchQuery?: string;
-	pageSize?: number;
-	page?: number;
+  userId: string;
+  secretWord?: string;
+  isArchived?: boolean;
+  all?: boolean;
+  order?: 'newest' | 'oldest';
+  matchAllTags?: string[];
+  matchAnyTags?: string[];
+  searchQuery?: string;
+  pageSize?: number;
+  page?: number;
 }
 
 export interface MemListResponse {
-	status: string;
-	mems?: Mem[];
+  status: string;
+  mems?: Mem[];
 }
 
 export interface MemAddResponse {
-	mem?: Mem;
-	error?: string;
+  mem?: Mem;
+  error?: string;
 }
 
 export interface SettingsWriteRequest {
-	key: string;
-	settings: any;
+  key: string;
+  settings: any;
 }
 export interface SettingsReadResponse {
-	key: string;
-	settings: any;
+  key: string;
+  settings: any;
 }
 
 export interface MemAnnotateResponse {
-	mem: Mem;
-	memId: string;
+  mem: Mem;
+  memId: string;
 }
 
 export interface MemFlagRequest {
-	new?: boolean;
-	seen?: boolean;
+  new?: boolean;
+  seen?: boolean;
 }

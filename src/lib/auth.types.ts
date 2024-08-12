@@ -3,21 +3,21 @@
 //
 // Referenced in $lib/lucia.server.ts
 export interface DatabaseUserAttributes {
-	email: string; // required
-	name?: string;
-	oauthAvatarUrl?: string;
+  email: string; // required
+  name?: string;
+  oauthAvatarUrl?: string;
 
-	githubUsername?: string;
+  githubUsername?: string;
 
-	googleUsername?: string;
-	googleAccountId?: string;
+  googleUsername?: string;
+  googleAccountId?: string;
 
-	appleUsername?: string;
-	appleUserId?: string;
+  appleUsername?: string;
+  appleUserId?: string;
 }
 
 // Defining this outside of Lucia so that we can use the
 // type on the client side.
 export interface User extends DatabaseUserAttributes {
-	id: string;
+  id: string;
 }

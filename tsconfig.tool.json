@@ -1,36 +1,36 @@
 {
-	"compilerOptions": {
-		"paths": {
-			"$lib": ["./src/lib"],
-			"$lib/*": ["./src/lib/*"]
-		},
-		"outDir": "./dist",
-		"allowJs": true,
-		"checkJs": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"noImplicitReturns": true,
-		"noUnusedLocals": true,
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"sourceMap": true,
-		"strict": true,
-		"importHelpers": true,
-		"experimentalDecorators": true,
-		"allowSyntheticDefaultImports": true,
-		"noEmit": false,
-		"target": "esnext",
-		"module": "esnext",
-		"moduleResolution": "node",
-		"types": ["jest"],
-		"lib": ["esnext", "dom", "dom.iterable", "scripthost"]
-	},
-	"include": ["src/tool.ts", "src/lib/**.ts", "src/tools/**.ts"],
-	"exclude": [
-		"node_modules",
-		"./node_modules/**",
-		"vite.config.js",
-		"tailwind.config.js",
-		"svelte.config.js"
-	]
+  "compilerOptions": {
+    "paths": {
+      "$lib": ["./src/lib"],
+      "$lib/*": ["./src/lib/*"]
+    },
+    "outDir": "./dist",
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "importHelpers": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "noEmit": false,
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "types": ["jest"],
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
+  },
+  "include": ["src/tool.ts", "src/lib/**.ts", "src/tools/**.ts"],
+  "exclude": [
+    "node_modules",
+    "./node_modules/**",
+    "vite.config.js",
+    "tailwind.config.js",
+    "svelte.config.js"
+  ]
 }

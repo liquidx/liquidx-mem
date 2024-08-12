@@ -1,45 +1,45 @@
 {
-	"extends": "./.svelte-kit/tsconfig.json",
-	"compilerOptions": {
-		"outDir": "./dist",
-		"allowJs": true,
-		"checkJs": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"noImplicitReturns": true,
-		"noUnusedLocals": true,
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"sourceMap": true,
-		"strict": true,
-		"importHelpers": true,
-		"experimentalDecorators": true,
-		"allowSyntheticDefaultImports": true,
-		"noEmit": false,
-		"target": "esnext",
-		"module": "esnext",
-		"moduleResolution": "node",
-		"types": ["jest"],
-		"lib": ["esnext", "dom", "dom.iterable", "scripthost"]
-	},
-	"include": [
-		"src/**/*.ts",
-		"src/**/*.tsx",
-		"tests/**/*.ts",
-		"tests/**/*.js",
-		"tests/**/*.tsx",
-		"function/**/*.ts",
-		"src/router/index.ts",
-		"src/firebase.ts",
-		"src/main.ts",
-		"ambient.d.ts",
-		"test/**/*.js"
-	],
-	"exclude": [
-		"node_modules",
-		"./node_modules/**",
-		"vite.config.js",
-		"tailwind.config.js",
-		"svelte.config.js"
-	]
+  "extends": "./.svelte-kit/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "importHelpers": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "noEmit": false,
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "types": ["jest"],
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.ts",
+    "tests/**/*.js",
+    "tests/**/*.tsx",
+    "function/**/*.ts",
+    "src/router/index.ts",
+    "src/firebase.ts",
+    "src/main.ts",
+    "ambient.d.ts",
+    "test/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "./node_modules/**",
+    "vite.config.js",
+    "tailwind.config.js",
+    "svelte.config.js"
+  ]
 }
