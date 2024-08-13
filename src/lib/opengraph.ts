@@ -1,4 +1,4 @@
-import axios, { type AxiosResponse } from 'axios';
+import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios';
 import he from 'he';
 import iconv from 'iconv-lite';
 
@@ -172,8 +172,7 @@ const transcodeResponse = (response: AxiosResponse): AxiosResponse => {
   }
 
   const decodedString = iconv.decode(response.data, charset);
-  const encodedString = iconv.encode(decodedString, 'utf-8');
-  response.data = encodedString;
+  response.data = decodedString;
 
   return response;
 };
@@ -183,22 +182,26 @@ export const fetchOpenGraph = async (
   url: string,
   verbose = false
 ): Promise<OpenGraphTags | void> => {
-  const request = {
+  const request: AxiosRequestConfig = {
     method: 'GET',
     url: url,
     headers: {
       accept: '*/*',
       'accept-language': 'en-US,en;q=0.9',
       'user-agent': DISCORD_BOT_USER_AGENT
-    }
+    },
+    // We need to get the raw data so we can transcode it
+    // using the right encoding returned by the http server.
+    responseType: 'arraybuffer'
   };
 
   const transcodingAxios = axios.create();
   transcodingAxios.interceptors.response.use(transcodeResponse);
 
-  const content = await transcodingAxios(request)
+  const content: string | null = await transcodingAxios(request)
     .then((response: { data: any }) => {
-      return response.data;
+      //console.log('Response:', response.data.substring(0, 1000));
+      return response.data.toString();
     })
     .catch((err: any) => {
       console.log('Error:', err.code, err.response.status);
