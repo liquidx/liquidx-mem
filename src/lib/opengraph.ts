@@ -1,6 +1,6 @@
-import axios from 'axios';
-import { parse } from 'dotenv';
+import axios, { type AxiosResponse } from 'axios';
 import he from 'he';
+import iconv from 'iconv-lite';
 
 export interface OpenGraphImage {
   url: string;
@@ -151,6 +151,33 @@ export const parseOpenGraph = (content: string): OpenGraphTags => {
   return ogTags;
 };
 
+// Detects HTTP headers that specify the content-type, and if it is not
+// UTF-8, transcode it to UTF-8.
+const transcodeResponse = (response: AxiosResponse): AxiosResponse => {
+  const contentCharsetPattern = /charset=([^;]*)/;
+
+  const contentType = response.headers['content-type'];
+  if (!contentType) {
+    return response;
+  }
+
+  const charsetMatch = contentType.match(contentCharsetPattern);
+  if (!charsetMatch) {
+    return response;
+  }
+
+  const charset = charsetMatch[1].toLowerCase();
+  if (charset === 'utf-8') {
+    return response;
+  }
+
+  const decodedString = iconv.decode(response.data, charset);
+  const encodedString = iconv.encode(decodedString, 'utf-8');
+  response.data = encodedString;
+
+  return response;
+};
+
 // Fetch open graph tags from a URL
 export const fetchOpenGraph = async (
   url: string,
@@ -166,7 +193,10 @@ export const fetchOpenGraph = async (
     }
   };
 
-  const content = await axios(request)
+  const transcodingAxios = axios.create();
+  transcodingAxios.interceptors.response.use(transcodeResponse);
+
+  const content = await transcodingAxios(request)
     .then((response: { data: any }) => {
       return response.data;
     })
@@ -182,5 +212,6 @@ export const fetchOpenGraph = async (
   if (!content) {
     return null;
   }
+
   return parseOpenGraph(content);
 };
