@@ -51,9 +51,11 @@
 <Collapsible.Root class="w-full space-y-2">
   <Collapsible.Trigger>
     <div class="w-64 bg-secondary mx-1 rounded-xl items-start flex">
-      <Button variant="ghost">
-        Filter by Tags
-        <ChevronsUpDownIcon size="16" class="transform transition-transform" />
+      <Button variant="ghost" class="pl-3 pr-2 w-full justify-start">
+        <div class=" flex flex-row items-center w-full justify-between">
+          <span>Filter by tags</span>
+          <ChevronsUpDownIcon size="16" class="transform transition-transform" />
+        </div>
       </Button>
     </div>
   </Collapsible.Trigger>
