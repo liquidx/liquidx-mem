@@ -1,11 +1,6 @@
 <script lang="ts">
   import { DateTime } from 'luxon';
   import { createEventDispatcher } from 'svelte';
-  import Archive from 'lucide-svelte/icons/archive';
-  import PenLine from 'lucide-svelte/icons/pen-line';
-  import Trash2 from 'lucide-svelte/icons/trash-2';
-  import ImageUp from 'lucide-svelte/icons/image-up';
-  import Eye from 'lucide-svelte/icons/eye';
 
   import type { Mem, MemPhoto } from '$lib/common/mems';
   import { Button } from '$lib/components/ui/button';
@@ -14,6 +9,7 @@
 
   import AutoResizeTextarea from '$lib/thirdparty/autoresize-textarea/AutoresizeTextarea.svelte';
   import { getCachedStorageUrl } from '$lib/storage';
+  import { ArchiveIcon, EyeIcon, ImageUpIcon, PenLineIcon, Trash2Icon } from 'lucide-svelte';
 
   type MediaUrl = {
     photo?: MemPhoto;
@@ -146,7 +142,7 @@
     dispatch('fileUpload', { mem, files: dataTransfer.files });
   }
 
-  const noteDidChange = async (e: CustomEvent) => {
+  const noteDidChange = async (e: FocusEvent) => {
     console.log('noteDidChange', e);
     const target: HTMLInputElement = e.target as HTMLInputElement;
     if (!target) {
@@ -160,7 +156,7 @@
     }
   };
 
-  function descriptionDidChange(e: CustomEvent): void {
+  function descriptionDidChange(e: FocusEvent): void {
     console.log('descriptionDidChange', e);
     const target: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
     if (!target) {
@@ -281,7 +277,7 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   class={'mem flex flex-col rounded-xl my-4 md:mx-2 py-4 px-4 md:px-6  text-muted-foreground ' +
-    (isDragging ? ' bg-yellow-100' : 'bg-muted')}
+    (isDragging ? ' bg-yellow-100' : 'bg-card')}
   on:dragover={ondragover}
   on:dragleave={ondragleave}
   on:drop={ondrop}
@@ -303,7 +299,7 @@
           <span class="title-text" bind:this={titleEl}>{getPrettyTitle(mem)}</span>
         </a>
         <button class="text-primary hover:text-secondary" on:click={startEdit}>
-          <PenLine class="align-middle" size="16" />
+          <PenLineIcon class="align-middle" size="16" />
         </button>
       </div>
     {/if}
@@ -387,35 +383,35 @@
   <div class="flex flex-row flex-wrap gap-1 md:gap-2">
     {#if mem.new}
       <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onArchive}>
-        <Archive class="align-middle" size="12" />
+        <ArchiveIcon class="align-middle" size="12" />
         Archive
       </Button>
     {/if}
 
     {#if !mem.new}
       <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onUnarchive}>
-        <Archive class="align-middle" size="12" />
+        <ArchiveIcon class="align-middle" size="12" />
         Unarchive
       </Button>
     {/if}
 
     <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onSeen}>
-      <Eye class="align-middle" size="12" />
+      <EyeIcon class="align-middle" size="12" />
       Seen
     </Button>
 
     <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onAnnotate}>
-      <PenLine class="align-middle" size="12" />
+      <PenLineIcon class="align-middle" size="12" />
       Annotate
     </Button>
 
     <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onDelete}>
-      <Trash2 class="align-middle" size="12" />
+      <Trash2Icon class="align-middle" size="12" />
       Delete
     </Button>
 
     <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onUploadDidClick}>
-      <ImageUp class="align-middle" size="12" />
+      <ImageUpIcon class="align-middle" size="12" />
       Upload
     </Button>
 

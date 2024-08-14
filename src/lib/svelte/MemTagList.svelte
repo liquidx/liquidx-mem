@@ -1,12 +1,12 @@
 <script lang="ts">
   import { getTags, getSavedViews } from '$lib/mem.client.js';
-  import type { TagListItem } from '$lib/tags';
+  import type { TagListItem } from '$lib/tags.types';
   import { sharedUser } from '$lib/firebase-shared';
   import type { UserView } from '$lib/user.types';
-  import type { TagFilters } from '$lib/filter';
+  import type { MemListOptions } from '$lib/filter';
   import { cn } from '$lib/utils';
 
-  export let currentTagFilters: TagFilters | undefined = undefined;
+  export let currentTagFilters: MemListOptions | undefined = undefined;
 
   let showAll = false;
   let initialVisibleCount = 30;
@@ -43,7 +43,7 @@
     showAll = true;
   };
 
-  const isSelected = (tag: string, filters_: TagFilters) => {
+  const isSelected = (tag: string, filters_: MemListOptions | undefined) => {
     if (!filters_) {
       return false;
     }
@@ -53,11 +53,11 @@
     return false;
   };
 
-  const isNew = (filters_: TagFilters) => {
-    return !filters_ || !filters_.onlyArchived;
+  const isNew = (filters_: MemListOptions | undefined) => {
+    return !filters_ || (!filters_.onlyArchived && filters_.matchAllTags.length == 0);
   };
 
-  const isArchive = (filters_: TagFilters) => {
+  const isArchive = (filters_: MemListOptions | undefined) => {
     return filters_ && filters_.onlyArchived && filters_.matchAllTags.includes('#*');
   };
 </script>

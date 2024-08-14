@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { ModeWatcher, setMode } from 'mode-watcher';
 
   import { sharedUser } from '$lib/firebase-shared';
@@ -9,11 +9,20 @@
 
   import '../../app.css';
   import { onMount } from 'svelte';
+  import { SunIcon } from 'lucide-svelte';
+  import Button from '$lib/components/ui/button/button.svelte';
 
   $sharedFirebaseApp = initializeFirebase();
 
+  let mode: 'dark' | 'light' | 'system' = 'system';
+
+  const toggleMode = () => {
+    mode = mode === 'light' ? 'dark' : 'light';
+    setMode(mode);
+  };
+
   onMount(() => {
-    setMode('light');
+    setMode(mode);
   });
 </script>
 
@@ -22,9 +31,16 @@
 <div id="app">
   <div class="p-4 flex flex-col w-full overflow-x-hidden md:flex-row">
     <header class="mt-0 p-2 w-screen md:min-h-screen md:w-48">
-      <h1 class="text-md py-2 font-bold text-primary">
-        <a href="/">#mem</a>
-      </h1>
+      <div class="flex flex-row justify-between items-center">
+        <h1 class="text-md py-2 font-bold text-primary">
+          <a href="/">#mem</a>
+        </h1>
+        <div class="mx-4 md:m-2">
+          <Button variant="outline" size="sm" on:click={toggleMode}
+            ><SunIcon size={16}></SunIcon></Button
+          >
+        </div>
+      </div>
 
       {#if $sharedUser}
         <div class="py-2">

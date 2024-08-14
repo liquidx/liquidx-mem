@@ -30,7 +30,8 @@
     matchAllTags: [],
     matchAnyTags: [],
     onlyArchived: false,
-    onlyNew: true
+    onlyNew: true,
+    order: 'newest'
   };
 
   $: {
@@ -192,7 +193,7 @@
     }
   };
 
-  const updateNoteForMem = async (e: FocusEvent) => {
+  const updateNoteForMem = async (e: CustomEvent) => {
     const mem: Mem = e.detail.mem;
     const text = e.detail.text;
     if (mem && $sharedUser) {
@@ -203,7 +204,7 @@
     }
   };
 
-  const updateTitleForMem = async (e: FocusEvent) => {
+  const updateTitleForMem = async (e: CustomEvent) => {
     let mem: Mem = e.detail.mem;
     let text = e.detail.text;
     if (mem && $sharedUser) {

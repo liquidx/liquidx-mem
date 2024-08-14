@@ -4,7 +4,6 @@
 
   import * as Collapsible from '$lib/components/ui/collapsible';
   import Button from '$lib/components/ui/button/button.svelte';
-  import * as Select from '$lib/components/ui/select';
 
   import type { TagListItem } from '$lib/tags.server';
   import type { MemListOptions } from '$lib/filter';
@@ -35,7 +34,7 @@
     return false;
   };
 
-  const sortOrderDidChange = (e) => {
+  const sortOrderDidChange = () => {
     console.log('sortOrderDidChange', sortOrder);
     dispatch('sortOrderDidChange', sortOrder);
   };
@@ -64,7 +63,9 @@
         <button
           class={cn(
             ' rounded-sm px-2 py-1 ',
-            isTagSelected(tag) ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200'
+            isTagSelected(tag)
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary hover:bg-muted'
           )}
           on:click={() => onTagDidClick(tag)}
         >
