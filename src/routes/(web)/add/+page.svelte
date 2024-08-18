@@ -1,9 +1,9 @@
 <script lang="ts">
-  import MemAdd from '$lib/svelte/MemAdd.svelte';
+  import MemAdd from "$lib/svelte/MemAdd.svelte";
 </script>
 
-<div class="flex flex-col w-full overflow-x-hidden md:flex-row">
-  <main class="p-2 max-w-screen flex-grow md:max-w-xl">
+<div class="flex w-full flex-col overflow-x-hidden md:flex-row">
+  <main class="max-w-screen flex-grow p-2 md:max-w-xl">
     <MemAdd />
   </main>
 </div>

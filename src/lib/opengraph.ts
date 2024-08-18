@@ -1,6 +1,6 @@
-import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios';
-import he from 'he';
-import iconv from 'iconv-lite';
+import axios, { type AxiosRequestConfig, type AxiosResponse } from "axios";
+import he from "he";
+import iconv from "iconv-lite";
 
 export interface OpenGraphImage {
   url: string;
@@ -37,7 +37,7 @@ export interface OpenGraphTags {
 }
 
 // https://stackoverflow.com/questions/62526483/twitter-website-doesnt-have-open-graph-tags
-const DISCORD_BOT_USER_AGENT = 'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)';
+const DISCORD_BOT_USER_AGENT = "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)";
 
 export const parseOpenGraph = (content: string): OpenGraphTags => {
   const ogRegex = /<meta\s+(content|property)="([^"]*)"\s+(content|property)="([^"]*)"/g;
@@ -53,62 +53,62 @@ export const parseOpenGraph = (content: string): OpenGraphTags => {
 
   const matches = content.matchAll(ogRegex);
   for (const match of matches) {
-    let propertyKey = '';
-    let propertyValue = '';
+    let propertyKey = "";
+    let propertyValue = "";
 
     // Figure out which group is the property and which is the content
-    if (match[1] === 'property') {
+    if (match[1] === "property") {
       propertyKey = match[2];
       propertyValue = he.decode(match[4]);
-    } else if (match[3] === 'property') {
+    } else if (match[3] === "property") {
       propertyKey = match[4];
       propertyValue = he.decode(match[2]);
     } else {
       console.log(match.groups);
     }
 
-    if (propertyKey.startsWith('og:')) {
-      propertyKey = propertyKey.replace('og:', '');
+    if (propertyKey.startsWith("og:")) {
+      propertyKey = propertyKey.replace("og:", "");
     } else {
       continue;
     }
 
     // Handle the content from the images.
-    if (propertyKey.startsWith('image')) {
-      if (propertyKey === 'image' || propertyKey === 'image:url') {
+    if (propertyKey.startsWith("image")) {
+      if (propertyKey === "image" || propertyKey === "image:url") {
         if (currentImage) {
           images.push(currentImage);
         }
         currentImage = { url: propertyValue };
-      } else if (propertyKey === 'image:width' && currentImage) {
+      } else if (propertyKey === "image:width" && currentImage) {
         currentImage.width = propertyValue;
-      } else if (propertyKey === 'image:height' && currentImage) {
+      } else if (propertyKey === "image:height" && currentImage) {
         currentImage.height = propertyValue;
-      } else if (propertyKey === 'image:type' && currentImage) {
+      } else if (propertyKey === "image:type" && currentImage) {
         currentImage.type = propertyValue;
-      } else if (propertyKey === 'image:alt' && currentImage) {
+      } else if (propertyKey === "image:alt" && currentImage) {
         currentImage.alt = propertyValue;
       }
-    } else if (propertyKey.startsWith('video')) {
-      if (propertyKey === 'video' || propertyKey === 'video:url') {
+    } else if (propertyKey.startsWith("video")) {
+      if (propertyKey === "video" || propertyKey === "video:url") {
         if (currentVideo) {
           videos.push(currentVideo);
         }
         currentVideo = { url: propertyValue };
-      } else if (propertyKey === 'video:width' && currentVideo) {
+      } else if (propertyKey === "video:width" && currentVideo) {
         currentVideo.width = propertyValue;
-      } else if (propertyKey === 'video:height' && currentVideo) {
+      } else if (propertyKey === "video:height" && currentVideo) {
         currentVideo.height = propertyValue;
-      } else if (propertyKey === 'video:type' && currentVideo) {
+      } else if (propertyKey === "video:type" && currentVideo) {
         currentVideo.type = propertyValue;
       }
-    } else if (propertyKey.startsWith('audio')) {
-      if (propertyKey === 'audio') {
+    } else if (propertyKey.startsWith("audio")) {
+      if (propertyKey === "audio") {
         if (currentAudio) {
           audios.push(currentAudio);
         }
         currentAudio = { url: propertyValue };
-      } else if (propertyKey === 'audio:type' && currentAudio) {
+      } else if (propertyKey === "audio:type" && currentAudio) {
         currentAudio.type = propertyValue;
       }
     } else {
@@ -156,7 +156,7 @@ export const parseOpenGraph = (content: string): OpenGraphTags => {
 const transcodeResponse = (response: AxiosResponse): AxiosResponse => {
   const contentCharsetPattern = /charset=([^;]*)/;
 
-  const contentType = response.headers['content-type'];
+  const contentType = response.headers["content-type"];
   if (!contentType) {
     return response;
   }
@@ -167,7 +167,7 @@ const transcodeResponse = (response: AxiosResponse): AxiosResponse => {
   }
 
   const charset = charsetMatch[1].toLowerCase();
-  if (charset === 'utf-8') {
+  if (charset === "utf-8") {
     return response;
   }
 
@@ -183,16 +183,16 @@ export const fetchOpenGraph = async (
   verbose = false
 ): Promise<OpenGraphTags | void> => {
   const request: AxiosRequestConfig = {
-    method: 'GET',
+    method: "GET",
     url: url,
     headers: {
-      accept: '*/*',
-      'accept-language': 'en-US,en;q=0.9',
-      'user-agent': DISCORD_BOT_USER_AGENT
+      accept: "*/*",
+      "accept-language": "en-US,en;q=0.9",
+      "user-agent": DISCORD_BOT_USER_AGENT
     },
     // We need to get the raw data so we can transcode it
     // using the right encoding returned by the http server.
-    responseType: 'arraybuffer'
+    responseType: "arraybuffer"
   };
 
   const transcodingAxios = axios.create();
@@ -204,12 +204,12 @@ export const fetchOpenGraph = async (
       return response.data.toString();
     })
     .catch((err: any) => {
-      console.log('Error:', err.code, err.response.status);
+      console.log("Error:", err.code, err.response.status);
       return null;
     });
 
   if (verbose) {
-    console.log('Content:', content);
+    console.log("Content:", content);
   }
 
   if (!content) {

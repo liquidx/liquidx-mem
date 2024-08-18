@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { fetchOpenGraph } from '$lib/opengraph';
+import { fetchOpenGraph } from "$lib/opengraph";
+import { describe, expect, it } from "vitest";
 
-describe('parseOpenGraph', () => {
-  it('should get opengraph from github', async () => {
-    const url = 'https://github.com/glanceapp/glance';
+describe("parseOpenGraph", () => {
+  it("should get opengraph from github", async () => {
+    const url = "https://github.com/glanceapp/glance";
     const result = await fetchOpenGraph(url);
     console.log(result);
-    expect(result).toHaveProperty('title');
+    expect(result).toHaveProperty("title");
   });
 });

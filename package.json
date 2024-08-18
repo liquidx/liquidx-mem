@@ -16,8 +16,8 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test:unit": "vitest",
-    "lint": "eslint .",
-    "format": "prettier --plugin-search-dir . --write .",
+    "lint": "prettier  --check . && eslint .",
+    "format": "prettier --write .",
     "tsc": "tsc --watch --preserveWatchOutput --project tsconfig.tool.json",
     "tsc-once": "tsc  --project tsconfig.tool.json"
   },

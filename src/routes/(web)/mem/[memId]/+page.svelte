@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount } from "svelte";
   // @ts-ignore
-  import { page } from '$app/stores';
+  import { page } from "$app/stores";
 
-  import type { Mem } from '$lib/common/mems';
-  import MemView from '$lib/svelte/MemView.svelte';
-  import { sharedUser } from '$lib/firebase-shared';
-  import { getMem } from '$lib/mem.client';
+  import type { Mem } from "$lib/common/mems";
+  import MemView from "$lib/svelte/MemView.svelte";
+  import { sharedUser } from "$lib/firebase-shared";
+  import { getMem } from "$lib/mem.client";
 
   let mem: Mem | undefined;
 

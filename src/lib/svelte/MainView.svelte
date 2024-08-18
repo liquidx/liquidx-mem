@@ -1,23 +1,23 @@
 <script lang="ts">
-  import axios from 'axios';
-  import { toast } from 'svelte-sonner';
-  import { goto } from '$app/navigation';
+  import axios from "axios";
+  import { toast } from "svelte-sonner";
+  import { goto } from "$app/navigation";
 
-  import { sharedUser } from '$lib/firebase-shared';
-  import type { Mem, MemPhoto } from '$lib/common/mems';
-  import * as memModifiers from '$lib/mem.client';
+  import { sharedUser } from "$lib/firebase-shared";
+  import type { Mem, MemPhoto } from "$lib/common/mems";
+  import * as memModifiers from "$lib/mem.client";
 
-  import MemList from '$lib/svelte/MemList.svelte';
-  import MemAdd from '$lib/svelte/MemAdd.svelte';
-  import MoreMem from '$lib/svelte/MoreMem.svelte';
-  import MemTagList from '$lib/svelte/MemTagList.svelte';
-  import type { MemAnnotateResponse, MemListRequest } from '$lib/request.types';
-  import { stringFromListOptions, listOptionsByString, type MemListOptions } from '$lib/filter';
-  import type { TagListItem } from '$lib/tags.types';
-  import MemListFilters from './MemListFilters.svelte';
-  import MemSearchBox from './MemSearchBox.svelte';
+  import MemList from "$lib/svelte/MemList.svelte";
+  import MemAdd from "$lib/svelte/MemAdd.svelte";
+  import MoreMem from "$lib/svelte/MoreMem.svelte";
+  import MemTagList from "$lib/svelte/MemTagList.svelte";
+  import type { MemAnnotateResponse, MemListRequest } from "$lib/request.types";
+  import { stringFromListOptions, listOptionsByString, type MemListOptions } from "$lib/filter";
+  import type { TagListItem } from "$lib/tags.types";
+  import MemListFilters from "./MemListFilters.svelte";
+  import MemSearchBox from "./MemSearchBox.svelte";
 
-  export let filter: string = '';
+  export let filter: string = "";
   export let showTags = true;
 
   let pageSize = 30;
@@ -25,13 +25,13 @@
   let mems: Mem[] = [];
   let moreMemsAvailable = true;
   let viewTags: TagListItem[] = [];
-  let searchQuery: string = '';
+  let searchQuery: string = "";
   let listOptions: MemListOptions = {
     matchAllTags: [],
     matchAnyTags: [],
     onlyArchived: false,
     onlyNew: true,
-    order: 'newest'
+    order: "newest"
   };
 
   $: {
@@ -82,7 +82,7 @@
 
     if (result.data) {
       const { data } = result;
-      if (data.status == 'OK' && data.mems) {
+      if (data.status == "OK" && data.mems) {
         if (append) {
           mems = [...mems, ...data.mems];
         } else {
@@ -95,17 +95,17 @@
   const loadMore = () => {
     visiblePages += 1;
     loadMems(listOptions, searchQuery, true);
-    console.log('loadMore', visiblePages);
+    console.log("loadMore", visiblePages);
   };
 
   const updateVisibleMems = (mems_: Mem[], updatedMem: Mem, updatedMemId: string | undefined) => {
-    console.log('updateVisibleMems', updatedMem);
+    console.log("updateVisibleMems", updatedMem);
     let didChange = false;
     let replacedMemId = updatedMemId || updatedMem._id;
     const replacedMems = mems_.map((mem) => {
       if (mem._id === replacedMemId) {
         didChange = true;
-        console.log('didChange', mem._id, updatedMem);
+        console.log("didChange", mem._id, updatedMem);
         return updatedMem;
       }
       return mem;
@@ -121,7 +121,7 @@
   ////
 
   const annotateMem = async (e: CustomEvent) => {
-    toast('Annotating...');
+    toast("Annotating...");
     let mem: Mem = e.detail.mem;
     if (mem && $sharedUser) {
       const response: MemAnnotateResponse | undefined = await memModifiers.annotateMem(
@@ -129,18 +129,18 @@
         $sharedUser
       );
       if (!response) {
-        toast.error('Failed to annotate...');
+        toast.error("Failed to annotate...");
       }
       if (response) {
         updateVisibleMems(mems, response.mem, response.mem._id);
-        toast.success('Done');
+        toast.success("Done");
       }
     }
   };
 
   const deleteMem = async (e: CustomEvent) => {
     let mem: Mem = e.detail.mem;
-    console.log('deleteMem', mem);
+    console.log("deleteMem", mem);
     if (mem && $sharedUser) {
       const deleteMemId = await memModifiers.deleteMem(mem, $sharedUser);
       if (deleteMemId) {
@@ -154,7 +154,7 @@
     let photo: MemPhoto = e.detail.photo;
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.removePhotoFromMem(mem, photo, $sharedUser);
-      console.log('removePhotoFromMem', updatedMem);
+      console.log("removePhotoFromMem", updatedMem);
       if (updatedMem) {
         updateVisibleMems(mems, updatedMem, mem._id);
       }
@@ -163,7 +163,7 @@
 
   const archiveMem = async (e: CustomEvent) => {
     let mem: Mem = e.detail.mem;
-    console.log('archiveMem');
+    console.log("archiveMem");
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.archiveMem(mem, $sharedUser);
       if (updatedMem) {
@@ -174,7 +174,7 @@
 
   const seenMem = async (e: CustomEvent) => {
     let mem: Mem = e.detail.mem;
-    console.log('seenMem');
+    console.log("seenMem");
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.seenMem(mem, $sharedUser);
       if (updatedMem) {
@@ -197,7 +197,7 @@
     const mem: Mem = e.detail.mem;
     const text = e.detail.text;
     if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(mem, 'note', text, $sharedUser);
+      const updatedMem = await memModifiers.updatePropertyForMem(mem, "note", text, $sharedUser);
       if (updatedMem) {
         updateVisibleMems(mems, updatedMem, mem._id);
       }
@@ -208,7 +208,7 @@
     let mem: Mem = e.detail.mem;
     let text = e.detail.text;
     if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(mem, 'title', text, $sharedUser);
+      const updatedMem = await memModifiers.updatePropertyForMem(mem, "title", text, $sharedUser);
       if (updatedMem) {
         updateVisibleMems(mems, updatedMem, mem._id);
       }
@@ -219,7 +219,7 @@
     let mem: Mem = e.detail.mem;
     let text = e.detail.url;
     if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(mem, 'url', text, $sharedUser);
+      const updatedMem = await memModifiers.updatePropertyForMem(mem, "url", text, $sharedUser);
       if (updatedMem) {
         updateVisibleMems(mems, updatedMem, mem._id);
       }
@@ -232,7 +232,7 @@
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.updatePropertyForMem(
         mem,
-        'description',
+        "description",
         text,
         $sharedUser
       );
@@ -260,7 +260,7 @@
 
   const tagDidClick = (e: CustomEvent) => {
     const tag = e.detail.tag;
-    console.log('tagDidClick', tag, listOptions);
+    console.log("tagDidClick", tag, listOptions);
 
     // Toggle the tag in the filters
     if (listOptions.matchAllTags.includes(tag)) {
@@ -274,21 +274,21 @@
     if (tagFiltersString) {
       goto(`/tag/${tagFiltersString}`);
     } else {
-      goto('/');
+      goto("/");
     }
   };
 
   const searchQueryDidChange = (e: CustomEvent) => {
     const query = e.detail.query;
     searchQuery = query;
-    console.log('searchQueryDidChange', query);
+    console.log("searchQueryDidChange", query);
   };
 
   const sortOrderDidChange = (e: CustomEvent) => {
     const order = e.detail;
     listOptions.order = order;
     listOptions = listOptions;
-    console.log('sortOrderDidChange', order);
+    console.log("sortOrderDidChange", order);
   };
 </script>
 
@@ -296,14 +296,14 @@
   <title>#mem</title>
 </svelte:head>
 
-<div class="flex flex-col w-full overflow-x-hidden md:flex-row">
+<div class="flex w-full flex-col overflow-x-hidden md:flex-row">
   {#if showTags}
     <section class="md:my-4">
       <MemSearchBox on:searchQueryDidChange={searchQueryDidChange} />
       <MemTagList currentTagFilters={listOptions} />
     </section>
   {/if}
-  <main class="p-2 max-w-screen flex-grow md:max-w-xl">
+  <main class="max-w-screen flex-grow p-2 md:max-w-xl">
     <MemAdd on:memDidAdd={memDidAdd} />
     {#if viewTags && viewTags.length > 0}
       <MemListFilters

@@ -1,71 +1,71 @@
 export const iconForTag = (tag: string) => {
   if (!tag) {
-    return '';
+    return "";
   }
   switch (tag) {
-    case '#art':
+    case "#art":
       return `🎨`;
-    case '#code':
+    case "#code":
       return `👨‍💻`;
-    case '#map':
+    case "#map":
       return `🗺️`;
-    case '#photo':
+    case "#photo":
       return `📷`;
-    case '#japan':
-    case '#japanese':
+    case "#japan":
+    case "#japanese":
       return `🇯🇵`;
-    case '#tokyo':
+    case "#tokyo":
       return `🗼`;
-    case '#hongkong':
+    case "#hongkong":
       return `🇭🇰`;
-    case '#house':
+    case "#house":
       return `🏠`;
-    case '#look':
-    case '#read':
+    case "#look":
+    case "#read":
       return `👀`;
-    case '#want':
+    case "#want":
       return `🤩`;
-    case '#3d':
+    case "#3d":
       return `📦`;
-    case '#ml':
-    case '#ml-generative':
-    case '#generated':
-    case '#ml-app':
-    case '#dreambooth':
-    case '#nerf':
-    case '#cloudml':
-    case '#stablediffusion':
-    case '#dalle':
-    case '#midjourney':
-    case '#llm':
-    case '#colab':
+    case "#ml":
+    case "#ml-generative":
+    case "#generated":
+    case "#ml-app":
+    case "#dreambooth":
+    case "#nerf":
+    case "#cloudml":
+    case "#stablediffusion":
+    case "#dalle":
+    case "#midjourney":
+    case "#llm":
+    case "#colab":
       return `🧠`;
-    case '#f1':
+    case "#f1":
       return `🏎️`;
-    case '#snow':
+    case "#snow":
       return `❄️`;
-    case '#datavis':
+    case "#datavis":
       return `📊`;
-    case '#design':
+    case "#design":
       return `🎨`;
-    case '#keyboard':
+    case "#keyboard":
       return `⌨️`;
-    case '#web':
+    case "#web":
       return `🌐`;
-    case '#music':
+    case "#music":
       return `🎵`;
-    case '#game':
-    case '#gaming':
+    case "#game":
+    case "#gaming":
       return `🎮`;
-    case '#place':
+    case "#place":
       return `📍`;
-    case '#snowboard':
+    case "#snowboard":
       return `🏂`;
-    case '#furniture':
+    case "#furniture":
       return `🛋️`;
-    case '#watch':
+    case "#watch":
       return `⌚`;
     default:
-      return '🏷️';
+      return "🏷️";
   }
 };

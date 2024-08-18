@@ -1,5 +1,5 @@
 <script lang="ts">
-  import OrganizeView from '$lib/svelte/OrganizeView.svelte';
+  import OrganizeView from "$lib/svelte/OrganizeView.svelte";
 </script>
 
 <svelte:head>

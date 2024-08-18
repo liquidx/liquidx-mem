@@ -1,11 +1,11 @@
-import type { Mem } from './common/mems';
+import type { Mem } from "./common/mems";
 
 export interface MemListRequest {
   userId: string;
   secretWord?: string;
   isArchived?: boolean;
   all?: boolean;
-  order?: 'newest' | 'oldest';
+  order?: "newest" | "oldest";
   matchAllTags?: string[];
   matchAnyTags?: string[];
   searchQuery?: string;

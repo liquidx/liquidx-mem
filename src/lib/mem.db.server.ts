@@ -1,12 +1,11 @@
-import { type Db, type DeleteResult } from 'mongodb';
-import { DateTime } from 'luxon';
-import type { S3Client } from '@aws-sdk/client-s3';
+import type { Mem } from "$lib/common/mems";
+import { getMemCollection } from "$lib/db";
+import { mirrorMedia } from "$lib/server/mirror.js";
+import type { S3Client } from "@aws-sdk/client-s3";
+import { DateTime } from "luxon";
+import { type Db, type DeleteResult } from "mongodb";
 
-import { mirrorMedia } from '$lib/server/mirror.js';
-import type { Mem } from '$lib/common/mems';
-import type { MemListRequest } from './request.types';
-
-import { getMemCollection } from '$lib/db';
+import type { MemListRequest } from "./request.types";
 
 export interface MemOptions {
   maxResults?: number;
@@ -17,12 +16,12 @@ export const updateMem = async (db: Db, mem: Mem): Promise<Mem | undefined> => {
   return (await getMemCollection(db).findOneAndUpdate(
     { _id: mem._id },
     { $set: mem },
-    { returnDocument: 'after' }
+    { returnDocument: "after" }
   )) as unknown as Mem;
 };
 
 export const deleteMem = async (db: Db, memId: string): Promise<DeleteResult> => {
-  const memTable = db.collection('mems');
+  const memTable = db.collection("mems");
   return await memTable.deleteOne({ _id: memId });
 };
 
@@ -61,7 +60,7 @@ export const getMems = async (
 ) => {
   const query: { [key: string]: any } = { $and: [{ userId: userId }] };
   // TODO: Make this a user configuration.
-  const suppressedTags = ['#xxx'];
+  const suppressedTags = ["#xxx"];
 
   if (request) {
     if (request.isArchived) {
@@ -88,9 +87,9 @@ export const getMems = async (
 
   // Apply order
   if (request && request.order) {
-    options['sort'] = { addedMs: request.order === 'oldest' ? 1 : -1 };
+    options["sort"] = { addedMs: request.order === "oldest" ? 1 : -1 };
   } else {
-    options['sort'] = { addedMs: -1 };
+    options["sort"] = { addedMs: -1 };
   }
 
   if (request && request.pageSize) {
@@ -112,8 +111,8 @@ export const getMems = async (
     const stages: any = [];
     stages.push({
       $search: {
-        index: 'text',
-        text: { query: request.searchQuery, path: ['title', 'description', 'url'] }
+        index: "text",
+        text: { query: request.searchQuery, path: ["title", "description", "url"] }
       }
     });
 
@@ -134,13 +133,13 @@ export const getMems = async (
       stages.push({ $skip: options.skip });
     }
 
-    console.log('Stages: ');
+    console.log("Stages: ");
     console.dir(stages, { depth: null, colors: true });
     try {
       const docs = await getMemCollection(db).aggregate(stages).toArray();
       return docs;
     } catch (err: any) {
-      console.error('Error in search query', err);
+      console.error("Error in search query", err);
       return [];
     }
   } else {
@@ -164,10 +163,10 @@ export const getAllMems = async (
 
   if (queryOptions) {
     if (queryOptions.lookQueue) {
-      query['tags'] = { $in: ['#look'] };
+      query["tags"] = { $in: ["#look"] };
     }
     if (queryOptions.maxResults) {
-      options['limit'] = queryOptions.maxResults;
+      options["limit"] = queryOptions.maxResults;
     }
   }
   const cursor = await getMemCollection(db).find(query, options);

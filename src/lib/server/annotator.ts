@@ -1,24 +1,22 @@
-import type { Mem, MemPhoto } from '../common/mems.js';
-
-import { ANNOTATOR_URL_CONFIG, type AnnotatorUrlConfig } from './annotator-config.js';
-
-import { fetchOpenGraph, type OpenGraphTags, type OpenGraphImage } from '../opengraph.js';
-import { removeUrlTrackingParams } from '../url.js';
+import type { Mem, MemPhoto } from "../common/mems.js";
+import { type OpenGraphImage, type OpenGraphTags, fetchOpenGraph } from "../opengraph.js";
+import { removeUrlTrackingParams } from "../url.js";
+import { ANNOTATOR_URL_CONFIG, type AnnotatorUrlConfig } from "./annotator-config.js";
 
 const ogImageToPhotos = (ogImages: OpenGraphImage[], url: string): MemPhoto[] => {
   return ogImages.map((image: any) => {
     let absoluteUrl = image.url;
-    if (!image.url.startsWith('http')) {
+    if (!image.url.startsWith("http")) {
       absoluteUrl = new URL(image.url, url).toString();
     }
     const photo: MemPhoto = {
       mediaUrl: absoluteUrl
     };
     if (
-      'width' in image &&
-      'height' in image &&
-      typeof image.width === 'string' &&
-      typeof image.height === 'string'
+      "width" in image &&
+      "height" in image &&
+      typeof image.width === "string" &&
+      typeof image.height === "string"
     ) {
       photo.size = {
         w: parseInt(image.width),
@@ -91,12 +89,12 @@ export const annotateMem = async (mem: Mem, verbose = false): Promise<Mem> => {
     const matched = mem.url.match(config.pattern);
     if (matched) {
       switch (config.action) {
-        case 'ignore':
+        case "ignore":
           return mem;
-        case 'opengraph': {
+        case "opengraph": {
           return annotateWithOpenGraph(mem, mem.url, config, verbose);
         }
-        case 'fetch': {
+        case "fetch": {
           // TODO implement me
 
           break;

@@ -1,9 +1,9 @@
 <script lang="ts">
   // @ts-ignore
-  import { page } from '$app/stores';
-  import MainView from '$lib/svelte/MainView.svelte';
+  import { page } from "$app/stores";
+  import MainView from "$lib/svelte/MainView.svelte";
 
-  let filter: string = '';
+  let filter: string = "";
 
   $: {
     if ($page && $page.params && $page.params.filter) {

@@ -1,9 +1,10 @@
-import urlRegexSafe from 'url-regex-safe';
-import { removeUrlTrackingParams } from '../url.js';
-import type { Mem } from './mems.js';
+import urlRegexSafe from "url-regex-safe";
 
-const tagRegex = new RegExp('#[^\\s,]+', 'g');
-const dateRegex = new RegExp('[0-9]{4}-[0-9]{2}-[0-9]{2}');
+import { removeUrlTrackingParams } from "../url.js";
+import type { Mem } from "./mems.js";
+
+const tagRegex = new RegExp("#[^\\s,]+", "g");
+const dateRegex = new RegExp("[0-9]{4}-[0-9]{2}-[0-9]{2}");
 
 export const extractTags = (text: string): string[] => {
   if (!text) {
@@ -24,12 +25,12 @@ export const extractTags = (text: string): string[] => {
 
 export const extractDate = (text: string): string => {
   if (!text) {
-    return '';
+    return "";
   }
 
   const dateMatch = text.match(dateRegex);
   if (!dateMatch) {
-    return '';
+    return "";
   }
 
   return dateMatch[0];
@@ -57,7 +58,7 @@ export const parseText = (text: string): Mem => {
   if (matches && matches.length > 0) {
     const first = matches[0];
     mem.url = removeUrlTrackingParams(first.toString());
-    mem.note = text.replace(urlRegexSafe(), '').trim();
+    mem.note = text.replace(urlRegexSafe(), "").trim();
   } else {
     mem.note = text;
   }

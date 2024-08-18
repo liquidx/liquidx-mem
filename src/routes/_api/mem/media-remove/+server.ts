@@ -1,28 +1,28 @@
-import { error, json } from '@sveltejs/kit';
-import type { RequestHandler } from './$types';
+import { memToJson } from "$lib/common/mems";
+import type { MemPhoto } from "$lib/common/mems";
+import { getDb } from "$lib/db";
+import { getFirebaseApp } from "$lib/firebase.server.js";
+import { getMem } from "$lib/mem.db.server";
+import { updateMem } from "$lib/mem.db.server";
+import { getUserId } from "$lib/server/api.server.js";
+import { refreshTagCounts } from "$lib/tags.server.js";
+import { error, json } from "@sveltejs/kit";
 
-import { getFirebaseApp } from '$lib/firebase.server.js';
-import { getMem } from '$lib/mem.db.server';
-import { memToJson } from '$lib/common/mems';
-import type { MemPhoto } from '$lib/common/mems';
-import { getUserId } from '$lib/server/api.server.js';
-import { refreshTagCounts } from '$lib/tags.server.js';
-import { getDb } from '$lib/db';
-import { updateMem } from '$lib/mem.db.server';
+import type { RequestHandler } from "./$types";
 
 export const POST: RequestHandler = async ({ request, locals }) => {
   const body = await request.json();
-  const memId = body['memId'] || '';
-  const mediaUrl = body['mediaUrl'] || '';
+  const memId = body["memId"] || "";
+  const mediaUrl = body["mediaUrl"] || "";
 
-  console.log('/_api/mem/media-remove:', body);
+  console.log("/_api/mem/media-remove:", body);
 
   if (!mediaUrl) {
-    return error(400, JSON.stringify({ error: 'No mediaUrl' }));
+    return error(400, JSON.stringify({ error: "No mediaUrl" }));
   }
 
   if (!memId) {
-    return error(400, JSON.stringify({ error: 'No memId' }));
+    return error(400, JSON.stringify({ error: "No memId" }));
   }
 
   const firebaseApp = getFirebaseApp();
@@ -30,12 +30,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
   const userId = await getUserId(firebaseApp, request);
   if (!userId) {
-    return error(403, JSON.stringify({ error: 'Permission denied' }));
+    return error(403, JSON.stringify({ error: "Permission denied" }));
   }
 
   const mem = await getMem(db, userId, memId);
   if (!mem) {
-    return error(404, JSON.stringify({ error: 'Mem not found' }));
+    return error(404, JSON.stringify({ error: "Mem not found" }));
   }
 
   // Iterate through the media to remove the item that has the mediaURl
@@ -52,7 +52,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
   const updatedMem = await updateMem(db, mem);
   if (!updatedMem) {
-    return error(500, JSON.stringify({ error: 'Error updating mem' }));
+    return error(500, JSON.stringify({ error: "Error updating mem" }));
   }
 
   await refreshTagCounts(db, userId);

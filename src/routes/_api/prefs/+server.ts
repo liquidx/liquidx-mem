@@ -1,14 +1,15 @@
-import { error, json } from '@sveltejs/kit';
-import { getFirebaseApp } from '$lib/firebase.server.js';
-import type { RequestHandler } from './$types';
-import { getUserId } from '$lib/server/api.server.js';
-import type { SettingsWriteRequest, SettingsReadResponse } from '$lib/request.types.js';
-import { getDb, getUserCollection } from '$lib/db';
+import { getDb, getUserCollection } from "$lib/db";
+import { getFirebaseApp } from "$lib/firebase.server.js";
+import type { SettingsReadResponse, SettingsWriteRequest } from "$lib/request.types.js";
+import { getUserId } from "$lib/server/api.server.js";
+import { error, json } from "@sveltejs/kit";
+
+import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ request, url, locals }) => {
-  const prefKey = url.searchParams.get('key') || '';
+  const prefKey = url.searchParams.get("key") || "";
   if (!prefKey) {
-    return error(400, 'Missing key');
+    return error(400, "Missing key");
   }
 
   const firebaseApp = getFirebaseApp();
@@ -16,11 +17,11 @@ export const GET: RequestHandler = async ({ request, url, locals }) => {
 
   const userId = await getUserId(firebaseApp, request);
   if (!userId) {
-    return error(403, JSON.stringify({ error: 'Permission denied' }));
+    return error(403, JSON.stringify({ error: "Permission denied" }));
   }
   const user = await getUserCollection(db).findOne({ _id: userId });
   if (!user) {
-    return error(500, 'Error: No user');
+    return error(500, "Error: No user");
   }
 
   const response: SettingsReadResponse = { key: prefKey, settings: user[prefKey] };
@@ -29,22 +30,22 @@ export const GET: RequestHandler = async ({ request, url, locals }) => {
 
 export const POST: RequestHandler = async ({ request, locals }) => {
   const body = (await request.json()) as SettingsWriteRequest;
-  const prefKey = body.key || '';
-  const settings = body.settings || '';
+  const prefKey = body.key || "";
+  const settings = body.settings || "";
   const firebaseApp = getFirebaseApp();
   const db = getDb(locals.mongoClient);
 
   const userId = await getUserId(firebaseApp, request);
   if (!userId) {
-    return error(403, JSON.stringify({ error: 'Permission denied' }));
+    return error(403, JSON.stringify({ error: "Permission denied" }));
   }
   const user = await getUserCollection(db).findOneAndUpdate(
     { _id: userId },
     { $set: { [prefKey]: settings } },
-    { returnDocument: 'after' }
+    { returnDocument: "after" }
   );
   if (!user) {
-    return error(500, 'Error: No user');
+    return error(500, "Error: No user");
   }
   const response = { key: prefKey, settings };
   return json(response);

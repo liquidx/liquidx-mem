@@ -1,13 +1,13 @@
-import axios from 'axios';
-import type { User } from 'firebase/auth';
+import axios from "axios";
+import type { User } from "firebase/auth";
 
-import { memFromJson, type Mem, type MemPhoto } from './common/mems';
-import type { TagListItem } from './tags.server';
-import { iconForTag } from './tags';
-import type { UserView, UserWriteSecret } from './user.types';
-import type { MemAnnotateResponse } from './request.types';
+import { type Mem, type MemPhoto, memFromJson } from "./common/mems";
+import type { MemAnnotateResponse } from "./request.types";
+import { iconForTag } from "./tags";
+import type { TagListItem } from "./tags.server";
+import type { UserView, UserWriteSecret } from "./user.types";
 
-const serverUrl = '/_api';
+const serverUrl = "/_api";
 // For debugging.
 //const serverUrl = 'http://localhost:5001/liquidx-mem/us-central1'
 
@@ -61,7 +61,7 @@ export async function addMem(mem: Mem, user: User): Promise<Mem | void> {
 }
 
 export async function deleteMem(mem: Mem, user: User): Promise<string | void> {
-  console.log('deleteMem', mem);
+  console.log("deleteMem", mem);
   const url = `${serverUrl}/mem/del`;
   const body = { memId: mem._id };
   const authToken = await user.getIdToken();
@@ -174,7 +174,7 @@ export async function updatePropertyForMem(
     [property]: value
   };
 
-  console.log('updatePropertyForMem', updates);
+  console.log("updatePropertyForMem", updates);
 
   const url = `${serverUrl}/mem/edit`;
   const body = { userId: user.uid, memId: mem._id, updates };
@@ -200,11 +200,11 @@ const contentsAsBase64 = (file: File) =>
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
-      if (typeof reader.result !== 'string') {
-        reject('reader.result is not a string');
+      if (typeof reader.result !== "string") {
+        reject("reader.result is not a string");
         return;
       }
-      resolve(reader.result.split(',')[1]);
+      resolve(reader.result.split(",")[1]);
     };
     reader.onerror = (error) => reject(error);
   });
@@ -217,12 +217,12 @@ export async function uploadFilesForMem(
 ): Promise<Mem | undefined> {
   const authToken = await user.getIdToken();
   if (!authToken) {
-    console.error('No auth token');
+    console.error("No auth token");
     return;
   }
 
   if (!files || files.length < 1) {
-    console.error('No files');
+    console.error("No files");
     return;
   }
 
@@ -306,7 +306,7 @@ export const updateSavedViews = async (user: User, settings: UserView[]): Promis
     Authorization: `Bearer ${authToken}`
   };
 
-  return axios.post(url, { key: 'views', settings }, { headers });
+  return axios.post(url, { key: "views", settings }, { headers });
 };
 
 export const getWriteSecret = async (user: User): Promise<UserWriteSecret> => {
@@ -329,13 +329,13 @@ export const updateSecrets = async (user: User, settings: UserWriteSecret): Prom
     Authorization: `Bearer ${authToken}`
   };
 
-  return axios.post(url, { key: 'secrets', settings }, { headers });
+  return axios.post(url, { key: "secrets", settings }, { headers });
 };
 
 export const getTags = async (user: User, filter?: string): Promise<TagListItem[]> => {
   const params = new URLSearchParams({ userId: user.uid });
   if (filter) {
-    params.append('filter', filter);
+    params.append("filter", filter);
   }
   const url = `${serverUrl}/tag/list?${params.toString()}`;
   const authToken = await user.getIdToken();

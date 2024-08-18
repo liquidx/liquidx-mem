@@ -1,13 +1,13 @@
 // End to end tests for Firebase Functions.
-import process from 'process';
-import fs from 'fs';
-import FormData from 'form-data';
-import { program } from 'commander';
-import axios from 'axios';
+import axios from "axios";
+import { program } from "commander";
+import FormData from "form-data";
+import fs from "fs";
+import process from "process";
 
-const server = 'http://localhost:12000/_api';
+const server = "http://localhost:12000/_api";
 //const server = "https://dev.mem.liquidx.net/_api";
-const testData = 'https://liquidx.net/ This is a #test';
+const testData = "https://liquidx.net/ This is a #test";
 
 const testQuery = () => {
   const data = encodeURIComponent(testData);
@@ -19,9 +19,9 @@ const testQuery = () => {
 
 const testJsonWrongSecret = () => {
   axios
-    .post(`${server}/add`, JSON.stringify({ text: testData, secret: 'wrongSecret' }), {
+    .post(`${server}/add`, JSON.stringify({ text: testData, secret: "wrongSecret" }), {
       headers: {
-        'content-type': 'application/json'
+        "content-type": "application/json"
       }
     })
     .then((response) => {
@@ -30,10 +30,10 @@ const testJsonWrongSecret = () => {
 };
 
 const testJsonAdd = () => {
-  const body = { text: testData, secret: 'akita-inu' };
+  const body = { text: testData, secret: "akita-inu" };
   const req = {
     headers: {
-      'content-type': 'application/json'
+      "content-type": "application/json"
     }
   };
 
@@ -51,9 +51,9 @@ const testJsonAdd = () => {
 
 const testJsonImage = (testData) => {
   axios
-    .post(`${server}/add`, JSON.stringify({ image: testData, secret: 'akita-inu' }), {
+    .post(`${server}/add`, JSON.stringify({ image: testData, secret: "akita-inu" }), {
       headers: {
-        'content-type': 'application/json'
+        "content-type": "application/json"
       }
     })
     .then((response) => {
@@ -63,13 +63,13 @@ const testJsonImage = (testData) => {
 
 const testAddWithFormData = () => {
   const body = new FormData();
-  body.append('text', testData);
-  body.append('secret', 'akita-inu');
+  body.append("text", testData);
+  body.append("secret", "akita-inu");
 
   axios
     .post(`${server}/add`, {
       text: testData,
-      secret: 'akita-inu'
+      secret: "akita-inu"
     })
     .then((response) => {
       console.log(response.data);
@@ -86,16 +86,16 @@ const testGet = () => {
 };
 
 const main = () => {
-  program.command('json-image <image>').action((image) => {
-    const imageBase64 = fs.readFileSync(image).toString('base64');
+  program.command("json-image <image>").action((image) => {
+    const imageBase64 = fs.readFileSync(image).toString("base64");
     testJsonImage(imageBase64);
   });
 
-  program.command('test-add-get').action(() => {
+  program.command("test-add-get").action(() => {
     testGet();
   });
 
-  program.command('test-add-post').action(() => {
+  program.command("test-add-post").action(() => {
     testJsonAdd();
   });
 

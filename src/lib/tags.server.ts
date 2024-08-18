@@ -1,8 +1,8 @@
-import { orderBy, toPairs } from 'lodash-es';
-import type { Db } from 'mongodb';
-import { getMemCollection, getTagCollection } from './db';
+import { orderBy, toPairs } from "lodash-es";
+import type { Db } from "mongodb";
 
-import type { Mem } from './common/mems';
+import type { Mem } from "./common/mems";
+import { getMemCollection, getTagCollection } from "./db";
 
 export type TagIndex = { [field: string]: number };
 export type TagListItem = { tag: string; count: number; icon?: string };
@@ -20,11 +20,11 @@ export const computeTagCounts = (mems: MemTags[]): TagListItem[] => {
     }
   });
 
-  const orderedTags: TagListItem[] = orderBy(toPairs(tags), [1], ['desc']).map(
+  const orderedTags: TagListItem[] = orderBy(toPairs(tags), [1], ["desc"]).map(
     (o) =>
       ({
         tag: o[0],
-        icon: '',
+        icon: "",
         count: o[1]
       }) as TagListItem
   );
@@ -42,7 +42,7 @@ export const refreshTagCounts = async (db: Db, userId: string) => {
   return await getTagCollection(db).findOneAndUpdate(
     { userId: userId },
     { $set: { counts: counts } },
-    { upsert: true, returnDocument: 'after' }
+    { upsert: true, returnDocument: "after" }
   );
 
   // TODO: implement me.

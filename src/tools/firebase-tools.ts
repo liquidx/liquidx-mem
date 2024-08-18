@@ -1,35 +1,34 @@
-import process from 'process';
-import fs from 'fs';
-import type { Command } from 'commander';
+import type { Command } from "commander";
+import { cert, initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
+import fs from "fs";
+import process from "process";
 
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getStorage } from 'firebase-admin/storage';
+import { annotateMem } from "../lib/server/annotator.js";
+import { mirrorMedia } from "../lib/server/mirror.js";
 
-import { mirrorMedia } from '../lib/server/mirror.js';
-import { annotateMem } from '../lib/server/annotator.js';
-
-const DEFAULT_USER = 'BB8zGVrCbrQ2QryHyiZNaUZJjQ93';
-const BUCKET_NAME = 'liquidx-mem.appspot.com';
+const DEFAULT_USER = "BB8zGVrCbrQ2QryHyiZNaUZJjQ93";
+const BUCKET_NAME = "liquidx-mem.appspot.com";
 
 export const addFirebaseCommands = (program: Command) => {
-  const firebaseAdminCreds = JSON.parse(process.env.MEM_FIREBASE_ADMIN_KEY ?? '');
+  const firebaseAdminCreds = JSON.parse(process.env.MEM_FIREBASE_ADMIN_KEY ?? "");
   const firebaseApp = initializeApp({ credential: cert(firebaseAdminCreds) });
   const firestore = getFirestore(firebaseApp);
   const storage = getStorage(firebaseApp);
   const bucket = storage.bucket(BUCKET_NAME);
 
   program
-    .command('annotate <memId>')
-    .requiredOption('-m --mem-id <memId>', 'Mem ID')
-    .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
+    .command("annotate <memId>")
+    .requiredOption("-m --mem-id <memId>", "Mem ID")
+    .option("-u --user-id <userId>", "User ID", DEFAULT_USER)
     .action(async (options: any) => {
       const userId = options.userId;
       const memId = options.memId;
       const docResult = await firestore
-        .collection('users')
+        .collection("users")
         .doc(userId)
-        .collection('mems')
+        .collection("mems")
         .doc(memId)
         .get();
       const doc: any = docResult.data();
@@ -43,24 +42,24 @@ export const addFirebaseCommands = (program: Command) => {
         console.log(writable);
 
         return firestore
-          .collection('users')
+          .collection("users")
           .doc(userId)
-          .collection('mems')
+          .collection("mems")
           .doc(memId)
           .set(writable);
       });
     });
 
   program
-    .command('mirror <memId>')
-    .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
+    .command("mirror <memId>")
+    .option("-u --user-id <userId>", "User ID", DEFAULT_USER)
     .action(async (memId: string, options) => {
       const userId = options.userId;
       const outputPath = `users/${userId}/media`;
       const docResult = await firestore
-        .collection('users')
+        .collection("users")
         .doc(userId)
-        .collection('mems')
+        .collection("mems")
         .doc(memId)
         .get();
       const doc: any = docResult.data();
@@ -70,21 +69,21 @@ export const addFirebaseCommands = (program: Command) => {
         const writable = Object.assign({}, mem);
         delete writable.id;
         return firestore
-          .collection('users')
+          .collection("users")
           .doc(userId)
-          .collection('mems')
+          .collection("mems")
           .doc(memId)
           .set(writable);
       });
     });
 
   program
-    .command('mirror-all')
-    .option('--only-video', 'Only mirror mems with videos', false)
-    .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
+    .command("mirror-all")
+    .option("--only-video", "Only mirror mems with videos", false)
+    .option("-u --user-id <userId>", "User ID", DEFAULT_USER)
     .action(async (options) => {
       const userId = options.userId;
-      const docsResult = await firestore.collection('users').doc(userId).collection('mems').get();
+      const docsResult = await firestore.collection("users").doc(userId).collection("mems").get();
       const mems = docsResult.docs.map((doc) => Object.assign(doc.data(), { id: doc.id }));
       for (const mem of mems) {
         if (mem.photos || mem.videos) {
@@ -104,9 +103,9 @@ export const addFirebaseCommands = (program: Command) => {
                 const memId = mem._id;
                 if (memId) {
                   await firestore
-                    .collection('users')
+                    .collection("users")
                     .doc(userId)
-                    .collection('mems')
+                    .collection("mems")
                     .doc(memId)
                     .set(writable);
                 }
@@ -123,16 +122,16 @@ export const addFirebaseCommands = (program: Command) => {
 
   // Add a command in commander
   program
-    .command('export-mems')
-    .option('-u --user-id <userId>', 'User ID', DEFAULT_USER)
-    .option('-o --output <output>', 'Output file')
+    .command("export-mems")
+    .option("-u --user-id <userId>", "User ID", DEFAULT_USER)
+    .option("-o --output <output>", "Output file")
     .action(async (options) => {
       const userId = options.userId;
-      const docsResult = await firestore.collection('users').doc(userId).collection('mems').get();
+      const docsResult = await firestore.collection("users").doc(userId).collection("mems").get();
       const mems = docsResult.docs.map((doc) => Object.assign(doc.data(), { id: doc.id }));
       if (options.output) {
         fs.writeFileSync(options.output, JSON.stringify(mems, null, 2));
-        console.log('Output to JSON file');
+        console.log("Output to JSON file");
       }
 
       for (const mem of mems) {
@@ -153,13 +152,13 @@ export const addFirebaseCommands = (program: Command) => {
 
   // Rename a tag.
   program
-    .command('rename-tag')
-    .option('-u,--user-id <userId>', 'User ID', DEFAULT_USER)
-    .option('-f,--from <from>', 'From tag (without #)')
-    .option('-t,--to <to>', 'To tag (without #)')
+    .command("rename-tag")
+    .option("-u,--user-id <userId>", "User ID", DEFAULT_USER)
+    .option("-f,--from <from>", "From tag (without #)")
+    .option("-t,--to <to>", "To tag (without #)")
     .action(async (options) => {
       const userId = options.userId;
-      const docsResult = await firestore.collection('users').doc(userId).collection('mems').get();
+      const docsResult = await firestore.collection("users").doc(userId).collection("mems").get();
 
       const fromHashTag = `#${options.from}`;
       const toHashTag = `#${options.to}`;
@@ -172,9 +171,9 @@ export const addFirebaseCommands = (program: Command) => {
           console.log(`Renaming tag: ${mem.id} : ${mem.tags} --> ${newTags}`);
           console.log(`Renaming tag: ${mem.id} : ${mem.note} --> ${note}`);
           await firestore
-            .collection('users')
+            .collection("users")
             .doc(userId)
-            .collection('mems')
+            .collection("mems")
             .doc(mem.id)
             .update({ tags: newTags, note: note });
         }

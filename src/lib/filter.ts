@@ -1,6 +1,6 @@
 export interface MemListOptions {
   // sort orders
-  order: 'newest' | 'oldest';
+  order: "newest" | "oldest";
   // filters
   onlyNew: boolean;
   onlyArchived: boolean;
@@ -10,7 +10,7 @@ export interface MemListOptions {
 
 export const listOptionsByString = (filterString: string | undefined): MemListOptions => {
   const options: MemListOptions = {
-    order: 'newest',
+    order: "newest",
     onlyNew: false,
     onlyArchived: false,
     matchAllTags: [],
@@ -22,14 +22,14 @@ export const listOptionsByString = (filterString: string | undefined): MemListOp
     return options;
   }
 
-  if (filterString == '*') {
+  if (filterString == "*") {
     options.onlyArchived = true;
   }
 
   // Filter strings can either be
   // - a single tag
   // - tags separated by '+' (match all) or ',' (match any)
-  const matchAll = filterString.split('+');
+  const matchAll = filterString.split("+");
   if (matchAll.length > 0) {
     options.matchAllTags = matchAll
       .map((tag) => tag.trim())
@@ -38,7 +38,7 @@ export const listOptionsByString = (filterString: string | undefined): MemListOp
     return options;
   }
 
-  const matchAny = filterString.split(',');
+  const matchAny = filterString.split(",");
   if (matchAny.length > 1) {
     options.matchAnyTags = matchAny
       .map((tag) => tag.trim())
@@ -52,15 +52,15 @@ export const listOptionsByString = (filterString: string | undefined): MemListOp
 
 export const stringFromListOptions = (options: MemListOptions): string => {
   if (options.onlyArchived) {
-    return '*';
+    return "*";
   }
   if (options.matchAllTags.length > 0) {
-    const matchAll = options.matchAllTags.map((tag) => tag.replace('#', '')).join('+');
+    const matchAll = options.matchAllTags.map((tag) => tag.replace("#", "")).join("+");
     return matchAll;
   }
   if (options.matchAnyTags.length > 0) {
-    const matchAny = options.matchAnyTags.map((tag) => tag.replace('#', '')).join(',');
+    const matchAny = options.matchAnyTags.map((tag) => tag.replace("#", "")).join(",");
     return matchAny;
   }
-  return '';
+  return "";
 };

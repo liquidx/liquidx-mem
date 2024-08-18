@@ -1,7 +1,9 @@
-import { type Db } from 'mongodb';
-import { getUserCollection } from './db';
-import { type User } from './user.types';
-export const USER_NOT_FOUND = '';
+import { type Db } from "mongodb";
+
+import { getUserCollection } from "./db";
+import { type User } from "./user.types";
+
+export const USER_NOT_FOUND = "";
 
 export const userForSharedSecret = async (
   db: Db,

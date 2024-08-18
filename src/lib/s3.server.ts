@@ -1,7 +1,7 @@
 // S3-compat Wasabi
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { NodeHttpHandler } from '@smithy/node-http-handler';
-import { S3_REGION, S3_SERVICE_URL, S3_ACCESS_KEY, S3_SECRET_KEY } from '$env/static/private';
+import { S3_ACCESS_KEY, S3_REGION, S3_SECRET_KEY, S3_SERVICE_URL } from "$env/static/private";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 export const getS3Client = () => {
   const httpHandler = new NodeHttpHandler({ requestTimeout: 10000 });
@@ -33,7 +33,7 @@ export const writeFileToS3 = (
       return filePath;
     })
     .catch((err: any) => {
-      console.error('Error writing file to S3', err);
+      console.error("Error writing file to S3", err);
       throw err;
     });
 };

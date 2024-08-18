@@ -1,24 +1,24 @@
-import { MongoClient, type Db, ServerApiVersion } from 'mongodb';
-import { EJSON } from 'bson';
+import { EJSON } from "bson";
+import { type Db, MongoClient, ServerApiVersion } from "mongodb";
 
-const MONGO_DB_ATLAS_SERVER = 'cluster0.uakqn3b.mongodb.net';
-const MONGO_DB_ATLAS_CLUSTER_NAME = 'Cluster0';
+const MONGO_DB_ATLAS_SERVER = "cluster0.uakqn3b.mongodb.net";
+const MONGO_DB_ATLAS_CLUSTER_NAME = "Cluster0";
 
 const MONGO_DB_ATLAS_PARAMS = {
-  retryWrites: 'true',
-  w: 'majority',
+  retryWrites: "true",
+  w: "majority",
   appName: MONGO_DB_ATLAS_CLUSTER_NAME
 };
-const MONGO_DB_MEM_DB = 'mem';
-const MONGO_DB_MEM_COLLECTION = 'mems';
-const MONGO_DB_USER_COLLECTION = 'users';
-const MONGO_DB_TAG_COLLECTION = 'tags';
+const MONGO_DB_MEM_DB = "mem";
+const MONGO_DB_MEM_COLLECTION = "mems";
+const MONGO_DB_USER_COLLECTION = "users";
+const MONGO_DB_TAG_COLLECTION = "tags";
 
-const MONGO_DB_SERVER = 'db-mongodb-sfo2-liquidx-bdf6d203.mongo.ondigitalocean.com';
+const MONGO_DB_SERVER = "db-mongodb-sfo2-liquidx-bdf6d203.mongo.ondigitalocean.com";
 const MONGO_DB_PARAMS = {
-  authSource: 'admin',
-  replicaSet: 'db-mongodb-sfo2-liquidx',
-  tls: 'true'
+  authSource: "admin",
+  replicaSet: "db-mongodb-sfo2-liquidx",
+  tls: "true"
 };
 
 export const getDbUrl = (user: string, password: string): string => {
@@ -43,11 +43,11 @@ export const getTagCollection = (db: Db) => {
 };
 
 export const getDbClient = async (user: string, password: string) => {
-  console.log('  >> Connecting');
+  console.log("  >> Connecting");
   const url = getDbUrl(user, password);
   const client = new MongoClient(url);
   await client.connect();
-  console.log('  << Database Connected');
+  console.log("  << Database Connected");
   return client;
 };
 
@@ -69,7 +69,7 @@ export const executeQuery = async (
   try {
     return await command(db);
   } finally {
-    console.log('	 >> Closing');
+    console.log("	 >> Closing");
     await client.close();
   }
 };

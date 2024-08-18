@@ -1,9 +1,9 @@
-<div class="flex flex-col gap-2 p-4 max-w-lg">
+<div class="flex max-w-lg flex-col gap-2 p-4">
   <header class="text-md font-bold">
     <h1><a href="/">#mem</a></h1>
   </header>
 
-  <main class="gap-2 flex flex-col">
+  <main class="flex flex-col gap-2">
     <p>#mem is a memory service that allows you to store text, photos and urls.</p>
     <p>It is designed to be very simple to get data into your account.</p>
 

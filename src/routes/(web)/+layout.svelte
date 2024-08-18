@@ -1,23 +1,23 @@
 <script lang="ts">
-  import { ModeWatcher, setMode } from 'mode-watcher';
+  import { ModeWatcher, setMode } from "mode-watcher";
 
-  import { sharedUser } from '$lib/firebase-shared';
-  import { sharedFirebaseApp } from '$lib/firebase-shared';
-  import { initializeFirebase } from '$lib/firebase-init';
-  import SignIn from '$lib/svelte/SignIn.svelte';
-  import { Toaster } from '$lib/components/ui/sonner';
+  import { sharedUser } from "$lib/firebase-shared";
+  import { sharedFirebaseApp } from "$lib/firebase-shared";
+  import { initializeFirebase } from "$lib/firebase-init";
+  import SignIn from "$lib/svelte/SignIn.svelte";
+  import { Toaster } from "$lib/components/ui/sonner";
 
-  import '../../app.css';
-  import { onMount } from 'svelte';
-  import { SunIcon } from 'lucide-svelte';
-  import Button from '$lib/components/ui/button/button.svelte';
+  import "../../app.css";
+  import { onMount } from "svelte";
+  import { SunIcon } from "lucide-svelte";
+  import Button from "$lib/components/ui/button/button.svelte";
 
   $sharedFirebaseApp = initializeFirebase();
 
-  let mode: 'dark' | 'light' | 'system' = 'system';
+  let mode: "dark" | "light" | "system" = "system";
 
   const toggleMode = () => {
-    mode = mode === 'light' ? 'dark' : 'light';
+    mode = mode === "light" ? "dark" : "light";
     setMode(mode);
   };
 
@@ -29,9 +29,9 @@
 <ModeWatcher />
 <Toaster />
 <div id="app">
-  <div class="p-4 flex flex-col w-full overflow-x-hidden md:flex-row">
-    <header class="mt-0 p-2 w-screen md:min-h-screen md:w-48">
-      <div class="flex flex-row justify-between items-center">
+  <div class="flex w-full flex-col overflow-x-hidden p-4 md:flex-row">
+    <header class="mt-0 w-screen p-2 md:min-h-screen md:w-48">
+      <div class="flex flex-row items-center justify-between">
         <h1 class="text-md py-2 font-bold text-primary">
           <a href="/">#mem</a>
         </h1>

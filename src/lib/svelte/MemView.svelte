@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { DateTime } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
+  import { DateTime } from "luxon";
+  import { createEventDispatcher } from "svelte";
 
-  import type { Mem, MemPhoto } from '$lib/common/mems';
-  import { Button } from '$lib/components/ui/button';
-  import { Input } from '$lib/components/ui/input';
-  import * as Popover from '$lib/components/ui/popover';
+  import type { Mem, MemPhoto } from "$lib/common/mems";
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import * as Popover from "$lib/components/ui/popover";
 
-  import AutoResizeTextarea from '$lib/thirdparty/autoresize-textarea/AutoresizeTextarea.svelte';
-  import { getCachedStorageUrl } from '$lib/storage';
-  import { ArchiveIcon, EyeIcon, ImageUpIcon, PenLineIcon, Trash2Icon } from 'lucide-svelte';
+  import AutoResizeTextarea from "$lib/thirdparty/autoresize-textarea/AutoresizeTextarea.svelte";
+  import { getCachedStorageUrl } from "$lib/storage";
+  import { ArchiveIcon, EyeIcon, ImageUpIcon, PenLineIcon, Trash2Icon } from "lucide-svelte";
 
   type MediaUrl = {
     photo?: MemPhoto;
@@ -22,7 +22,7 @@
   export let mem: Mem;
 
   let maxChars = 1000;
-  let mediaImageUrl = '';
+  let mediaImageUrl = "";
   let displayPhotos: MediaUrl[] = [];
   let displayVideos: MediaUrl[] = [];
   let isDragging = false;
@@ -33,24 +33,24 @@
   const dispatch = createEventDispatcher();
 
   function onArchive() {
-    console.log('onArchive');
-    dispatch('archive', { mem });
+    console.log("onArchive");
+    dispatch("archive", { mem });
   }
 
   function onUnarchive() {
-    dispatch('unarchive', { mem });
+    dispatch("unarchive", { mem });
   }
 
   function onAnnotate() {
-    dispatch('annotate', { mem });
+    dispatch("annotate", { mem });
   }
 
   function onDelete() {
-    dispatch('delete', { mem });
+    dispatch("delete", { mem });
   }
 
   function onSeen() {
-    dispatch('seen', { mem });
+    dispatch("seen", { mem });
   }
 
   function onUploadDidClick() {
@@ -60,8 +60,8 @@
   }
 
   function onRemovePhoto(photo: MemPhoto | undefined) {
-    console.log('onRemovePhoto', photo);
-    dispatch('removePhoto', { mem, photo });
+    console.log("onRemovePhoto", photo);
+    dispatch("removePhoto", { mem, photo });
   }
 
   $: {
@@ -73,33 +73,33 @@
 
   function getPrettyDate(mem_: Mem) {
     if (!mem_.addedMs) {
-      return '';
+      return "";
     }
 
     const date = new Date(mem_.addedMs);
-    return DateTime.fromJSDate(date).toFormat('yyyy-MM-dd hh:mm');
+    return DateTime.fromJSDate(date).toFormat("yyyy-MM-dd hh:mm");
   }
 
   function getPrettyTitle(mem_: Mem) {
     if (!mem_) {
-      return '';
+      return "";
     }
 
     if (mem_.title) {
       return mem_.title;
     } else if (mem_.url) {
-      return mem_.url.replace(/http[s]:\/\//, '');
+      return mem_.url.replace(/http[s]:\/\//, "");
     } else {
-      return '';
+      return "";
     }
   }
 
   function getShortDescription(mem_: Mem) {
     if (!mem_.description) {
-      return '';
+      return "";
     }
     if (mem_.description.length > maxChars) {
-      return mem_.description.substring(0, maxChars) + '...';
+      return mem_.description.substring(0, maxChars) + "...";
     }
     return mem_.description;
   }
@@ -114,8 +114,8 @@
       return;
     }
 
-    console.log('fileDidChange for mem', mem);
-    dispatch('fileUpload', { mem, files: target.files });
+    console.log("fileDidChange for mem", mem);
+    dispatch("fileUpload", { mem, files: target.files });
     // TODO: Check if there are issues if we clear this too early?
     // target.value = '';
   }
@@ -139,32 +139,32 @@
 
     console.log(e.dataTransfer.files);
     isDragging = false;
-    dispatch('fileUpload', { mem, files: dataTransfer.files });
+    dispatch("fileUpload", { mem, files: dataTransfer.files });
   }
 
   const noteDidChange = async (e: FocusEvent) => {
-    console.log('noteDidChange', e);
+    console.log("noteDidChange", e);
     const target: HTMLInputElement = e.target as HTMLInputElement;
     if (!target) {
       return;
     }
     const noteValue = target.value;
-    console.log('noteDidChange', noteValue);
+    console.log("noteDidChange", noteValue);
     if (noteValue != mem.note) {
-      dispatch('noteChanged', { mem, text: noteValue });
+      dispatch("noteChanged", { mem, text: noteValue });
       target.innerText = noteValue;
     }
   };
 
   function descriptionDidChange(e: FocusEvent): void {
-    console.log('descriptionDidChange', e);
+    console.log("descriptionDidChange", e);
     const target: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
     if (!target) {
       return;
     }
     const descriptionValue = target.value;
     if (descriptionValue != mem.description) {
-      dispatch('descriptionChanged', { mem, text: descriptionValue });
+      dispatch("descriptionChanged", { mem, text: descriptionValue });
     }
   }
 
@@ -174,17 +174,17 @@
       if (!linkEl) {
         return;
       }
-      const linkUrl = linkEl.getAttribute('href');
-      linkEl.removeAttribute('href');
+      const linkUrl = linkEl.getAttribute("href");
+      linkEl.removeAttribute("href");
 
-      titleEl.setAttribute('contenteditable', 'true');
+      titleEl.setAttribute("contenteditable", "true");
       titleEl.focus();
       titleEl.onblur = () => {
         if (titleEl) {
-          dispatch('titleChanged', { mem, text: titleEl.innerText });
-          titleEl.removeAttribute('contenteditable');
+          dispatch("titleChanged", { mem, text: titleEl.innerText });
+          titleEl.removeAttribute("contenteditable");
           if (linkUrl) {
-            linkEl.setAttribute('href', linkUrl);
+            linkEl.setAttribute("href", linkUrl);
           }
         }
       };
@@ -193,24 +193,24 @@
 
   async function getMediaImageUrl() {
     if (mem && mem.media && mem.media.path) {
-      console.log('Getting url', mem.media.path);
+      console.log("Getting url", mem.media.path);
       try {
-        console.log('Got url', mem.media.path);
+        console.log("Got url", mem.media.path);
         mediaImageUrl = getCachedStorageUrl(mem.media.path);
       } catch (e) {
         // Silent fail
       }
     } else {
-      mediaImageUrl = '';
+      mediaImageUrl = "";
     }
   }
 
   const onUrlDidKeyUp = (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       const target = e.target as HTMLInputElement;
       if (target) {
-        console.log('onUrlKeyUp', target.value);
-        dispatch('urlChanged', { mem, url: target.value });
+        console.log("onUrlKeyUp", target.value);
+        dispatch("urlChanged", { mem, url: target.value });
       }
     }
   };
@@ -228,12 +228,12 @@
         if (photo.cachedMediaPath) {
           photos.push({
             url: getCachedStorageUrl(photo.cachedMediaPath),
-            status: 'cached',
+            status: "cached",
             photo: photo
           });
         } else {
           if (photo.mediaUrl) {
-            photos.push({ photo: photo, url: photo.mediaUrl, status: 'live' });
+            photos.push({ photo: photo, url: photo.mediaUrl, status: "live" });
           }
         }
       }
@@ -251,10 +251,10 @@
             videos.push({
               url: url,
               posterUrl: video.posterUrl,
-              status: 'cached'
+              status: "cached"
             });
           } catch (e) {
-            console.log('Error getting cached video', e);
+            console.log("Error getting cached video", e);
           }
         } else {
           if (video.mediaUrl) {
@@ -262,7 +262,7 @@
               video: video,
               url: video.mediaUrl,
               posterUrl: video.posterUrl,
-              status: 'live'
+              status: "live"
             });
           }
         }
@@ -276,25 +276,25 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class={'mem flex flex-col rounded-xl my-4 md:mx-2 py-4 px-4 md:px-6  text-muted-foreground ' +
-    (isDragging ? ' bg-yellow-100' : 'bg-card')}
+  class={"mem my-4 flex flex-col rounded-xl px-4 py-4 text-muted-foreground md:mx-2  md:px-6 " +
+    (isDragging ? " bg-yellow-100" : "bg-card")}
   on:dragover={ondragover}
   on:dragleave={ondragleave}
   on:drop={ondrop}
 >
   <div>
     <AutoResizeTextarea
-      class="my-2 py-2 rounded-xl bg-input px-4 min-h-[1rem] h-8 w-full"
+      class="my-2 h-8 min-h-[1rem] w-full rounded-xl bg-input px-4 py-2"
       maxRows={4}
       on:change={() => {
-        console.log('chage');
+        console.log("chage");
       }}
       on:blur={noteDidChange}
       value={mem.note}
     />
 
     {#if mem.url}
-      <div class="text-lg px-1 py-1 max-h-48 overflow-clip">
+      <div class="max-h-48 overflow-clip px-1 py-1 text-lg">
         <a href={mem.url} target="_blank" class="font-bold">
           <span class="title-text" bind:this={titleEl}>{getPrettyTitle(mem)}</span>
         </a>
@@ -305,7 +305,7 @@
     {/if}
 
     <AutoResizeTextarea
-      class="my-2 py-2 rounded-xl bg-input px-4 h-8 w-full"
+      class="my-2 h-8 w-full rounded-xl bg-input px-4 py-2"
       minRows={2}
       maxRows={10}
       on:blur={descriptionDidChange}
@@ -327,7 +327,7 @@
           <div>
             <img src={photo.url} alt={photo.status} title={photo.status} class="mt-4 rounded-md" />
             <button
-              class="text-xs text-right text-muted-foreground w-full"
+              class="w-full text-right text-xs text-muted-foreground"
               on:click={() => onRemovePhoto(photo.photo)}
             >
               Remove
@@ -359,7 +359,7 @@
       </ul>
     {/if}
 
-    <div class="my-2 text-muted-foreground text-xs" title={mem._id}>
+    <div class="my-2 text-xs text-muted-foreground" title={mem._id}>
       <div>{getPrettyDate(mem)}</div>
       <div>
         <a href={`/mem/${mem._id}`} class="hover:text-secondary-foreground">{mem._id}</a>
@@ -368,7 +368,7 @@
       <Popover.Root>
         <Popover.Trigger
           ><div class="max-h-48 overflow-y-clip">
-            <button class="text-left overflow-x-clip hover:text-secondary-foreground"
+            <button class="overflow-x-clip text-left hover:text-secondary-foreground"
               >{mem.url} (edit)</button
             >
           </div>

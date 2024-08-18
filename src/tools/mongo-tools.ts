@@ -1,10 +1,11 @@
-import process from 'process';
-import fs from 'fs';
-import type { Command } from 'commander';
-import type { Mem } from '../lib/common/mems';
-import { executeQuery, getDbClient } from '../lib/db.js';
+import type { Command } from "commander";
+import fs from "fs";
+import process from "process";
 
-const DEFAULT_MEM_USER_ID = 'BB8zGVrCbrQ2QryHyiZNaUZJjQ93';
+import type { Mem } from "../lib/common/mems";
+import { executeQuery, getDbClient } from "../lib/db.js";
+
+const DEFAULT_MEM_USER_ID = "BB8zGVrCbrQ2QryHyiZNaUZJjQ93";
 
 const importMems = async (mems: Mem[], memUserId: string, dbUser: string, dbPassword: string) => {
   let hasNoId: number = 0;
@@ -23,23 +24,23 @@ const importMems = async (mems: Mem[], memUserId: string, dbUser: string, dbPass
 
   const client = await getDbClient(dbUser, dbPassword);
   await executeQuery(client, async (db) => {
-    const collection = db.collection('mems');
+    const collection = db.collection("mems");
     //await db.command({ ping: 1 });
     await collection.deleteMany({});
     await collection.insertMany(writableMems);
-    console.log('Success');
+    console.log("Success");
   });
 };
 
 export const addMongoCommands = (program: Command, dbUser: string, dbPassword: string) => {
   program
-    .command('import-mems')
-    .description('Import mems from a file')
-    .option('-u --user-id <userId>', 'User ID', DEFAULT_MEM_USER_ID)
-    .option('-f, --file <file>', 'File to import')
+    .command("import-mems")
+    .description("Import mems from a file")
+    .option("-u --user-id <userId>", "User ID", DEFAULT_MEM_USER_ID)
+    .option("-f, --file <file>", "File to import")
     .action(async (options: any) => {
       const file = options.file;
-      const data = fs.readFileSync(file, 'utf8');
+      const data = fs.readFileSync(file, "utf8");
       const mems = JSON.parse(data);
       const memUser = options.userId;
 
@@ -47,8 +48,8 @@ export const addMongoCommands = (program: Command, dbUser: string, dbPassword: s
     });
 
   program
-    .command('ping')
-    .description('ping')
+    .command("ping")
+    .description("ping")
     .action(async (options: any) => {
       const client = await getDbClient(dbUser, dbPassword);
       await executeQuery(client, async (db) => {

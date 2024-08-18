@@ -1,14 +1,14 @@
-import { Lucia, generateId, type User, type UserId } from 'lucia';
-import { dev } from '$app/environment';
-import { MongodbAdapter } from '@lucia-auth/adapter-mongodb';
-import { type MongoClient, type Collection } from 'mongodb';
-import { type DatabaseUserAttributes } from '$lib/auth.types';
-import { MONGO_AUTH_DB } from '$lib/db';
+import { dev } from "$app/environment";
+import { type DatabaseUserAttributes } from "$lib/auth.types";
+import { MONGO_AUTH_DB } from "$lib/db";
+import { MongodbAdapter } from "@lucia-auth/adapter-mongodb";
+import { Lucia, type User, type UserId, generateId } from "lucia";
+import { type Collection, type MongoClient } from "mongodb";
 
 // Collection names in the database.
 const AUTH_COLLECTIONS = {
-  Users: 'auth-users',
-  Sessions: 'auth-sessions'
+  Users: "auth-users",
+  Sessions: "auth-sessions"
 };
 
 // This is a re-declaration of the UserDoc and SessionDoc types from the adapter-mongodb package.
@@ -74,7 +74,7 @@ export const updateUser = async (
     // @ts-ignore - Using a string userId rather than ObjectId which is allowed, but not to typescript.
     .updateOne({ _id: userId }, { $set: updatedInfo });
 
-  console.log('updateUser', result);
+  console.log("updateUser", result);
   return result;
 };
 
@@ -115,13 +115,13 @@ export const addNewUser = async (
 // token exchange as idToken.
 export const decodeProfileFromIdToken = (idToken: string): { [key: string]: any } | undefined => {
   // https://github.com/lucia-auth/lucia/blob/v2/packages/oauth/src/core/oidc.ts
-  const parts = idToken.split('.');
+  const parts = idToken.split(".");
   const base64UrlPayload = parts[1];
   // Convert from URL encoded base64 to regular base64.
-  const base64 = base64UrlPayload.replace(/-/g, '+').replace(/_/g, '/');
-  console.log('base64UrlPayload', base64);
+  const base64 = base64UrlPayload.replace(/-/g, "+").replace(/_/g, "/");
+  console.log("base64UrlPayload", base64);
   const payload = atob(base64);
-  console.log('payload', payload);
+  console.log("payload", payload);
   const decodedJson = JSON.parse(payload) as { [key: string]: any };
   if (!decodedJson) {
     return;
@@ -131,7 +131,7 @@ export const decodeProfileFromIdToken = (idToken: string): { [key: string]: any 
 
 // Some type magic that Lucia wants in order for the DatabaseUserAttributes to be
 // defined in the type definitions of Lucia for `User`
-declare module 'lucia' {
+declare module "lucia" {
   interface Register {
     Lucia: Lucia;
     DatabaseUserAttributes: DatabaseUserAttributes;

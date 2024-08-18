@@ -15,3 +15,6 @@ yarn.lock
 
 # Ignore shadcn-svelte components
 src/lib/components/ui
+
+# Ignore the test fixtures
+test/fixtures

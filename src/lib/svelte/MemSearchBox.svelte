@@ -1,13 +1,13 @@
 <script lang="ts">
-  import Input from '$lib/components/ui/input/input.svelte';
-  import { createEventDispatcher } from 'svelte';
+  import Input from "$lib/components/ui/input/input.svelte";
+  import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
-  let searchQuery: string = '';
+  let searchQuery: string = "";
 
   const onInputDidKeyUp = (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      dispatch('searchQueryDidChange', { query: searchQuery });
+    if (e.key === "Enter") {
+      dispatch("searchQueryDidChange", { query: searchQuery });
     }
   };
 </script>

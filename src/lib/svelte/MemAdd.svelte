@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { DateTime } from 'luxon';
-  import { toast } from 'svelte-sonner';
+  import { DateTime } from "luxon";
+  import { toast } from "svelte-sonner";
 
-  import { parseText } from '$lib/common/parser';
-  import { sharedUser } from '$lib/firebase-shared';
-  import { addMem } from '$lib/mem.client';
-  import { createEventDispatcher } from 'svelte';
-  import { Button } from '$lib/components/ui/button/index.js';
-  import { cn } from '$lib/utils';
+  import { parseText } from "$lib/common/parser";
+  import { sharedUser } from "$lib/firebase-shared";
+  import { addMem } from "$lib/mem.client";
+  import { createEventDispatcher } from "svelte";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import { cn } from "$lib/utils";
 
   let pending = false;
-  let rawInput: string = '';
+  let rawInput: string = "";
   const dispatch = createEventDispatcher();
 
   const addNewMem = async () => {
@@ -27,20 +27,20 @@
     const addedMem = await addMem(mem, $sharedUser);
     pending = false;
     if (addedMem) {
-      dispatch('memDidAdd', { mem: addedMem });
-      rawInput = '';
+      dispatch("memDidAdd", { mem: addedMem });
+      rawInput = "";
     } else {
-      toast.error('Failed to add mem');
+      toast.error("Failed to add mem");
     }
   };
 </script>
 
-<div class="flex flex-col w-full py-1 px-0 md:px-1">
+<div class="flex w-full flex-col px-0 py-1 md:px-1">
   <textarea
     bind:value={rawInput}
     placeholder="Enter text, urls, #tags here."
-    class="p-3 m-0.5 rounded-xl bg-input text-input-foreground w-full h-16"
+    class="text-input-foreground m-0.5 h-16 w-full rounded-xl bg-input p-3"
     disabled={pending}
   />
-  <Button class={cn('my-2', pending ? 'animate-pulse' : '')} on:click={addNewMem}>Add</Button>
+  <Button class={cn("my-2", pending ? "animate-pulse" : "")} on:click={addNewMem}>Add</Button>
 </div>

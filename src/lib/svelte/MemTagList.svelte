@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { getTags, getSavedViews } from '$lib/mem.client.js';
-  import type { TagListItem } from '$lib/tags.types';
-  import { sharedUser } from '$lib/firebase-shared';
-  import type { UserView } from '$lib/user.types';
-  import type { MemListOptions } from '$lib/filter';
-  import { cn } from '$lib/utils';
+  import { getTags, getSavedViews } from "$lib/mem.client.js";
+  import type { TagListItem } from "$lib/tags.types";
+  import { sharedUser } from "$lib/firebase-shared";
+  import type { UserView } from "$lib/user.types";
+  import type { MemListOptions } from "$lib/filter";
+  import { cn } from "$lib/utils";
 
   export let currentTagFilters: MemListOptions | undefined = undefined;
 
@@ -35,7 +35,7 @@
   };
 
   const pathForView = (view: string) => {
-    let hashesRemoved = view.replaceAll('#', '');
+    let hashesRemoved = view.replaceAll("#", "");
     return `/tag/${hashesRemoved}/`;
   };
 
@@ -58,16 +58,16 @@
   };
 
   const isArchive = (filters_: MemListOptions | undefined) => {
-    return filters_ && filters_.onlyArchived && filters_.matchAllTags.includes('#*');
+    return filters_ && filters_.onlyArchived && filters_.matchAllTags.includes("#*");
   };
 </script>
 
-<section class="w-screen p-2 md:w-48 flex flex-row flex-wrap md:flex-col justify-start">
+<section class="flex w-screen flex-row flex-wrap justify-start p-2 md:w-48 md:flex-col">
   <a
     href="/"
     class={cn(
-      'block md:px-2 px-1 py-1 whitespace-nowrap hover:underline font-bold rounded-sm',
-      isNew(currentTagFilters) ? 'bg-primary text-white' : ''
+      "block whitespace-nowrap rounded-sm px-1 py-1 font-bold hover:underline md:px-2",
+      isNew(currentTagFilters) ? "bg-primary text-white" : ""
     )}
   >
     🆕 New
@@ -75,14 +75,14 @@
   <a
     href="/tag/*"
     class={cn(
-      'block md:px-2 px-1 py-1 whitespace-nowrap hover:underline font-bold rounded-sm',
-      isArchive(currentTagFilters) ? 'bg-primary text-white' : ''
+      "block whitespace-nowrap rounded-sm px-1 py-1 font-bold hover:underline md:px-2",
+      isArchive(currentTagFilters) ? "bg-primary text-white" : ""
     )}>📦 Archive</a
   >
   {#each views as view}
     <a
       href={pathForView(view.tags)}
-      class="block md:px-2 px-1 py-1 whitespace-nowrap hover:underline rounded-sm"
+      class="block whitespace-nowrap rounded-sm px-1 py-1 hover:underline md:px-2"
     >
       ⭐️ {view.tags}
     </a>
@@ -91,8 +91,8 @@
     <a
       href={pathForView(tag.tag)}
       class={cn(
-        'block md:px-2 px-1 py-1 whitespace-nowrap hover:underline  rounded-sm',
-        isSelected(tag.tag, currentTagFilters) ? 'bg-primary text-white' : ''
+        "block whitespace-nowrap rounded-sm px-1 py-1 hover:underline  md:px-2",
+        isSelected(tag.tag, currentTagFilters) ? "bg-primary text-white" : ""
       )}
     >
       {tag.icon}
@@ -102,7 +102,7 @@
   {#if !showAll}
     <button
       on:click|preventDefault={showAllDidClick}
-      class="block md:px-2 px-1 py-1 whitespace-nowrap hover:underline text-left rounded-md"
+      class="block whitespace-nowrap rounded-md px-1 py-1 text-left hover:underline md:px-2"
     >
       More..
     </button>

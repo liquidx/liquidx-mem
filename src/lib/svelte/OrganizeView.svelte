@@ -1,16 +1,16 @@
 <script lang="ts">
-  import axios from 'axios';
-  import { toast } from 'svelte-sonner';
+  import axios from "axios";
+  import { toast } from "svelte-sonner";
 
-  import { sharedUser } from '$lib/firebase-shared';
-  import type { Mem } from '$lib/common/mems';
-  import * as memModifiers from '$lib/mem.client';
+  import { sharedUser } from "$lib/firebase-shared";
+  import type { Mem } from "$lib/common/mems";
+  import * as memModifiers from "$lib/mem.client";
 
-  import MemView from '$lib/svelte/MemView.svelte';
-  import type { MemListRequest } from '$lib/request.types';
-  import { orderBy } from 'lodash-es';
+  import MemView from "$lib/svelte/MemView.svelte";
+  import type { MemListRequest } from "$lib/request.types";
+  import { orderBy } from "lodash-es";
 
-  export let filter: string = '';
+  export let filter: string = "";
 
   let selectedMem: Mem | undefined;
   let mems: Mem[] = [];
@@ -28,7 +28,7 @@
     duplicateMems = [];
     mems_.forEach((mem) => {
       if (mem.url) {
-        const prettyUrl = mem.url.replace('^http[s]?://', '');
+        const prettyUrl = mem.url.replace("^http[s]?://", "");
         if (memsByUrl[prettyUrl]) {
           duplicateMems.push(memsByUrl[prettyUrl]);
           duplicateMems.push(mem);
@@ -55,7 +55,7 @@
     };
 
     if (withFilter) {
-      params.matchAllTags = withFilter.split(',').map((tag) => `#${tag}`);
+      params.matchAllTags = withFilter.split(",").map((tag) => `#${tag}`);
     }
 
     const result = await axios.post(`/_api/mem/list`, params, { headers });
@@ -63,8 +63,8 @@
     if (result.data && result.data.mems) {
       mems = orderBy(
         result.data.mems,
-        [(m) => (m.url ? m.url.replace('^http[s]?://', '') : m.url), 'addedMs'],
-        ['asc', 'desc']
+        [(m) => (m.url ? m.url.replace("^http[s]?://", "") : m.url), "addedMs"],
+        ["asc", "desc"]
       );
     }
 
@@ -87,7 +87,7 @@
   ////
 
   const annotateMem = async (e: CustomEvent) => {
-    toast('Annotating...');
+    toast("Annotating...");
     let mem: Mem = e.detail.mem;
     if (mem && $sharedUser) {
       const response: MemAnnotateResponse | undefined = await memModifiers.annotateMem(
@@ -95,18 +95,18 @@
         $sharedUser
       );
       if (!response) {
-        toast.error('Failed to annotate...');
+        toast.error("Failed to annotate...");
       }
       if (response) {
         updateVisibleMems(mems, response.mem, response.mem._id);
-        toast.success('Done');
+        toast.success("Done");
       }
     }
   };
 
   const deleteMem = async (e: CustomEvent) => {
     let mem: Mem = e.detail.mem;
-    console.log('deleteMem', mem);
+    console.log("deleteMem", mem);
     if (mem && $sharedUser) {
       const deleteMemId = await memModifiers.deleteMem(mem, $sharedUser);
       if (deleteMemId) {
@@ -120,7 +120,7 @@
     let photo: MemPhoto = e.detail.photo;
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.removePhotoFromMem(mem, photo, $sharedUser);
-      console.log('removePhotoFromMem', updatedMem);
+      console.log("removePhotoFromMem", updatedMem);
       if (updatedMem) {
         updateVisibleMems(mems, updatedMem, mem._id);
       }
@@ -129,7 +129,7 @@
 
   const archiveMem = async (e: CustomEvent) => {
     let mem: Mem = e.detail.mem;
-    console.log('archiveMem');
+    console.log("archiveMem");
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.archiveMem(mem, $sharedUser);
       if (updatedMem) {
@@ -140,7 +140,7 @@
 
   const seenMem = async (e: CustomEvent) => {
     let mem: Mem = e.detail.mem;
-    console.log('seenMem');
+    console.log("seenMem");
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.seenMem(mem, $sharedUser);
       if (updatedMem) {
@@ -163,7 +163,7 @@
     const mem: Mem = e.detail.mem;
     const text = e.detail.text;
     if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(mem, 'note', text, $sharedUser);
+      const updatedMem = await memModifiers.updatePropertyForMem(mem, "note", text, $sharedUser);
       if (updatedMem) {
         updateVisibleMems(mems, updatedMem, mem._id);
       }
@@ -174,7 +174,7 @@
     let mem: Mem = e.detail.mem;
     let text = e.detail.text;
     if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(mem, 'title', text, $sharedUser);
+      const updatedMem = await memModifiers.updatePropertyForMem(mem, "title", text, $sharedUser);
       if (updatedMem) {
         updateVisibleMems(mems, updatedMem, mem._id);
       }
@@ -185,7 +185,7 @@
     let mem: Mem = e.detail.mem;
     let text = e.detail.url;
     if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(mem, 'url', text, $sharedUser);
+      const updatedMem = await memModifiers.updatePropertyForMem(mem, "url", text, $sharedUser);
       if (updatedMem) {
         updateVisibleMems(mems, updatedMem, mem._id);
       }
@@ -198,7 +198,7 @@
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.updatePropertyForMem(
         mem,
-        'description',
+        "description",
         text,
         $sharedUser
       );
@@ -224,8 +224,8 @@
   <title>#mem</title>
 </svelte:head>
 
-<div class="flex flex-col w-full overflow-x-hidden md:flex-row">
-  <main class="p-2 max-w-full flex-grow">
+<div class="flex w-full flex-col overflow-x-hidden md:flex-row">
+  <main class="max-w-full flex-grow p-2">
     <h1>Duplicated</h1>
     <div>
       {#each duplicateMems as mem}
@@ -257,7 +257,7 @@
       {/each}
     </div>
   </main>
-  <div class="fixed top-4 right-4 p-2 w-[480px]">
+  <div class="fixed right-4 top-4 w-[480px] p-2">
     {#if selectedMem}
       <MemView
         mem={selectedMem}

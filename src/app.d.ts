@@ -1,4 +1,4 @@
-import type { MongoClient } from 'mongodb';
+import type { MongoClient } from "mongodb";
 
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces

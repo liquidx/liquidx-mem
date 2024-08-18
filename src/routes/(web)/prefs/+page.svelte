@@ -4,15 +4,15 @@
     updateSavedViews,
     getWriteSecret,
     updateSecrets
-  } from '$lib/mem.client.js';
-  import { sharedUser } from '$lib/firebase-shared';
-  import { Input } from '$lib/components/ui/input/index.js';
-  import { Button } from '$lib/components/ui/button/index.js';
-  import type { UserView, UserWriteSecret } from '$lib/user.types';
+  } from "$lib/mem.client.js";
+  import { sharedUser } from "$lib/firebase-shared";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import type { UserView, UserWriteSecret } from "$lib/user.types";
 
-  let writeSecret: UserWriteSecret = '';
+  let writeSecret: UserWriteSecret = "";
   let views: UserView[] = [];
-  let newView = '';
+  let newView = "";
 
   $: {
     if ($sharedUser) {
@@ -27,15 +27,15 @@
     }
 
     let savedViews = await getSavedViews($sharedUser);
-    console.log('savedViews', savedViews);
+    console.log("savedViews", savedViews);
     if (savedViews && savedViews.length > 0) {
       views = savedViews;
-      console.log('views', views);
+      console.log("views", views);
     }
   };
 
   const saveViews = () => {
-    console.log('saveViews');
+    console.log("saveViews");
     if (!$sharedUser) {
       return;
     }
@@ -45,7 +45,7 @@
   const addView = () => {
     views.push({ tags: newView });
     views = views; // force reactivity
-    newView = '';
+    newView = "";
     saveViews();
   };
 
@@ -93,7 +93,7 @@
   <div class="mb-4">
     <div class="font-bold">Views</div>
     {#each views as view, index}
-      <div class="flex items-center justify-between space-x-4 my-1">
+      <div class="my-1 flex items-center justify-between space-x-4">
         <Input type="text" value={view.tags} />
         <Button variant="secondary" data-index={index} on:click={deleteView}>Delete</Button>
       </div>

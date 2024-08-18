@@ -1,7 +1,8 @@
-import { getAllMems } from '$lib/mem.db.server';
-import { htmlEscape } from '$lib/html';
-import { getDb } from '$lib/db';
-import type { RequestHandler } from './$types';
+import { getDb } from "$lib/db";
+import { htmlEscape } from "$lib/html";
+import { getAllMems } from "$lib/mem.db.server";
+
+import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ params, locals }) => {
   // TODO: Verify the user ID using a secret code

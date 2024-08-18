@@ -1,6 +1,5 @@
-import { getMems } from '$lib/mem.db.server';
-
-import { getDb } from '$lib/db';
+import { getDb } from "$lib/db";
+import { getMems } from "$lib/mem.db.server";
 
 export const load = async ({ params, locals }) => {
   // TODO: Verify the user ID using a secret code
