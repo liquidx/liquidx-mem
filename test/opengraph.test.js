@@ -32,5 +32,25 @@ describe("parseOpenGraph", () => {
     const result = parseOpenGraph(content);
     console.log(result);
     expect(result).toHaveProperty("title");
+    expect(result).toHaveProperty("images");
+    expect(result.images.length).toBeGreaterThan(0);
+    expect(result.images[0]).toHaveProperty("url");
+  });
+
+  it("should get opengraph images from kottke", async () => {
+    const content = readFileSync("./test/fixtures/kottke.html", "utf-8");
+
+    const result = parseOpenGraph(content);
+    console.log(result);
+    expect(result).not.toHaveProperty("images");
+  });
+  it("should get opengraph images from substack", async () => {
+    const content = readFileSync("./test/fixtures/substack.html", "utf-8");
+
+    const result = parseOpenGraph(content);
+    console.log(result);
+    expect(result).toHaveProperty("images");
+    expect(result.images.length).toBeGreaterThan(0);
+    expect(result.images[0]).toHaveProperty("url");
   });
 });

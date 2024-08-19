@@ -74,7 +74,7 @@ export const parseOpenGraph = (content: string): OpenGraphTags => {
     }
 
     // Handle the content from the images.
-    if (propertyKey.startsWith("image")) {
+    if (propertyKey.startsWith("image") && propertyValue.trim().length > 0) {
       if (propertyKey === "image" || propertyKey === "image:url") {
         if (currentImage) {
           images.push(currentImage);
@@ -89,7 +89,7 @@ export const parseOpenGraph = (content: string): OpenGraphTags => {
       } else if (propertyKey === "image:alt" && currentImage) {
         currentImage.alt = propertyValue;
       }
-    } else if (propertyKey.startsWith("video")) {
+    } else if (propertyKey.startsWith("video") && propertyValue.trim().length > 0) {
       if (propertyKey === "video" || propertyKey === "video:url") {
         if (currentVideo) {
           videos.push(currentVideo);
@@ -102,7 +102,7 @@ export const parseOpenGraph = (content: string): OpenGraphTags => {
       } else if (propertyKey === "video:type" && currentVideo) {
         currentVideo.type = propertyValue;
       }
-    } else if (propertyKey.startsWith("audio")) {
+    } else if (propertyKey.startsWith("audio") && propertyValue.trim().length > 0) {
       if (propertyKey === "audio") {
         if (currentAudio) {
           audios.push(currentAudio);
@@ -111,7 +111,7 @@ export const parseOpenGraph = (content: string): OpenGraphTags => {
       } else if (propertyKey === "audio:type" && currentAudio) {
         currentAudio.type = propertyValue;
       }
-    } else {
+    } else if (propertyValue.trim().length > 0) {
       ogTags[propertyKey] = propertyValue;
     }
   }
