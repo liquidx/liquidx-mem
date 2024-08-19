@@ -25,4 +25,12 @@ describe("parseOpenGraph", () => {
     console.log(result);
     expect(result).toHaveProperty("title");
   });
+
+  it("should get opengraph images from medium", async () => {
+    const content = readFileSync("./test/fixtures/medium.html", "utf-8");
+
+    const result = parseOpenGraph(content);
+    console.log(result);
+    expect(result).toHaveProperty("title");
+  });
 });

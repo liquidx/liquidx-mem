@@ -40,12 +40,12 @@ export interface OpenGraphTags {
 const DISCORD_BOT_USER_AGENT = "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)";
 
 export const parseOpenGraph = (content: string): OpenGraphTags => {
-  const ogRegex = /<meta\s+(content|property)="([^"]*)"\s+(content|property)="([^"]*)"/g;
+  const ogRegex = /<meta\s+[^>]*?\s?(content|property)="([^"]*)"\s+(content|property)="([^"]*)"/g;
   const ogTags: OpenGraphTags = {};
 
-  let images = [];
-  let videos = [];
-  let audios = [];
+  const images = [];
+  const videos = [];
+  const audios = [];
 
   let currentImage: OpenGraphImage | null = null;
   let currentVideo: OpenGraphVideo | null = null;
