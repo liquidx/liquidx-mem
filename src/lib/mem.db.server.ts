@@ -110,9 +110,10 @@ export const getMems = async (
   if (request && request.searchQuery) {
     const stages: any = [];
     stages.push({
-      $search: {
-        index: "text",
-        text: { query: request.searchQuery, path: ["title", "description", "url"] }
+      $match: {
+        $text: {
+          $search: request.searchQuery
+        }
       }
     });
 

@@ -156,3 +156,11 @@ node tool.cjs get-all
 # Mirrors any media that are on the mems to our own cloud storage
 node tools.cjs mirror-all
 ```
+
+# Database
+
+## MongoDB
+
+- For full text search to work, text indexes need to be me created:
+  - https://www.digitalocean.com/community/tutorials/how-to-perform-full-text-search-in-mongodb
+  - https://www.mongodb.com/docs/manual/tutorial/text-search-in-aggregation/
