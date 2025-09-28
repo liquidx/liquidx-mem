@@ -32,7 +32,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
   const mems = (await getMems(db, userId, request)) as Mem[];
   const limitedMems = (mems ?? []).slice(0, feedLimit);
 
-  const channelTitle = `${userId} - ${normalizedTag}`;
+  const channelTitle = `Mem Feed [${normalizedTag}]`;
   const now = new Date().toUTCString();
 
   let rss = `<?xml version="1.0" encoding="UTF-8" ?>\n`;
@@ -47,12 +47,19 @@ export const GET: RequestHandler = async ({ params, locals }) => {
     const title = htmlEscape(mem.title ?? mem.note ?? normalizedTag) ?? normalizedTag;
     const link = htmlEscape(mem.url ?? "") ?? "";
     const descriptionSource = mem.description || mem.note || mem.url || "";
-    const description = htmlEscape(descriptionSource) ?? "";
+    const enclosure = getMemImage(mem);
+    
+    // Include image in description for better RSS reader compatibility
+    let description = htmlEscape(descriptionSource) ?? "";
+    if (enclosure) {
+      const imageTag = `<img src="${htmlEscape(enclosure.url) ?? enclosure.url}" alt="${title}" style="max-width: 100%; height: auto;" />`;
+      description = description ? `${imageTag}<br/><br/>${description}` : imageTag;
+    }
+    
     const pubDate = mem.addedMs ? new Date(mem.addedMs).toUTCString() : now;
     const guid =
       htmlEscape(mem._id ?? `${userId}-${feedId}-${mem.addedMs ?? now}`) ??
       `${userId}-${feedId}-${mem.addedMs ?? now}`;
-    const enclosure = getMemImage(mem);
 
     rss += `<item>\n`;
     rss += `<guid isPermaLink="false">${guid}</guid>\n`;
@@ -60,11 +67,11 @@ export const GET: RequestHandler = async ({ params, locals }) => {
     if (link) {
       rss += `<link>${link}</link>\n`;
     }
-    rss += `<description>${description}</description>\n`;
+    rss += `<description><![CDATA[${description}]]></description>\n`;
     rss += `<pubDate>${pubDate}</pubDate>\n`;
     if (enclosure) {
       const enclosureUrl = htmlEscape(enclosure.url) ?? enclosure.url;
-      rss += `<enclosure url="${enclosureUrl}" type="${enclosure.type}" />\n`;
+      rss += `<enclosure url="${enclosureUrl}" type="${enclosure.type}" length="0" />\n`;
       rss += `<media:content url="${enclosureUrl}" type="${enclosure.type}" medium="image" />\n`;
     }
     rss += `</item>\n`;
