@@ -1,7 +1,3 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
 liquidx-mem is a note-taking service that allows users to collect content from across the internet into a simple storage system. Each note is called a "mem" and the system supports automatic content annotation, media mirroring, and various export formats.
@@ -48,11 +44,13 @@ npm run tsc-once    # Single compilation
 ## Project Architecture
 
 ### Core Data Model
+
 - **Mem**: Central data structure representing a note/memory (defined in `src/lib/common/mems.ts`)
 - **MemPhoto/MemVideo/MemLink**: Specialized media types within mems
 - Database operations handled in `src/lib/mem.db.server.ts`
 
 ### Directory Structure
+
 - **`src/routes/_api/`**: API endpoints for mem operations (add, edit, delete, list, etc.)
 - **`src/routes/(web)/`**: Main web application pages
 - **`src/routes/(feeds)/`**: RSS/feed generation functionality
@@ -62,22 +60,26 @@ npm run tsc-once    # Single compilation
 - **`src/tools/`**: Administrative tools for Firebase and MongoDB operations
 
 ### Key Components
+
 - **Authentication**: Firebase Auth integration (`src/lib/firebase.server.ts`, `src/lib/server/auth.server.ts`)
 - **Content Annotation**: Automatic processing of URLs and media (`src/lib/server/annotator.ts`)
 - **Media Mirroring**: S3 storage for cached media files (`src/lib/server/mirror.ts`)
 - **Full-text Search**: MongoDB text indexes for searching mems
 
 ### Migration Notes
+
 The project is in active migration from Firebase Firestore to MongoDB. Some legacy Firebase code may still exist alongside new MongoDB implementations.
 
 ## Database Setup Requirements
 
 For full-text search functionality, MongoDB text indexes must be created manually:
+
 - Reference: https://www.mongodb.com/docs/manual/tutorial/text-search-in-aggregation/
 
 ## Environment Configuration
 
 Required environment variables (see README.md for details):
+
 - Firebase Admin credentials (`MEM_FIREBASE_ADMIN_KEY`)
 - MongoDB connection (`MONGO_DB_USERNAME`, `MONGO_DB_PASSWORD`)
 - S3 storage configuration (`S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`, etc.)
