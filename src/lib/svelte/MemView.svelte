@@ -1,6 +1,6 @@
 <script lang="ts">
   import { DateTime } from "luxon";
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onDestroy, onMount } from "svelte";
 
   import type { Mem, MemPhoto } from "$lib/common/mems";
   import { Button } from "$lib/components/ui/button";
@@ -26,6 +26,7 @@
   let displayPhotos: MediaUrl[] = [];
   let displayVideos: MediaUrl[] = [];
   let isDragging = false;
+  let isHovered = false;
 
   let titleEl: HTMLSpanElement | null = null;
   let uploadEl: HTMLInputElement | null = null;
@@ -141,6 +142,95 @@
     isDragging = false;
     dispatch("fileUpload", { mem, files: dataTransfer.files });
   }
+
+  const shouldBypassPaste = () => {
+    const active = document.activeElement as HTMLElement | null;
+    if (!active) {
+      return false;
+    }
+
+    if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) {
+      return true;
+    }
+
+    return active.isContentEditable;
+  };
+
+  const handlePaste = (event: ClipboardEvent) => {
+    if (!isHovered) {
+      return;
+    }
+
+    if (shouldBypassPaste()) {
+      return;
+    }
+
+    const clipboardData = event.clipboardData;
+    if (!clipboardData) {
+      return;
+    }
+
+    const types: string[] = [];
+    for (let i = 0; i < clipboardData.types.length; i += 1) {
+      const type = clipboardData.types[i];
+      if (type) {
+        types.push(type);
+      }
+    }
+
+    const items = [];
+    for (let i = 0; i < clipboardData.items.length; i += 1) {
+      const item = clipboardData.items[i];
+      if (item) {
+        items.push({ kind: item.kind, type: item.type });
+      }
+    }
+
+    const files = clipboardData.files;
+    const fileSummaries = files
+      ? Array.from(files).map((file) => ({ name: file.name, type: file.type, size: file.size }))
+      : [];
+
+    console.log("MemView paste", {
+      memId: mem._id,
+      clipboardTypes: types,
+      clipboardItems: items,
+      clipboardFiles: fileSummaries
+    });
+
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    const images = Array.from(files).filter((file) => file.type.startsWith("image/"));
+    if (images.length === 0) {
+      return;
+    }
+
+    let filesForUpload: FileList = files;
+    if (typeof DataTransfer !== "undefined") {
+      const dataTransfer = new DataTransfer();
+      images.forEach((image) => dataTransfer.items.add(image));
+      filesForUpload = dataTransfer.files;
+    }
+
+    event.preventDefault();
+    dispatch("fileUpload", { mem, files: filesForUpload });
+  };
+
+  onMount(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.addEventListener("paste", handlePaste);
+  });
+
+  onDestroy(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.removeEventListener("paste", handlePaste);
+  });
 
   const noteDidChange = async (e: FocusEvent) => {
     console.log("noteDidChange", e);
@@ -276,11 +366,13 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-  class={"mem my-4 flex flex-col rounded-xl px-4 py-4 text-muted-foreground md:mx-2  md:px-6 " +
+  class={"mem my-4 flex flex-col rounded-xl px-4 py-4 text-muted-foreground hover:bg-neutral-900  md:mx-2 md:px-6" +
     (isDragging ? " bg-yellow-100" : "bg-card")}
   on:dragover={ondragover}
   on:dragleave={ondragleave}
   on:drop={ondrop}
+  on:mouseenter={() => (isHovered = true)}
+  on:mouseleave={() => (isHovered = false)}
 >
   <div>
     <AutoResizeTextarea
