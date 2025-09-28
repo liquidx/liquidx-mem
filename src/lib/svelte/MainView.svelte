@@ -33,6 +33,7 @@
     onlyNew: true,
     order: "newest"
   };
+  let feedHref: string | null = null;
 
   $: {
     listOptions = listOptionsByString(filter);
@@ -42,6 +43,17 @@
     if ($sharedUser) {
       loadMems(listOptions, searchQuery, false);
       loadFilters(listOptions);
+    }
+  }
+
+  $: {
+    const allTags = listOptions.matchAllTags || [];
+    const primaryTag = allTags[0];
+    if (primaryTag && $sharedUser) {
+      const cleanedTag = primaryTag.startsWith("#") ? primaryTag.slice(1) : primaryTag;
+      feedHref = `/feed/${$sharedUser.uid}/${encodeURIComponent(cleanedTag)}.xml`;
+    } else {
+      feedHref = null;
     }
   }
 
@@ -328,5 +340,10 @@
       on:urlChanged={updateUrlForMem}
     />
     <MoreMem moreAvailable={moreMemsAvailable} on:loadMore={loadMore} />
+    {#if feedHref}
+      <div class="mt-4 flex justify-end">
+        <a class="text-sm text-primary hover:underline" href={feedHref} rel="alternate">Feed</a>
+      </div>
+    {/if}
   </main>
 </div>
