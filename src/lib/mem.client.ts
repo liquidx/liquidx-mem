@@ -364,3 +364,44 @@ export const getTags = async (user: User, filter?: string): Promise<TagListItem[
     return tag;
   });
 };
+
+export const getTagSuggestions = async (
+  user: User,
+  query: string,
+  limit = 10
+): Promise<TagListItem[]> => {
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) {
+    return [];
+  }
+
+  const params = new URLSearchParams({ userId: user.uid, query: trimmedQuery });
+  if (limit) {
+    params.append("limit", limit.toString());
+  }
+
+  const url = `${serverUrl}/tag/suggest?${params.toString()}`;
+  const authToken = await user.getIdToken();
+  const headers = {
+    Authorization: `Bearer ${authToken}`
+  };
+
+  const response = await axios.get(url, { headers }).catch(() => {
+    return null;
+  });
+
+  if (!response || response.status !== 200) {
+    return [];
+  }
+
+  const suggestions = response.data?.suggestions;
+  if (!Array.isArray(suggestions)) {
+    return [];
+  }
+
+  return suggestions.map((suggestion: TagListItem) => ({
+    tag: suggestion.tag,
+    count: suggestion.count,
+    icon: iconForTag(suggestion.tag)
+  }));
+};
