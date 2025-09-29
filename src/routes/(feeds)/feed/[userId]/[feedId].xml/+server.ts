@@ -48,14 +48,14 @@ export const GET: RequestHandler = async ({ params, locals }) => {
     const link = htmlEscape(mem.url ?? "") ?? "";
     const descriptionSource = mem.description || mem.note || mem.url || "";
     const enclosure = getMemImage(mem);
-    
+
     // Include image in description for better RSS reader compatibility
     let description = htmlEscape(descriptionSource) ?? "";
     if (enclosure) {
       const imageTag = `<img src="${htmlEscape(enclosure.url) ?? enclosure.url}" alt="${title}" style="max-width: 100%; height: auto;" />`;
       description = description ? `${imageTag}<br/><br/>${description}` : imageTag;
     }
-    
+
     const pubDate = mem.addedMs ? new Date(mem.addedMs).toUTCString() : now;
     const guid =
       htmlEscape(mem._id ?? `${userId}-${feedId}-${mem.addedMs ?? now}`) ??

@@ -3,7 +3,7 @@ import { memToJson } from "$lib/common/mems";
 import { parseText } from "$lib/common/parser.js";
 import { getDb } from "$lib/db";
 import { getFirebaseApp } from "$lib/firebase.server.js";
-import { addMem } from "$lib/mem.db.server";
+import { addMem, findMemByUrl } from "$lib/mem.db.server";
 import { mirrorMediaInMem } from "$lib/mem.db.server";
 import { getS3Client, writeFileToS3 } from "$lib/s3.server";
 import { annotateMem } from "$lib/server/annotator.js";
@@ -63,6 +63,14 @@ export const fallback: RequestHandler = async ({ url, request, locals }) => {
     mem = parseText(text.toString());
     if (!mem) {
       return error(500, JSON.stringify({ error: "Invalid text" }));
+    }
+
+    // Check if a mem with this URL already exists
+    if (mem.url) {
+      const existingMem = await findMemByUrl(db, userId, mem.url);
+      if (existingMem) {
+        return json({ mem: memToJson(existingMem) });
+      }
     }
   } else if (image) {
     //const imageDataBuffer = Buffer.from(image, "base64");

@@ -153,6 +153,14 @@ export const getMem = async (db: Db, userId: string, memId: string): Promise<Mem
   return getMemCollection(db).findOne({ _id: memId, userId: userId });
 };
 
+export const findMemByUrl = async (
+  db: Db,
+  userId: string,
+  url: string
+): Promise<Mem | undefined> => {
+  return getMemCollection(db).findOne({ userId: userId, url: url });
+};
+
 // TODO: merge with getMems
 export const getAllMems = async (
   db: Db,
