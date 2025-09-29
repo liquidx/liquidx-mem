@@ -21,8 +21,33 @@ const dbPrepare: Handle = async ({ event, resolve }) => {
   return response;
 };
 
+const cors: Handle = async ({ event, resolve }) => {
+  // Handle preflight requests
+  if (event.request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    });
+  }
+
+  const response = await resolve(event);
+  
+  // Add CORS headers to all API responses
+  if (event.url.pathname.startsWith('/_api/')) {
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  }
+  
+  return response;
+};
+
 // sequence() here is in case we have multiple hooks.
-export const handle = sequence(dbPrepare);
+export const handle = sequence(cors, dbPrepare);
 
 export const handleError: HandleServerError = ({ error }) => {
   return { message: (error as any).message };
