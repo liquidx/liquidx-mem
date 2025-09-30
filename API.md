@@ -389,6 +389,7 @@ Get tag suggestions based on query.
 
 **Parameters**:
 - `userId` (query): User ID
+- `secret` (query): Shared secret for authentication
 - `query` (query, optional): Search query for tag suggestions
 - `limit` (query, optional): Max results (default: 10, max: 25)
 

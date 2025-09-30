@@ -51,6 +51,11 @@ export const GET: RequestHandler = async ({ request, url, locals }) => {
     return error(400, "Missing userId");
   }
 
+  const secret = url.searchParams.get("secret")?.trim() ?? "";
+  if (!secret) {
+    return error(400, "Missing secret");
+  }
+
   const firebaseApp = getFirebaseApp();
   const db = getDb(locals.mongoClient);
 
