@@ -2,6 +2,7 @@ import { getDb, getTagCollection } from "$lib/db";
 import { getFirebaseApp } from "$lib/firebase.server.js";
 import { getUserId } from "$lib/server/api.server.js";
 import type { TagCount, TagIndex } from "$lib/tags.types";
+import { userForSharedSecret } from "$lib/user.db.server";
 import { error, json } from "@sveltejs/kit";
 
 import type { RequestHandler } from "./$types";
@@ -46,25 +47,29 @@ const matchesQuery = (tag: string, query: string, queryWithoutHash: string): boo
 };
 
 export const GET: RequestHandler = async ({ request, url, locals }) => {
-  const requestUserId = url.searchParams.get("userId")?.trim() ?? "";
-  if (!requestUserId) {
-    return error(400, "Missing userId");
-  }
-
   const secret = url.searchParams.get("secret")?.trim() ?? "";
-  if (!secret) {
-    return error(400, "Missing secret");
+
+  // Check auth
+  const token = request.headers.get("Authorization")?.replace("Bearer ", "");
+  if (!token && !secret) {
+    console.log("Error: No token or secret");
+    return error(403, JSON.stringify({ error: "Permission denied" }));
   }
 
   const firebaseApp = getFirebaseApp();
   const db = getDb(locals.mongoClient);
 
-  const userId = await getUserId(firebaseApp, request);
-  if (!userId) {
-    return error(403, JSON.stringify({ error: "Permission denied" }));
+  let userId: string | undefined;
+  if (token) {
+    userId = await getUserId(firebaseApp, request);
+  } else if (secret) {
+    const user = await userForSharedSecret(db, secret);
+    if (user) {
+      userId = user._id;
+    }
   }
 
-  if (requestUserId !== userId) {
+  if (!userId) {
     return error(403, JSON.stringify({ error: "Permission denied" }));
   }
 
