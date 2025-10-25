@@ -3,7 +3,7 @@ import { memToJson } from "$lib/common/mems";
 import { parseText } from "$lib/common/parser.js";
 import { getDb } from "$lib/db";
 import { getFirebaseApp } from "$lib/firebase.server.js";
-import { addMem, findMemByUrl } from "$lib/mem.db.server";
+import { addMem, findMemByUrl, updateMem } from "$lib/mem.db.server";
 import { mirrorMediaInMem } from "$lib/mem.db.server";
 import { getS3Client, writeFileToS3 } from "$lib/s3.server";
 import { annotateMem } from "$lib/server/annotator.js";
@@ -69,6 +69,32 @@ export const fallback: RequestHandler = async ({ url, request, locals }) => {
     if (mem.url) {
       const existingMem = await findMemByUrl(db, userId, mem.url);
       if (existingMem) {
+        // Merge tags from new mem into existing mem
+        if (mem.tags && mem.tags.length > 0) {
+          const existingTags = existingMem.tags || [];
+          const newTags = mem.tags || [];
+          // Combine and deduplicate tags
+          existingMem.tags = [...new Set([...existingTags, ...newTags])];
+        }
+
+        // Merge description/note from new mem into existing mem
+        if (mem.note) {
+          if (existingMem.note) {
+            existingMem.note = `${existingMem.note}\n\n${mem.note}`;
+          } else {
+            existingMem.note = mem.note;
+          }
+        }
+
+        // Update the last modified timestamp
+        existingMem.addedMs = DateTime.utc().toMillis();
+
+        // Save the updated mem
+        const updatedExistingMem = await updateMem(db, existingMem);
+        if (updatedExistingMem) {
+          await refreshTagCounts(db, userId);
+          return json({ mem: memToJson(updatedExistingMem) });
+        }
         return json({ mem: memToJson(existingMem) });
       }
     }
