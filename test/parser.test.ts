@@ -23,6 +23,14 @@ describe("parseText", () => {
     expect(result.raw).toBe(text);
   });
 
+  it("should extract the URL in the middle of the note", () => {
+    const text = "visualrambling.space https://visualrambling.space/ #look";
+    const result = parseText(text);
+    expect(result.url).toBe("https://visualrambling.space/");
+    expect(result.note).toBe("visualrambling.space  #look");
+    expect(result.raw).toBe(text);
+  });
+
   it("should remove tracking parameters from URL", () => {
     const text = "https://example.com/page?utm_source=twitter&id=123";
     const result = parseText(text);

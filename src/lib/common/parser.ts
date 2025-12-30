@@ -53,12 +53,19 @@ export const parseText = (text: string): Mem => {
     raw: text
   };
 
-  const matches = text.match(urlRegexSafe());
+  const allMatches = text.match(urlRegexSafe()) || [];
+  const matches = allMatches.filter((m) => m.startsWith("http://") || m.startsWith("https://"));
+
   // TODO: deal with multiple matches.
   if (matches && matches.length > 0) {
     const first = matches[0];
     mem.url = removeUrlTrackingParams(first.toString());
-    mem.note = text.replace(urlRegexSafe(), "").trim();
+    // Remove all http URLs from the note
+    mem.note = text;
+    for (const m of matches) {
+      mem.note = mem.note.replace(m, "");
+    }
+    mem.note = mem.note.trim();
   } else {
     mem.note = text;
   }
