@@ -6,7 +6,7 @@
   import { sharedFirebaseApp } from "$lib/firebase-shared";
   import SignIn from "$lib/svelte/SignIn.svelte";
   import { SunIcon } from "@lucide/svelte";
-  import { ModeWatcher } from "mode-watcher";
+  import { ModeWatcher, toggleMode } from "mode-watcher";
   import { onMount } from "svelte";
 
   import "../../app.css";
