@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run, preventDefault } from 'svelte/legacy';
+
   import { getTags, getSavedViews } from "$lib/mem.client.js";
   import type { TagListItem } from "$lib/tags.types";
   import { sharedUser } from "$lib/firebase-shared";
@@ -6,23 +8,19 @@
   import type { MemListOptions } from "$lib/filter";
   import { cn } from "$lib/utils";
 
-  export let currentTagFilters: MemListOptions | undefined = undefined;
+  interface Props {
+    currentTagFilters?: MemListOptions | undefined;
+  }
 
-  let showAll = false;
+  let { currentTagFilters = undefined }: Props = $props();
+
+  let showAll = $state(false);
   let initialVisibleCount = 30;
-  let tags: TagListItem[] = [];
-  let views: UserView[] = [];
-  let visibleTags: TagListItem[] = [];
+  let tags: TagListItem[] = $state([]);
+  let views: UserView[] = $state([]);
+  let visibleTags: TagListItem[] = $state([]);
 
-  $: {
-    if ($sharedUser) {
-      getData();
-    }
-  }
 
-  $: {
-    visibleTags = showAll ? tags : tags.slice(0, initialVisibleCount);
-  }
 
   const getData = async () => {
     if ($sharedUser) {
@@ -60,6 +58,14 @@
   const isArchive = (filters_: MemListOptions | undefined) => {
     return filters_ && filters_.onlyArchived && filters_.matchAllTags.includes("#*");
   };
+  run(() => {
+    if ($sharedUser) {
+      getData();
+    }
+  });
+  run(() => {
+    visibleTags = showAll ? tags : tags.slice(0, initialVisibleCount);
+  });
 </script>
 
 <section class="flex w-screen flex-row flex-wrap justify-start p-2 md:w-48 md:flex-col">
@@ -101,7 +107,7 @@
   {/each}
   {#if !showAll}
     <button
-      on:click|preventDefault={showAllDidClick}
+      onclick={preventDefault(showAllDidClick)}
       class="block whitespace-nowrap rounded-md px-1 py-1 text-left hover:underline md:px-2"
     >
       More..

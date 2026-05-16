@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import {
     getSavedViews,
     updateSavedViews,
@@ -10,16 +12,10 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import type { UserView, UserWriteSecret } from "$lib/user.types";
 
-  let writeSecret: UserWriteSecret = "";
-  let views: UserView[] = [];
-  let newView = "";
+  let writeSecret: UserWriteSecret = $state("");
+  let views: UserView[] = $state([]);
+  let newView = $state("");
 
-  $: {
-    if ($sharedUser) {
-      loadWriteSecret();
-      loadViews();
-    }
-  }
 
   const loadViews = async () => {
     if (!$sharedUser) {
@@ -79,6 +75,12 @@
     }
     updateSecrets($sharedUser, writeSecret);
   };
+  run(() => {
+    if ($sharedUser) {
+      loadWriteSecret();
+      loadViews();
+    }
+  });
 </script>
 
 <div class="p-4">

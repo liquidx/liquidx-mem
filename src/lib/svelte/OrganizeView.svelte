@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import axios from "axios";
   import { toast } from "svelte-sonner";
 
@@ -10,18 +12,17 @@
   import type { MemListRequest } from "$lib/request.types";
   import { orderBy } from "lodash-es";
 
-  export let filter: string = "";
-
-  let selectedMem: Mem | undefined;
-  let mems: Mem[] = [];
-
-  let duplicateMems: Mem[] = [];
-
-  $: {
-    if ($sharedUser) {
-      loadMems(filter, false);
-    }
+  interface Props {
+    filter?: string;
   }
+
+  let { filter = "" }: Props = $props();
+
+  let selectedMem: Mem | undefined = $state();
+  let mems: Mem[] = $state([]);
+
+  let duplicateMems: Mem[] = $state([]);
+
 
   const findDuplicatedMems = (mems_: Mem[]) => {
     let memsByUrl = {};
@@ -218,6 +219,11 @@
       }
     }
   };
+  run(() => {
+    if ($sharedUser) {
+      loadMems(filter, false);
+    }
+  });
 </script>
 
 <svelte:head>
@@ -233,7 +239,7 @@
           <a href={mem.url} target="_blank">{mem.url}</a>
           <span class="text-secondary-foreground">
             (<button
-              on:click={() => {
+              onclick={() => {
                 selectedMem = mem;
               }}>{mem._id}</button
             >)
@@ -248,7 +254,7 @@
           <a href={mem.url} target="_blank">{mem.url}</a>
           <span class="text-secondary-foreground">
             (<button
-              on:click={() => {
+              onclick={() => {
                 selectedMem = mem;
               }}>{mem._id}</button
             >)

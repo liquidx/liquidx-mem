@@ -1,8 +1,11 @@
+<!-- @migration-task Error while migrating Svelte code: $$props is used together with named props in a way that cannot be automatically migrated. -->
 <script lang="ts">
   import { onDestroy } from "svelte";
   import type { HTMLTextareaAttributes } from "svelte/elements";
 
-  interface $$Props extends HTMLTextareaAttributes {
+  import ProxyTextareaElement from "./core";
+
+  interface $Props extends HTMLTextareaAttributes {
     value?: any;
     minRows?: number;
     maxRows?: number;
@@ -11,8 +14,6 @@
   export let value = "";
   export let minRows: number | undefined = undefined;
   export let maxRows: number | undefined = undefined;
-
-  import ProxyTextareaElement from "./core";
 
   let element: HTMLTextAreaElement | null = null;
 
@@ -28,4 +29,4 @@
   });
 </script>
 
-<textarea {...$$props} bind:this={element} bind:value on:blur />
+<textarea {...$$props} bind:this={element} bind:value on:blur></textarea>

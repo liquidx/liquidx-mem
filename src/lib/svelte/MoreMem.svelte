@@ -3,7 +3,11 @@
   import { Button } from "$lib/components/ui/button/index.js";
 
   const dispatch = createEventDispatcher();
-  export let moreAvailable = false;
+  interface Props {
+    moreAvailable?: boolean;
+  }
+
+  let { moreAvailable = false }: Props = $props();
 
   function loadMoreDidClick() {
     dispatch("loadMore");

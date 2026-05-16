@@ -1,17 +1,19 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
-  import { ChevronsUpDownIcon } from "lucide-svelte";
-
-  import * as Collapsible from "$lib/components/ui/collapsible";
   import Button from "$lib/components/ui/button/button.svelte";
-
-  import type { TagListItem } from "$lib/tags.server";
+  import * as Collapsible from "$lib/components/ui/collapsible";
   import type { MemListOptions } from "$lib/filter";
+  import type { TagListItem } from "$lib/tags.server";
   import { cn } from "$lib/utils";
+  import { ChevronsUpDownIcon } from "@lucide/svelte";
+  import { createEventDispatcher } from "svelte";
 
-  export let tags: TagListItem[] = [];
-  export let listOptions: MemListOptions | undefined = undefined;
-  let sortOrder = "newest";
+  interface Props {
+    tags?: TagListItem[];
+    listOptions?: MemListOptions | undefined;
+  }
+
+  let { tags = [], listOptions = undefined }: Props = $props();
+  let sortOrder = $state("newest");
 
   const dispatch = createEventDispatcher();
 
@@ -41,7 +43,7 @@
 </script>
 
 <div class="mx-1 my-2 w-64 rounded-xl bg-secondary px-2 py-2 ring-0">
-  <select class="w-full bg-transparent" bind:value={sortOrder} on:change={sortOrderDidChange}>
+  <select class="w-full bg-transparent" bind:value={sortOrder} onchange={sortOrderDidChange}>
     {#each sortOrders as { value, label }}
       <option {value}>{label}</option>
     {/each}
@@ -69,7 +71,7 @@
               ? "bg-primary text-primary-foreground"
               : "bg-secondary hover:bg-muted"
           )}
-          on:click={() => onTagDidClick(tag)}
+          onclick={() => onTagDidClick(tag)}
         >
           {tag.tag}
           <span class={isTagSelected(tag) ? "text-gray-200" : "text-muted-foreground"}

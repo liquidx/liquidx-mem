@@ -1,13 +1,19 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import type { Mem } from "$lib/common/mems";
   import MemView from "./MemView.svelte";
-  export let mems: Mem[] = [];
+  interface Props {
+    mems?: Mem[];
+  }
 
-  $: {
+  let { mems = [] }: Props = $props();
+
+  run(() => {
     if (mems) {
       console.log("MemList: redrawing mems");
     }
-  }
+  });
 </script>
 
 <div>

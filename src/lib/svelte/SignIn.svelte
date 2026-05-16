@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import {
     getAuth,
     onAuthStateChanged,
@@ -7,9 +9,9 @@
   } from "firebase/auth";
   import { sharedUser, sharedFirebaseApp } from "$lib/firebase-shared";
 
-  let email = "";
-  let password = "";
-  let authUnsubscribe: Unsubscribe | null = null;
+  let email = $state("");
+  let password = $state("");
+  let authUnsubscribe: Unsubscribe | null = $state(null);
 
   function signIn() {
     const firebaseApp = $sharedFirebaseApp;
@@ -34,7 +36,7 @@
     }
   }
 
-  $: {
+  run(() => {
     if ($sharedFirebaseApp) {
       if (!authUnsubscribe) {
         const auth = getAuth($sharedFirebaseApp);
@@ -44,14 +46,14 @@
         });
       }
     }
-  }
+  });
 </script>
 
 <div class="text-sm">
   {#if $sharedUser}
     <div class="mb-2">
       <h3 class="">Signed in as {$sharedUser.email}</h3>
-      <div><button class="underline" on:click={signOut}>Sign out.</button></div>
+      <div><button class="underline" onclick={signOut}>Sign out.</button></div>
     </div>
   {:else}
     <div class="mb-2">
@@ -72,7 +74,7 @@
         bind:value={password}
       />
     </div>
-    <button class="rounded-lg bg-black px-4 py-2 text-xs text-white" on:click={signIn}
+    <button class="rounded-lg bg-black px-4 py-2 text-xs text-white" onclick={signIn}
       >Sign In</button
     >
   {/if}

@@ -1,29 +1,23 @@
 <script lang="ts">
-  import { ModeWatcher, setMode } from "mode-watcher";
-
+  import Button from "$lib/components/ui/button/button.svelte";
+  import { Toaster } from "$lib/components/ui/sonner";
+  import { initializeFirebase } from "$lib/firebase-init";
   import { sharedUser } from "$lib/firebase-shared";
   import { sharedFirebaseApp } from "$lib/firebase-shared";
-  import { initializeFirebase } from "$lib/firebase-init";
   import SignIn from "$lib/svelte/SignIn.svelte";
-  import { Toaster } from "$lib/components/ui/sonner";
+  import { SunIcon } from "@lucide/svelte";
+  import { ModeWatcher } from "mode-watcher";
+  import { onMount } from "svelte";
 
   import "../../app.css";
-  import { onMount } from "svelte";
-  import { SunIcon } from "lucide-svelte";
-  import Button from "$lib/components/ui/button/button.svelte";
+
+  interface Props {
+    children?: import("svelte").Snippet;
+  }
+
+  let { children }: Props = $props();
 
   $sharedFirebaseApp = initializeFirebase();
-
-  let mode: "dark" | "light" | "system" = "system";
-
-  const toggleMode = () => {
-    mode = mode === "light" ? "dark" : "light";
-    setMode(mode);
-  };
-
-  onMount(() => {
-    setMode(mode);
-  });
 </script>
 
 <ModeWatcher />
@@ -62,6 +56,6 @@
       {/if}
       <SignIn />
     </header>
-    <slot />
+    {@render children?.()}
   </div>
 </div>

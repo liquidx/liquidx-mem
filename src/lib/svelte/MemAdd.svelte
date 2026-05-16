@@ -1,22 +1,24 @@
 <script lang="ts">
-  import { DateTime } from "luxon";
-  import { toast } from "svelte-sonner";
-
   import { parseText } from "$lib/common/parser";
+  import { Button } from "$lib/components/ui/button/index.js";
   import { sharedUser } from "$lib/firebase-shared";
   import { addMem, getTagSuggestions } from "$lib/mem.client";
   import type { TagListItem } from "$lib/tags.server";
-  import { createEventDispatcher, tick } from "svelte";
-  import { Button } from "$lib/components/ui/button/index.js";
   import { cn } from "$lib/utils";
+  import { DateTime } from "luxon";
+  import { createEventDispatcher, tick } from "svelte";
+  import { toast } from "svelte-sonner";
+  import { createBubbler, preventDefault } from "svelte/legacy";
 
-  let pending = false;
-  let rawInput: string = "";
-  let suggestions: TagListItem[] = [];
-  let highlightedIndex = 0;
-  let showSuggestions = false;
+  const bubble = createBubbler();
+
+  let pending = $state(false);
+  let rawInput: string = $state("");
+  let suggestions: TagListItem[] = $state([]);
+  let highlightedIndex = $state(0);
+  let showSuggestions = $state(false);
   let tokenStartIndex = 0;
-  let textareaEl: HTMLTextAreaElement | null = null;
+  let textareaEl: HTMLTextAreaElement | null = $state(null);
   let latestQuery = "";
   let fetchSequence = 0;
   const dispatch = createEventDispatcher();
@@ -158,9 +160,9 @@
     placeholder="Enter text, urls, #tags here."
     class="text-input-foreground m-0.5 h-16 w-full rounded-xl bg-input p-3"
     disabled={pending}
-    on:input={handleInput}
-    on:keydown={handleKeydown}
-  />
+    oninput={handleInput}
+    onkeydown={handleKeydown}
+  ></textarea>
   {#if showSuggestions}
     <div
       class="absolute left-0 right-0 top-full z-20 mt-1 rounded-lg border border-border bg-popover shadow-lg"
@@ -172,8 +174,8 @@
             "flex w-full items-center gap-3 px-3 py-2 text-left text-sm",
             index === highlightedIndex ? "bg-accent text-accent-foreground" : "text-foreground"
           )}
-          on:mousedown|preventDefault
-          on:click={() => void applySuggestion(suggestion.tag)}
+          onmousedown={preventDefault(bubble("mousedown"))}
+          onclick={() => void applySuggestion(suggestion.tag)}
         >
           <span class="font-mono">{suggestion.tag}</span>
           {#if suggestion.count}

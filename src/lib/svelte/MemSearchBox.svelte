@@ -3,7 +3,7 @@
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
-  let searchQuery: string = "";
+  let searchQuery: string = $state("");
 
   const onInputDidKeyUp = (e: KeyboardEvent) => {
     if (e.key === "Enter") {

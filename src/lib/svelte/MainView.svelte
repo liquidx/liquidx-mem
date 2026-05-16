@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import axios from "axios";
   import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
@@ -17,45 +19,30 @@
   import MemListFilters from "./MemListFilters.svelte";
   import MemSearchBox from "./MemSearchBox.svelte";
 
-  export let filter: string = "";
-  export let showTags = true;
+  interface Props {
+    filter?: string;
+    showTags?: boolean;
+  }
+
+  let { filter = "", showTags = true }: Props = $props();
 
   let pageSize = 30;
   let visiblePages = 1;
-  let mems: Mem[] = [];
+  let mems: Mem[] = $state([]);
   let moreMemsAvailable = true;
-  let viewTags: TagListItem[] = [];
-  let searchQuery: string = "";
-  let listOptions: MemListOptions = {
+  let viewTags: TagListItem[] = $state([]);
+  let searchQuery: string = $state("");
+  let listOptions: MemListOptions = $state({
     matchAllTags: [],
     matchAnyTags: [],
     onlyArchived: false,
     onlyNew: true,
     order: "newest"
-  };
-  let feedHref: string | null = null;
+  });
+  let feedHref: string | null = $state(null);
 
-  $: {
-    listOptions = listOptionsByString(filter);
-  }
 
-  $: {
-    if ($sharedUser) {
-      loadMems(listOptions, searchQuery, false);
-      loadFilters(listOptions);
-    }
-  }
 
-  $: {
-    const allTags = listOptions.matchAllTags || [];
-    const primaryTag = allTags[0];
-    if (primaryTag && $sharedUser) {
-      const cleanedTag = primaryTag.startsWith("#") ? primaryTag.slice(1) : primaryTag;
-      feedHref = `/feed/${$sharedUser.uid}/${encodeURIComponent(cleanedTag)}.xml`;
-    } else {
-      feedHref = null;
-    }
-  }
 
   const loadFilters = async (tagFilters: MemListOptions) => {
     if (!$sharedUser) {
@@ -302,6 +289,25 @@
     listOptions = listOptions;
     console.log("sortOrderDidChange", order);
   };
+  run(() => {
+    listOptions = listOptionsByString(filter);
+  });
+  run(() => {
+    if ($sharedUser) {
+      loadMems(listOptions, searchQuery, false);
+      loadFilters(listOptions);
+    }
+  });
+  run(() => {
+    const allTags = listOptions.matchAllTags || [];
+    const primaryTag = allTags[0];
+    if (primaryTag && $sharedUser) {
+      const cleanedTag = primaryTag.startsWith("#") ? primaryTag.slice(1) : primaryTag;
+      feedHref = `/feed/${$sharedUser.uid}/${encodeURIComponent(cleanedTag)}.xml`;
+    } else {
+      feedHref = null;
+    }
+  });
 </script>
 
 <svelte:head>

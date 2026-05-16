@@ -2,7 +2,7 @@ import adapter from "@sveltejs/adapter-vercel";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 const vercelConfig = {
-  runtime: "nodejs20.x",
+  runtime: "nodejs22.x",
   regions: ["sfo1"]
 };
 

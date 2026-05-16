@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { DateTime } from "luxon";
-  import { createEventDispatcher, onDestroy, onMount } from "svelte";
-
   import type { Mem, MemPhoto } from "$lib/common/mems";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import * as Popover from "$lib/components/ui/popover";
-
-  import AutoResizeTextarea from "$lib/thirdparty/autoresize-textarea/AutoresizeTextarea.svelte";
   import { getCachedStorageUrl } from "$lib/storage";
-  import { ArchiveIcon, EyeIcon, ImageUpIcon, PenLineIcon, Trash2Icon } from "lucide-svelte";
+  import AutoResizeTextarea from "$lib/thirdparty/autoresize-textarea/AutoresizeTextarea.svelte";
+  import { ArchiveIcon, EyeIcon, ImageUpIcon, PenLineIcon, Trash2Icon } from "@lucide/svelte";
+  import { DateTime } from "luxon";
+  import { createEventDispatcher, onDestroy, onMount } from "svelte";
+  import { run } from "svelte/legacy";
 
   type MediaUrl = {
     photo?: MemPhoto;
@@ -19,17 +18,21 @@
     status?: string;
   };
 
-  export let mem: Mem;
+  interface Props {
+    mem: Mem;
+  }
+
+  let { mem }: Props = $props();
 
   let maxChars = 1000;
-  let mediaImageUrl = "";
-  let displayPhotos: MediaUrl[] = [];
-  let displayVideos: MediaUrl[] = [];
-  let isDragging = false;
-  let isHovered = false;
+  let mediaImageUrl = $state("");
+  let displayPhotos: MediaUrl[] = $state([]);
+  let displayVideos: MediaUrl[] = $state([]);
+  let isDragging = $state(false);
+  let isHovered = $state(false);
 
-  let titleEl: HTMLSpanElement | null = null;
-  let uploadEl: HTMLInputElement | null = null;
+  let titleEl: HTMLSpanElement | null = $state(null);
+  let uploadEl: HTMLInputElement | null = $state(null);
 
   const dispatch = createEventDispatcher();
 
@@ -63,13 +66,6 @@
   function onRemovePhoto(photo: MemPhoto | undefined) {
     console.log("onRemovePhoto", photo);
     dispatch("removePhoto", { mem, photo });
-  }
-
-  $: {
-    if (mem) {
-      getMediaImageUrl();
-      getMediaUrls();
-    }
   }
 
   function getPrettyDate(mem_: Mem) {
@@ -362,17 +358,23 @@
       displayVideos = [];
     }
   }
+  run(() => {
+    if (mem) {
+      getMediaImageUrl();
+      getMediaUrls();
+    }
+  });
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class={"mem my-4 flex flex-col rounded-xl px-4 py-4 text-muted-foreground hover:bg-neutral-900  md:mx-2 md:px-6" +
     (isDragging ? " bg-yellow-100" : "bg-card")}
-  on:dragover={ondragover}
-  on:dragleave={ondragleave}
-  on:drop={ondrop}
-  on:mouseenter={() => (isHovered = true)}
-  on:mouseleave={() => (isHovered = false)}
+  {ondragover}
+  {ondragleave}
+  {ondrop}
+  onmouseenter={() => (isHovered = true)}
+  onmouseleave={() => (isHovered = false)}
 >
   <div>
     <AutoResizeTextarea
@@ -390,7 +392,7 @@
         <a href={mem.url} target="_blank" class="font-bold">
           <span class="title-text" bind:this={titleEl}>{getPrettyTitle(mem)}</span>
         </a>
-        <button class="text-primary hover:text-secondary" on:click={startEdit}>
+        <button class="text-primary hover:text-secondary" onclick={startEdit}>
           <PenLineIcon class="align-middle" size="16" />
         </button>
       </div>
@@ -407,8 +409,9 @@
     {#if displayVideos}
       <div class="videos">
         {#each displayVideos as video (video.url)}
-          <!-- svelte-ignore a11y-media-has-caption -->
-          <video src={video.url} title={video.status} class="my-4" playsinline controls loop />
+          <!-- svelte-ignore a11y_media_has_caption -->
+          <video src={video.url} title={video.status} class="my-4" playsinline controls loop>
+          </video>
         {/each}
       </div>
     {/if}
@@ -420,7 +423,7 @@
             <img src={photo.url} alt={photo.status} title={photo.status} class="mt-4 rounded-md" />
             <button
               class="w-full text-right text-xs text-muted-foreground"
-              on:click={() => onRemovePhoto(photo.photo)}
+              onclick={() => onRemovePhoto(photo.photo)}
             >
               Remove
             </button>
@@ -516,7 +519,7 @@
         id="fileInput"
         accept="image/*"
         bind:this={uploadEl}
-        on:change={fileDidChange}
+        onchange={fileDidChange}
       />
     </form>
   </div>

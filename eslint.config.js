@@ -1,16 +1,20 @@
+import { includeIgnoreFile } from "@eslint/compat";
 import js from "@eslint/js";
-import prettier from "eslint-config-prettier";
 import svelte from "eslint-plugin-svelte";
 import globals from "globals";
+import { fileURLToPath } from "node:url";
 import ts from "typescript-eslint";
+
+import svelteConfig from "./svelte.config.js";
+
+const gitignorePath = fileURLToPath(new URL("./.gitignore", import.meta.url));
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
+  includeIgnoreFile(gitignorePath),
   js.configs.recommended,
   ...ts.configs.recommended,
-  ...svelte.configs["flat/recommended"],
-  prettier,
-  ...svelte.configs["flat/prettier"],
+  ...svelte.configs.recommended,
   {
     languageOptions: {
       globals: {
@@ -19,15 +23,30 @@ export default [
       }
     },
     rules: {
-      "@typescript-eslint/no-unused-vars": "warn",
+      "no-undef": "off",
+      "svelte/no-unused-props": "off",
+      "svelte/no-navigation-without-resolve": "off",
+      "svelte/no-at-html-tags": "off",
+      "svelte/no-unused-svelte-ignore": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          caughtErrors: "none",
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^\\$\\$(Props|Events|Slots|Generic)$"
+        }
+      ],
       "@typescript-eslint/no-explicit-any": 0
     }
   },
   {
-    files: ["**/*.svelte"],
+    files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
     languageOptions: {
       parserOptions: {
-        parser: ts.parser
+        projectService: true,
+        extraFileExtensions: [".svelte"],
+        parser: ts.parser,
+        svelteConfig
       }
     }
   },
