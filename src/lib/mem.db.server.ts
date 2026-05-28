@@ -127,11 +127,11 @@ export const getMems = async (
       }
     }
 
-    if (options.limit) {
-      stages.push({ $limit: options.limit });
-    }
     if (options.skip) {
       stages.push({ $skip: options.skip });
+    }
+    if (options.limit) {
+      stages.push({ $limit: options.limit });
     }
 
     console.log("Stages: ");
