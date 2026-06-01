@@ -1,15 +1,18 @@
 <script lang="ts">
   import Input from "$lib/components/ui/input/input.svelte";
-  import { createEventDispatcher } from "svelte";
 
-  const dispatch = createEventDispatcher();
+  interface Props {
+    onsearchQueryDidChange?: (data: { query: string }) => void;
+  }
+
+  let { onsearchQueryDidChange }: Props = $props();
   let searchQuery: string = $state("");
 
   const onInputDidKeyUp = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
-      dispatch("searchQueryDidChange", { query: searchQuery });
+      onsearchQueryDidChange?.({ query: searchQuery });
     }
   };
 </script>
 
-<Input bind:value={searchQuery} on:keyup={onInputDidKeyUp} placeholder="Search" class="w-full" />
+<Input bind:value={searchQuery} onkeyup={onInputDidKeyUp} placeholder="Search" class="w-full" />

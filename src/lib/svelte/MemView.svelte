@@ -7,7 +7,7 @@
   import AutoResizeTextarea from "$lib/thirdparty/autoresize-textarea/AutoresizeTextarea.svelte";
   import { ArchiveIcon, EyeIcon, ImageUpIcon, PenLineIcon, Trash2Icon } from "@lucide/svelte";
   import { DateTime } from "luxon";
-  import { createEventDispatcher, onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { run } from "svelte/legacy";
 
   type MediaUrl = {
@@ -20,9 +20,33 @@
 
   interface Props {
     mem: Mem;
+    onarchive?: (data: { mem: Mem }) => void;
+    onunarchive?: (data: { mem: Mem }) => void;
+    onannotate?: (data: { mem: Mem }) => void;
+    ondelete?: (data: { mem: Mem }) => void;
+    onseen?: (data: { mem: Mem }) => void;
+    onremovePhoto?: (data: { mem: Mem; photo: MemPhoto | undefined }) => void;
+    onfileUpload?: (data: { mem: Mem; files: FileList }) => void;
+    onnoteChanged?: (data: { mem: Mem; text: string }) => void;
+    ondescriptionChanged?: (data: { mem: Mem; text: string }) => void;
+    ontitleChanged?: (data: { mem: Mem; text: string }) => void;
+    onurlChanged?: (data: { mem: Mem; url: string }) => void;
   }
 
-  let { mem }: Props = $props();
+  let {
+    mem,
+    onarchive,
+    onunarchive,
+    onannotate,
+    ondelete,
+    onseen,
+    onremovePhoto,
+    onfileUpload,
+    onnoteChanged,
+    ondescriptionChanged,
+    ontitleChanged,
+    onurlChanged
+  }: Props = $props();
 
   let maxChars = 1000;
   let mediaImageUrl = $state("");
@@ -34,27 +58,25 @@
   let titleEl: HTMLSpanElement | null = $state(null);
   let uploadEl: HTMLInputElement | null = $state(null);
 
-  const dispatch = createEventDispatcher();
-
   function onArchive() {
     console.log("onArchive");
-    dispatch("archive", { mem });
+    onarchive?.({ mem });
   }
 
   function onUnarchive() {
-    dispatch("unarchive", { mem });
+    onunarchive?.({ mem });
   }
 
   function onAnnotate() {
-    dispatch("annotate", { mem });
+    onannotate?.({ mem });
   }
 
   function onDelete() {
-    dispatch("delete", { mem });
+    ondelete?.({ mem });
   }
 
   function onSeen() {
-    dispatch("seen", { mem });
+    onseen?.({ mem });
   }
 
   function onUploadDidClick() {
@@ -65,7 +87,7 @@
 
   function onRemovePhoto(photo: MemPhoto | undefined) {
     console.log("onRemovePhoto", photo);
-    dispatch("removePhoto", { mem, photo });
+    onremovePhoto?.({ mem, photo });
   }
 
   function getPrettyDate(mem_: Mem) {
@@ -112,7 +134,7 @@
     }
 
     console.log("fileDidChange for mem", mem);
-    dispatch("fileUpload", { mem, files: target.files });
+    onfileUpload?.({ mem, files: target.files });
     // TODO: Check if there are issues if we clear this too early?
     // target.value = '';
   }
@@ -136,7 +158,7 @@
 
     console.log(e.dataTransfer.files);
     isDragging = false;
-    dispatch("fileUpload", { mem, files: dataTransfer.files });
+    onfileUpload?.({ mem, files: dataTransfer.files });
   }
 
   const shouldBypassPaste = () => {
@@ -211,7 +233,7 @@
     }
 
     event.preventDefault();
-    dispatch("fileUpload", { mem, files: filesForUpload });
+    onfileUpload?.({ mem, files: filesForUpload });
   };
 
   onMount(() => {
@@ -237,7 +259,7 @@
     const noteValue = target.value;
     console.log("noteDidChange", noteValue);
     if (noteValue != mem.note) {
-      dispatch("noteChanged", { mem, text: noteValue });
+      onnoteChanged?.({ mem, text: noteValue });
       target.innerText = noteValue;
     }
   };
@@ -250,7 +272,7 @@
     }
     const descriptionValue = target.value;
     if (descriptionValue != mem.description) {
-      dispatch("descriptionChanged", { mem, text: descriptionValue });
+      ondescriptionChanged?.({ mem, text: descriptionValue });
     }
   }
 
@@ -267,7 +289,7 @@
       titleEl.focus();
       titleEl.onblur = () => {
         if (titleEl) {
-          dispatch("titleChanged", { mem, text: titleEl.innerText });
+          ontitleChanged?.({ mem, text: titleEl.innerText });
           titleEl.removeAttribute("contenteditable");
           if (linkUrl) {
             linkEl.setAttribute("href", linkUrl);
@@ -296,7 +318,7 @@
       const target = e.target as HTMLInputElement;
       if (target) {
         console.log("onUrlKeyUp", target.value);
-        dispatch("urlChanged", { mem, url: target.value });
+        onurlChanged?.({ mem, url: target.value });
       }
     }
   };
@@ -380,10 +402,7 @@
     <AutoResizeTextarea
       class="my-2 h-8 min-h-[1rem] w-full rounded-xl bg-input px-4 py-2"
       maxRows={4}
-      on:change={() => {
-        console.log("chage");
-      }}
-      on:blur={noteDidChange}
+      onblur={noteDidChange}
       value={mem.note}
     />
 
@@ -402,7 +421,7 @@
       class="my-2 h-8 w-full rounded-xl bg-input px-4 py-2"
       minRows={2}
       maxRows={10}
-      on:blur={descriptionDidChange}
+      onblur={descriptionDidChange}
       value={getShortDescription(mem)}
     />
 
@@ -469,7 +488,7 @@
           </div>
         </Popover.Trigger>
         <Popover.Content>
-          <Input type="text" value={mem.url} on:keyup={onUrlDidKeyUp} />
+          <Input type="text" value={mem.url} onkeyup={onUrlDidKeyUp} />
         </Popover.Content>
       </Popover.Root>
     </div>
@@ -477,35 +496,35 @@
 
   <div class="flex flex-row flex-wrap gap-1 md:gap-2">
     {#if mem.new}
-      <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onArchive}>
+      <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onArchive}>
         <ArchiveIcon class="align-middle" size="12" />
         Archive
       </Button>
     {/if}
 
     {#if !mem.new}
-      <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onUnarchive}>
+      <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onUnarchive}>
         <ArchiveIcon class="align-middle" size="12" />
         Unarchive
       </Button>
     {/if}
 
-    <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onSeen}>
+    <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onSeen}>
       <EyeIcon class="align-middle" size="12" />
       Seen
     </Button>
 
-    <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onAnnotate}>
+    <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onAnnotate}>
       <PenLineIcon class="align-middle" size="12" />
       Annotate
     </Button>
 
-    <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onDelete}>
+    <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onDelete}>
       <Trash2Icon class="align-middle" size="12" />
       Delete
     </Button>
 
-    <Button class="flex flex-row gap-2" variant="outline" size="sm" on:click={onUploadDidClick}>
+    <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onUploadDidClick}>
       <ImageUpIcon class="align-middle" size="12" />
       Upload
     </Button>

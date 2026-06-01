@@ -119,9 +119,9 @@
   // Actions
   ////
 
-  const annotateMem = async (e: CustomEvent) => {
+  const annotateMem = async (data: { mem: Mem }) => {
     toast("Annotating...");
-    let mem: Mem = e.detail.mem;
+    let mem: Mem = data.mem;
     if (mem && $sharedUser) {
       const response: MemAnnotateResponse | undefined = await memModifiers.annotateMem(
         mem,
@@ -137,8 +137,8 @@
     }
   };
 
-  const deleteMem = async (e: CustomEvent) => {
-    let mem: Mem = e.detail.mem;
+  const deleteMem = async (data: { mem: Mem }) => {
+    let mem: Mem = data.mem;
     console.log("deleteMem", mem);
     if (mem && $sharedUser) {
       const deleteMemId = await memModifiers.deleteMem(mem, $sharedUser);
@@ -148,9 +148,9 @@
     }
   };
 
-  const removePhotoFromMem = async (e: CustomEvent) => {
-    let mem: Mem = e.detail.mem;
-    let photo: MemPhoto = e.detail.photo;
+  const removePhotoFromMem = async (data: { mem: Mem; photo: MemPhoto }) => {
+    let mem: Mem = data.mem;
+    let photo: MemPhoto = data.photo;
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.removePhotoFromMem(mem, photo, $sharedUser);
       console.log("removePhotoFromMem", updatedMem);
@@ -160,8 +160,8 @@
     }
   };
 
-  const archiveMem = async (e: CustomEvent) => {
-    let mem: Mem = e.detail.mem;
+  const archiveMem = async (data: { mem: Mem }) => {
+    let mem: Mem = data.mem;
     console.log("archiveMem");
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.archiveMem(mem, $sharedUser);
@@ -171,8 +171,8 @@
     }
   };
 
-  const seenMem = async (e: CustomEvent) => {
-    let mem: Mem = e.detail.mem;
+  const seenMem = async (data: { mem: Mem }) => {
+    let mem: Mem = data.mem;
     console.log("seenMem");
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.seenMem(mem, $sharedUser);
@@ -182,8 +182,8 @@
     }
   };
 
-  const unarchiveMem = async (e: CustomEvent) => {
-    const mem: Mem = e.detail.mem;
+  const unarchiveMem = async (data: { mem: Mem }) => {
+    const mem: Mem = data.mem;
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.unarchiveMem(mem, $sharedUser);
       if (updatedMem) {
@@ -192,9 +192,9 @@
     }
   };
 
-  const updateNoteForMem = async (e: CustomEvent) => {
-    const mem: Mem = e.detail.mem;
-    const text = e.detail.text;
+  const updateNoteForMem = async (data: { mem: Mem; text: string }) => {
+    const mem: Mem = data.mem;
+    const text = data.text;
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.updatePropertyForMem(mem, "note", text, $sharedUser);
       if (updatedMem) {
@@ -203,9 +203,9 @@
     }
   };
 
-  const updateTitleForMem = async (e: CustomEvent) => {
-    let mem: Mem = e.detail.mem;
-    let text = e.detail.text;
+  const updateTitleForMem = async (data: { mem: Mem; text: string }) => {
+    let mem: Mem = data.mem;
+    let text = data.text;
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.updatePropertyForMem(mem, "title", text, $sharedUser);
       if (updatedMem) {
@@ -214,9 +214,9 @@
     }
   };
 
-  const updateUrlForMem = async (e: CustomEvent) => {
-    let mem: Mem = e.detail.mem;
-    let text = e.detail.url;
+  const updateUrlForMem = async (data: { mem: Mem; url: string }) => {
+    let mem: Mem = data.mem;
+    let text = data.url;
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.updatePropertyForMem(mem, "url", text, $sharedUser);
       if (updatedMem) {
@@ -225,9 +225,9 @@
     }
   };
 
-  const updateDescriptionForMem = async (e: CustomEvent) => {
-    let mem: Mem = e.detail.mem;
-    let text = e.detail.text;
+  const updateDescriptionForMem = async (data: { mem: Mem; text: string }) => {
+    let mem: Mem = data.mem;
+    let text = data.text;
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.updatePropertyForMem(
         mem,
@@ -241,9 +241,9 @@
     }
   };
 
-  const uploadFilesForMem = async (e: CustomEvent) => {
-    let mem: Mem = e.detail.mem;
-    let files = e.detail.files;
+  const uploadFilesForMem = async (data: { mem: Mem; files: FileList }) => {
+    let mem: Mem = data.mem;
+    let files = data.files;
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.uploadFilesForMem(mem, files, $sharedUser);
       if (updatedMem) {
@@ -252,13 +252,11 @@
     }
   };
 
-  const memDidAdd = (e: CustomEvent) => {
-    //const mem = e.detail.mem;
+  const memDidAdd = (_data: { mem: Mem }) => {
     loadMems(listOptions, searchQuery, false);
   };
 
-  const tagDidClick = (e: CustomEvent) => {
-    const tag = e.detail.tag;
+  const tagDidClick = (tag: TagListItem) => {
     console.log("tagDidClick", tag, listOptions);
 
     // Toggle the tag in the filters
@@ -277,14 +275,12 @@
     }
   };
 
-  const searchQueryDidChange = (e: CustomEvent) => {
-    const query = e.detail.query;
-    searchQuery = query;
-    console.log("searchQueryDidChange", query);
+  const searchQueryDidChange = (data: { query: string }) => {
+    searchQuery = data.query;
+    console.log("searchQueryDidChange", data.query);
   };
 
-  const sortOrderDidChange = (e: CustomEvent) => {
-    const order = e.detail;
+  const sortOrderDidChange = (order: string) => {
     listOptions.order = order;
     listOptions = listOptions;
     console.log("sortOrderDidChange", order);
@@ -317,35 +313,35 @@
 <div class="flex w-full flex-col overflow-x-hidden md:flex-row">
   {#if showTags}
     <section class="md:my-4">
-      <MemSearchBox on:searchQueryDidChange={searchQueryDidChange} />
+      <MemSearchBox onsearchQueryDidChange={searchQueryDidChange} />
       <MemTagList currentTagFilters={listOptions} />
     </section>
   {/if}
   <main class="max-w-screen flex-grow p-2 md:max-w-xl">
-    <MemAdd on:memDidAdd={memDidAdd} />
+    <MemAdd onmemDidAdd={memDidAdd} />
     {#if viewTags && viewTags.length > 0}
       <MemListFilters
         tags={viewTags}
         {listOptions}
-        on:tagDidClick={tagDidClick}
-        on:sortOrderDidChange={sortOrderDidChange}
+        ontagDidClick={tagDidClick}
+        onsortOrderDidChange={sortOrderDidChange}
       />
     {/if}
     <MemList
       {mems}
-      on:annotate={annotateMem}
-      on:archive={archiveMem}
-      on:unarchive={unarchiveMem}
-      on:delete={deleteMem}
-      on:descriptionChanged={updateDescriptionForMem}
-      on:noteChanged={updateNoteForMem}
-      on:titleChanged={updateTitleForMem}
-      on:fileUpload={uploadFilesForMem}
-      on:seen={seenMem}
-      on:removePhoto={removePhotoFromMem}
-      on:urlChanged={updateUrlForMem}
+      onannotate={annotateMem}
+      onarchive={archiveMem}
+      onunarchive={unarchiveMem}
+      ondelete={deleteMem}
+      ondescriptionChanged={updateDescriptionForMem}
+      onnoteChanged={updateNoteForMem}
+      ontitleChanged={updateTitleForMem}
+      onfileUpload={uploadFilesForMem}
+      onseen={seenMem}
+      onremovePhoto={removePhotoFromMem}
+      onurlChanged={updateUrlForMem}
     />
-    <MoreMem moreAvailable={moreMemsAvailable} on:loadMore={loadMore} />
+    <MoreMem moreAvailable={moreMemsAvailable} onloadMore={loadMore} />
     {#if feedHref}
       <div class="mt-4 flex justify-end">
         <a class="text-sm text-primary hover:underline" href={feedHref} rel="alternate">Feed</a>

@@ -1,17 +1,23 @@
 <script lang="ts">
   import { parseText } from "$lib/common/parser";
+  import type { Mem } from "$lib/common/mems";
   import { Button } from "$lib/components/ui/button/index.js";
   import { sharedUser } from "$lib/firebase-shared";
   import { addMem, getTagSuggestions } from "$lib/mem.client";
   import type { TagListItem } from "$lib/tags.server";
   import { cn } from "$lib/utils";
   import { DateTime } from "luxon";
-  import { createEventDispatcher, tick } from "svelte";
+  import { tick } from "svelte";
   import { toast } from "svelte-sonner";
   import { createBubbler, preventDefault } from "svelte/legacy";
 
   const bubble = createBubbler();
 
+  interface Props {
+    onmemDidAdd?: (data: { mem: Mem }) => void;
+  }
+
+  let { onmemDidAdd }: Props = $props();
   let pending = $state(false);
   let rawInput: string = $state("");
   let suggestions: TagListItem[] = $state([]);
@@ -21,7 +27,6 @@
   let textareaEl: HTMLTextAreaElement | null = $state(null);
   let latestQuery = "";
   let fetchSequence = 0;
-  const dispatch = createEventDispatcher();
 
   const resetSuggestions = () => {
     suggestions = [];
@@ -144,7 +149,7 @@
     const addedMem = await addMem(mem, $sharedUser);
     pending = false;
     if (addedMem) {
-      dispatch("memDidAdd", { mem: addedMem });
+      onmemDidAdd?.({ mem: addedMem });
       rawInput = "";
       resetSuggestions();
     } else {
@@ -185,5 +190,5 @@
       {/each}
     </div>
   {/if}
-  <Button class={cn("my-2", pending ? "animate-pulse" : "")} on:click={addNewMem}>Add</Button>
+  <Button class={cn("my-2", pending ? "animate-pulse" : "")} onclick={addNewMem}>Add</Button>
 </div>

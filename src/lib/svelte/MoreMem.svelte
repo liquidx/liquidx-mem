@@ -1,22 +1,21 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import { Button } from "$lib/components/ui/button/index.js";
 
-  const dispatch = createEventDispatcher();
   interface Props {
     moreAvailable?: boolean;
+    onloadMore?: () => void;
   }
 
-  let { moreAvailable = false }: Props = $props();
+  let { moreAvailable = false, onloadMore }: Props = $props();
 
   function loadMoreDidClick() {
-    dispatch("loadMore");
+    onloadMore?.();
   }
 </script>
 
 <div class="m-1 flex w-full flex-row justify-between">
   {#if moreAvailable}
-    <Button on:click={loadMoreDidClick} class="my-4">More</Button>
+    <Button onclick={loadMoreDidClick} class="my-4">More</Button>
   {:else}
     <div>That's it.</div>
   {/if}

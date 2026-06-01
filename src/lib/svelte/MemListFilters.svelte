@@ -5,17 +5,15 @@
   import type { TagListItem } from "$lib/tags.server";
   import { cn } from "$lib/utils";
   import { ChevronsUpDownIcon } from "@lucide/svelte";
-  import { createEventDispatcher } from "svelte";
-
   interface Props {
     tags?: TagListItem[];
     listOptions?: MemListOptions | undefined;
+    ontagDidClick?: (tag: TagListItem) => void;
+    onsortOrderDidChange?: (order: string) => void;
   }
 
-  let { tags = [], listOptions = undefined }: Props = $props();
+  let { tags = [], listOptions = undefined, ontagDidClick, onsortOrderDidChange }: Props = $props();
   let sortOrder = $state("newest");
-
-  const dispatch = createEventDispatcher();
 
   const sortOrders = [
     { value: "newest", label: "Newest" },
@@ -23,7 +21,7 @@
   ];
 
   const onTagDidClick = (tag: TagListItem) => {
-    dispatch("tagDidClick", tag);
+    ontagDidClick?.(tag);
   };
 
   const isTagSelected = (tag: TagListItem) => {
@@ -38,7 +36,7 @@
 
   const sortOrderDidChange = () => {
     console.log("sortOrderDidChange", sortOrder);
-    dispatch("sortOrderDidChange", sortOrder);
+    onsortOrderDidChange?.(sortOrder);
   };
 </script>
 
