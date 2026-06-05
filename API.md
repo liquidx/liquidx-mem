@@ -56,7 +56,7 @@ Create a new memory from text or image content.
 **Features**:
 - Automatically annotates content
 - Mirrors media to S3 storage
-- Checks for duplicate URLs
+- Deduplicates by URL: if a mem with the same URL already exists, tags are merged and notes are appended rather than creating a duplicate; the updated existing mem is returned
 - Refreshes tag counts
 
 **Error Responses**: `403`, `500`
@@ -97,14 +97,14 @@ Retrieve a filtered list of memories with pagination.
 {
   "userId": "string",
   "secretWord": "string",           // optional
-  "isArchived": false,              // optional
-  "all": false,                     // optional
+  "isArchived": false,              // optional: filter to archived (non-new) mems
+  "all": false,                     // optional: return all mems regardless of new status
   "order": "newest",                // optional: "newest" | "oldest"
   "matchAllTags": ["tag1", "tag2"], // optional: AND filter
   "matchAnyTags": ["tag3", "tag4"], // optional: OR filter
   "searchQuery": "search text",     // optional: full-text search
-  "pageSize": 20,                   // optional: default varies
-  "page": 1                         // optional: 1-based pagination
+  "pageSize": 20,                   // optional: number of results per page
+  "page": 0                         // optional: 0-based page index (default: 0)
 }
 ```
 
@@ -120,6 +120,14 @@ Retrieve a filtered list of memories with pagination.
   ]
 }
 ```
+
+**Behavior**:
+- Default (no filters): returns only mems with `new: true`
+- `all: true`: returns all mems regardless of new status
+- `isArchived: true`: returns mems with `new: false`
+- Tag filter (`matchAllTags`/`matchAnyTags`) overrides the new-only default
+- Mems tagged `#xxx` are suppressed from results unless `#xxx` is explicitly included in `matchAllTags`
+- `searchQuery` performs full-text search and bypasses the new-only filter
 
 **Error Responses**: `403`, `500`
 
@@ -385,11 +393,10 @@ Get tag counts for a user.
 
 Get tag suggestions based on query.
 
-**Authentication**: Firebase token
+**Authentication**: Firebase token OR shared secret
 
 **Parameters**:
-- `userId` (query): User ID
-- `secret` (query): Shared secret for authentication
+- `secret` (query): Shared secret for authentication (alternative to Bearer token)
 - `query` (query, optional): Search query for tag suggestions
 - `limit` (query, optional): Max results (default: 10, max: 25)
 
@@ -407,10 +414,11 @@ Get tag suggestions based on query.
 ```
 
 **Features**:
-- Results sorted by count, then alphabetically
-- Supports partial matching
+- Results sorted by count (descending), then alphabetically
+- Query matches tag prefixes case-insensitively
+- Hash prefix is optional: querying `photo` also matches `#photo`, and querying `#photo` also matches `#photo`
 
-**Error Responses**: `400`, `403`
+**Error Responses**: `403`
 
 ---
 
@@ -543,4 +551,4 @@ Write a user preference.
 - Most endpoints automatically refresh tag counts when content is modified
 - Image uploads are stored in S3-compatible storage
 - Full-text search is supported via MongoDB text indexes
-- Pagination is 1-based for the `page` parameter
+- Pagination is 0-based for the `page` parameter (`page: 0` returns the first page)
