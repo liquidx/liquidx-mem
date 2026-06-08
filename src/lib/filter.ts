@@ -24,29 +24,29 @@ export const listOptionsByString = (filterString: string | undefined): MemListOp
 
   if (filterString == "*") {
     options.onlyArchived = true;
+    options.matchAllTags = ["#*"];
+    return options;
   }
+
+  const toTag = (tag: string) => `#${tag.trim().toLowerCase()}`;
 
   // Filter strings can either be
   // - a single tag
   // - tags separated by '+' (match all) or ',' (match any)
-  const matchAll = filterString.split("+");
-  if (matchAll.length > 0) {
-    options.matchAllTags = matchAll
-      .map((tag) => tag.trim())
-      .map((tag) => tag.toLowerCase())
-      .map((tag) => `#${tag}`);
+  // Check for the separators explicitly: split('+') always returns at least one
+  // element, so it cannot be used to detect which separator was used.
+  if (filterString.includes("+")) {
+    options.matchAllTags = filterString.split("+").map(toTag);
     return options;
   }
 
-  const matchAny = filterString.split(",");
-  if (matchAny.length > 1) {
-    options.matchAnyTags = matchAny
-      .map((tag) => tag.trim())
-      .map((tag) => tag.toLowerCase())
-      .map((tag) => `#${tag}`);
+  if (filterString.includes(",")) {
+    options.matchAnyTags = filterString.split(",").map(toTag);
     return options;
   }
 
+  // A single tag.
+  options.matchAllTags = [toTag(filterString)];
   return options;
 };
 
