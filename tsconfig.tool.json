@@ -20,8 +20,8 @@
     "allowSyntheticDefaultImports": true,
     "noEmit": false,
     "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "types": ["jest"],
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
