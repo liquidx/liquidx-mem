@@ -15,30 +15,27 @@ liquidx-mem is a note-taking service that allows users to collect content from a
 
 ```bash
 # Development server
-npm run dev
+pnpm run dev
 
 # Build for production
-npm run build
+pnpm run build
 
 # Preview production build
-npm run preview
-
-# Deploy to Firebase hosting
-npm run deploy
+pnpm run preview
 
 # Testing
-npm run test        # Playwright end-to-end tests
-npm run vitest      # Unit tests with Vitest
+pnpm run test        # Unit tests with Vitest
+pnpm run test:e2e    # Playwright end-to-end tests
 
 # Code quality
-npm run lint        # Prettier + ESLint
-npm run format      # Prettier formatting
-npm run check       # Svelte type checking
-npm run check:watch # Svelte type checking in watch mode
+pnpm run lint        # Prettier + ESLint
+pnpm run format      # Prettier formatting
+pnpm run check       # Svelte type checking
+pnpm run check:watch # Svelte type checking in watch mode
 
 # TypeScript compilation
-npm run tsc         # Watch mode for tools
-npm run tsc-once    # Single compilation
+pnpm run tsc         # Watch mode for tools
+pnpm run tsc-once    # Single compilation
 ```
 
 ## Project Architecture
