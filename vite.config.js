@@ -13,6 +13,6 @@ export default defineConfig({
   },
   plugins: [tailwindcss(), sveltekit()],
   test: {
-    include: ["src/**/*.{test,spec}.{js,ts}", "test/**/*.{test,spec}.{js,ts}"]
+    include: ["src/**/*.{test,spec}.{js,ts}", "tests/unit/**/*.{test,spec}.{js,ts}"]
   }
 });

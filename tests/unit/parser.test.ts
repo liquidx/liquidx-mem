@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseText } from "../src/lib/common/parser.js";
+import { parseText } from "../../src/lib/common/parser.js";
 
 describe("parseText", () => {
   it("should parse plain text without entities", () => {
