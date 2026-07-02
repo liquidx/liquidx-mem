@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { listOptionsByString, stringFromListOptions } from "../src/lib/filter.js";
+import { listOptionsByString, stringFromListOptions } from "../../src/lib/filter.js";
 
 describe("listOptionsByString", () => {
   it("defaults to only-new when empty", () => {

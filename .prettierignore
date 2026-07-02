@@ -17,4 +17,4 @@ yarn.lock
 src/lib/components/ui
 
 # Ignore the test fixtures
-test/fixtures
+tests/unit/fixtures
