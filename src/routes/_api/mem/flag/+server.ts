@@ -1,9 +1,11 @@
 import { memToJson } from "$lib/common/mems";
+import { READING_LIST_TAGS } from "$lib/common/reading";
 import { getDb } from "$lib/db";
 import { getFirebaseApp } from "$lib/firebase.server.js";
 import { getMem } from "$lib/mem.db.server";
 import { updateMem } from "$lib/mem.db.server";
 import { getUserId } from "$lib/server/api.server.js";
+import { refreshTagCounts } from "$lib/tags.server.js";
 import { error, json } from "@sveltejs/kit";
 
 import type { RequestHandler } from "./$types";
@@ -54,9 +56,28 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     }
   }
 
+  // Mark a mem as read: strip all reading-list tags so it drops off the
+  // Reading List while staying saved.
+  if (body.markRead) {
+    if (mem.tags) {
+      mem.tags = mem.tags.filter((tag) => !READING_LIST_TAGS.includes(tag));
+    }
+    if (mem.note) {
+      for (const tag of READING_LIST_TAGS) {
+        mem.note = mem.note.replaceAll(tag, "");
+      }
+      mem.note = mem.note.replace(/\s+/g, " ").trim();
+    }
+  }
+
   const updatedMem = await updateMem(db, mem);
   if (!updatedMem) {
     return error(500, JSON.stringify({ error: "Error updating mem" }));
+  }
+
+  // The set of tags changed, so refresh the cached counts.
+  if (body.seen !== undefined || body.markRead) {
+    await refreshTagCounts(db, userId);
   }
 
   return json({ mem: memToJson(updatedMem) });

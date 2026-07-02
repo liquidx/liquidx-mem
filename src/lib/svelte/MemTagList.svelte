@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { run, preventDefault } from 'svelte/legacy';
-
-  import { getTags, getSavedViews } from "$lib/mem.client.js";
-  import type { TagListItem } from "$lib/tags.types";
-  import { sharedUser } from "$lib/firebase-shared";
-  import type { UserView } from "$lib/user.types";
+  import { page } from "$app/stores";
   import type { MemListOptions } from "$lib/filter";
+  import { sharedUser } from "$lib/firebase-shared";
+  import { getSavedViews, getTags } from "$lib/mem.client.js";
+  import type { TagListItem } from "$lib/tags.types";
+  import type { UserView } from "$lib/user.types";
   import { cn } from "$lib/utils";
+  import { preventDefault, run } from "svelte/legacy";
 
   interface Props {
     currentTagFilters?: MemListOptions | undefined;
@@ -19,8 +19,6 @@
   let tags: TagListItem[] = $state([]);
   let views: UserView[] = $state([]);
   let visibleTags: TagListItem[] = $state([]);
-
-
 
   const getData = async () => {
     if ($sharedUser) {
@@ -78,6 +76,13 @@
   >
     🆕 New
   </a>
+  <a
+    href="/reading"
+    class={cn(
+      "block whitespace-nowrap rounded-sm px-1 py-1 font-bold hover:underline md:px-2",
+      $page.url.pathname === "/reading" ? "bg-primary text-white" : ""
+    )}>📖 Reading List</a
+  >
   <a
     href="/tag/*"
     class={cn(

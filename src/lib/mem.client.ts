@@ -164,6 +164,26 @@ export async function seenMem(mem: Mem, user: User): Promise<Mem | undefined> {
   });
 }
 
+export async function markReadMem(mem: Mem, user: User): Promise<Mem | undefined> {
+  const url = `${serverUrl}/mem/flag`;
+  const body = { userId: user.uid, memId: mem._id, markRead: true };
+  const authToken = await user.getIdToken();
+  const headers = {
+    Authorization: `Bearer ${authToken}`
+  };
+
+  return axios.post(url, body, { headers }).then((response) => {
+    if (response.status != 200) {
+      return;
+    }
+
+    if (!response.data.mem) {
+      return;
+    }
+    return memFromJson(response.data.mem);
+  });
+}
+
 export async function updatePropertyForMem(
   mem: Mem,
   property: string,
