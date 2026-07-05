@@ -1,9 +1,59 @@
+@import url("https://fonts.googleapis.com/css2?family=Spline+Sans+Mono:wght@400;500;600&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
   margin: 0;
-  min-width: 350px;
+  width: 340px;
   min-height: 200px;
+  background: #08080a;
+  color: #e6e6ea;
+  font-family: "Spline Sans Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 1; /* tabular numerals */
+}
+
+/* Accent caret in text fields (search-field feel) */
+input,
+textarea {
+  caret-color: #a78bfa;
+}
+
+/* Tick strip: 1px vertical ticks every 24px on a hairline baseline */
+.tick-strip {
+  height: 9px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.16) 0 1px,
+    transparent 1px 24px
+  );
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+/* Blinking caret glyph for prompts */
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.caret-blink {
+  animation: blink 1.1s steps(1) infinite;
+}
+
+/* Thin dark scrollbar for the horizontal autocomplete strip */
+.hud-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.hud-scroll::-webkit-scrollbar-thumb {
+  background: #3a3a44;
+}
+.hud-scroll::-webkit-scrollbar-track {
+  background: transparent;
 }

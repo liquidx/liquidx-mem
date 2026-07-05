@@ -3,6 +3,38 @@ import { getCurrentTabUrl, saveToMem, getStoredSecret, saveSecret } from './util
 import { HashtagAutocomplete } from './HashtagAutocomplete'
 import { useHashtagAutocomplete } from './useHashtagAutocomplete'
 
+// Shared terminal/HUD styling (docs/design/README.md)
+const fieldClass =
+  'w-full bg-surface border border-hair-strong px-3 py-2 text-[13px] text-ink-primary placeholder:text-ink-faint focus:outline-none focus:border-accent'
+
+function SectionLabel({ label, descriptor }: { label: string; descriptor?: string }) {
+  return (
+    <div className="mb-2 flex items-center gap-2">
+      <span className="text-[10px] uppercase tracking-[0.16em] text-ink-tertiary">
+        {label}
+      </span>
+      <span className="h-px flex-1 bg-hair" />
+      {descriptor && (
+        <span className="text-[10px] uppercase tracking-[0.16em] text-ink-faint">
+          {descriptor}
+        </span>
+      )}
+    </div>
+  )
+}
+
+function StatusMessage({ message }: { message: string }) {
+  if (!message) return null
+  const ok = message.startsWith('✓')
+  const text = message.replace(/^✓\s*/, '')
+  return (
+    <div className="flex items-center gap-2 text-[11px]">
+      <span className={ok ? 'text-accent' : 'text-danger'}>▪</span>
+      <span className={ok ? 'text-ink-secondary' : 'text-danger'}>{text}</span>
+    </div>
+  )
+}
+
 function App() {
   const [currentUrl, setCurrentUrl] = useState<string>('')
   const [description, setDescription] = useState<string>('')
@@ -11,14 +43,13 @@ function App() {
   const [message, setMessage] = useState<string>('')
   const [showSettings, setShowSettings] = useState<boolean>(false)
   const [cursorPosition, setCursorPosition] = useState<number>(0)
-  const [autocompletePosition, setAutocompletePosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
-  
+
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleTextChange = (newText: string, newCursorPosition: number) => {
     setDescription(newText)
     setCursorPosition(newCursorPosition)
-    
+
     // Set cursor position in textarea
     if (textareaRef.current) {
       setTimeout(() => {
@@ -42,7 +73,7 @@ function App() {
       try {
         const url = await getCurrentTabUrl()
         setCurrentUrl(url)
-        
+
         const storedSecret = await getStoredSecret()
         if (storedSecret) {
           setSecret(storedSecret)
@@ -56,41 +87,6 @@ function App() {
 
     initializeApp()
   }, [])
-
-  // Calculate autocomplete position based on cursor
-  const updateAutocompletePosition = () => {
-    if (!textareaRef.current || !autocomplete.currentHashtag) return
-
-    const textarea = textareaRef.current
-    const { startIndex } = autocomplete.currentHashtag
-    
-    // Create a temporary element to measure text
-    const canvas = document.createElement('canvas')
-    const context = canvas.getContext('2d')
-    if (context) {
-      context.font = getComputedStyle(textarea).font
-      
-      const textBeforeCursor = description.substring(0, startIndex)
-      const lines = textBeforeCursor.split('\n')
-      const currentLine = lines[lines.length - 1]
-      const textWidth = context.measureText(currentLine).width
-      
-      const rect = textarea.getBoundingClientRect()
-      const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20
-      
-      setAutocompletePosition({
-        top: rect.top + (lines.length - 1) * lineHeight + lineHeight + 5,
-        left: rect.left + textWidth + 5
-      })
-    }
-  }
-
-  // Update autocomplete position when hashtag changes
-  useEffect(() => {
-    if (autocomplete.isVisible) {
-      updateAutocompletePosition()
-    }
-  }, [autocomplete.currentHashtag, autocomplete.isVisible])
 
   // Handle keyboard events
   useEffect(() => {
@@ -106,7 +102,7 @@ function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!secret.trim()) {
       setMessage('Error: Please set your shared secret first')
       setShowSettings(true)
@@ -126,7 +122,7 @@ function App() {
       await saveToMem(text, secret)
       setMessage('✓ Successfully saved to mem!')
       setDescription('')
-      
+
       // Close popup after success
       setTimeout(() => {
         window.close()
@@ -155,79 +151,82 @@ function App() {
 
   if (showSettings) {
     return (
-      <div className="w-80 p-4 bg-white">
-        <h2 className="text-lg font-semibold mb-4">Settings</h2>
-        <div className="space-y-4">
+      <div className="w-[340px] bg-base font-mono text-ink-primary">
+        <header className="flex items-baseline justify-between px-[18px] pt-4">
+          <h1 className="text-[18px] font-semibold uppercase tracking-[0.05em]">
+            settings
+          </h1>
+          {secret && (
+            <button
+              onClick={() => setShowSettings(false)}
+              className="text-[11px] uppercase tracking-[0.12em] text-ink-faint hover:text-accent focus:outline-none"
+            >
+              [ back ]
+            </button>
+          )}
+        </header>
+        <div className="tick-strip mt-3" />
+
+        <div className="space-y-4 px-[18px] py-4">
           <div>
-            <label htmlFor="secret" className="block text-sm font-medium text-gray-700 mb-1">
-              Shared Secret
-            </label>
+            <SectionLabel label="shared secret" descriptor="mem.liquidx.net" />
             <input
               type="password"
               id="secret"
               value={secret}
               onChange={(e) => setSecret(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your shared secret"
+              className={fieldClass}
+              placeholder="enter your shared secret"
             />
           </div>
-          <div className="flex space-x-2">
+          <div className="flex gap-2">
             <button
               onClick={handleSaveSecret}
-              className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 border border-accent bg-accent/10 px-4 py-2 text-[12px] uppercase tracking-[0.16em] text-accent hover:bg-accent/20 focus:outline-none"
             >
-              Save Secret
+              save
             </button>
             {secret && (
               <button
                 onClick={() => setShowSettings(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="border border-hair-strong px-4 py-2 text-[12px] uppercase tracking-[0.16em] text-ink-secondary hover:bg-white/[0.04] focus:outline-none"
               >
-                Cancel
+                cancel
               </button>
             )}
           </div>
-          {message && (
-            <p className={`text-sm ${message.startsWith('✓') ? 'text-green-600' : 'text-red-600'}`}>
-              {message}
-            </p>
-          )}
+          <StatusMessage message={message} />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="w-80 p-4 bg-white">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-lg font-semibold">Save to Mem</h1>
+    <div className="w-[340px] bg-base font-mono text-ink-primary">
+      <header className="flex items-baseline justify-between px-[18px] pt-4">
+        <h1 className="text-[18px] font-semibold uppercase tracking-[0.05em]">
+          save to mem
+        </h1>
         <button
           onClick={() => setShowSettings(true)}
-          className="text-gray-500 hover:text-gray-700 focus:outline-none"
+          className="text-[11px] uppercase tracking-[0.12em] text-ink-faint hover:text-accent focus:outline-none"
           title="Settings"
         >
-          ⚙️
+          [ cfg ]
         </button>
-      </div>
+      </header>
+      <div className="tick-strip mt-3" />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 px-[18px] py-4">
         <div>
-          <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
-            Current URL
-          </label>
-          <input
-            type="text"
-            id="url"
-            value={currentUrl}
-            readOnly
-            className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-600"
-          />
+          <SectionLabel label="url" descriptor="source" />
+          <div className="truncate bg-surface border border-hair px-3 py-2 text-[12px] text-ink-secondary">
+            {currentUrl || '—'}
+          </div>
         </div>
 
-        <div className="relative">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Description (can include #hashtags)
-          </label>
+        <div>
+          <SectionLabel label="note" descriptor="#tags ok" />
           <textarea
             ref={textareaRef}
             id="description"
@@ -242,15 +241,14 @@ function App() {
             onMouseUp={(e) => {
               setCursorPosition(e.currentTarget.selectionStart)
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className={`${fieldClass} resize-none`}
             rows={3}
-            placeholder="Add a description..."
+            placeholder="add a note…"
           />
           {autocomplete.isVisible && (
             <HashtagAutocomplete
               suggestions={autocomplete.suggestions}
               onSelect={autocomplete.selectSuggestion}
-              position={autocompletePosition}
               selectedIndex={autocomplete.selectedIndex}
               onSelectedIndexChange={autocomplete.setSelectedIndex}
             />
@@ -260,16 +258,12 @@ function App() {
         <button
           type="submit"
           disabled={isLoading || !description.trim()}
-          className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="w-full border px-4 py-2 text-[12px] uppercase tracking-[0.16em] transition-colors focus:outline-none enabled:border-accent enabled:bg-accent/10 enabled:text-accent enabled:hover:bg-accent/20 disabled:cursor-not-allowed disabled:border-hair disabled:bg-transparent disabled:text-ink-faint"
         >
-          {isLoading ? 'Saving...' : 'Save to Mem'}
+          {isLoading ? 'saving…' : '⏎ save'}
         </button>
 
-        {message && (
-          <p className={`text-sm ${message.startsWith('✓') ? 'text-green-600' : 'text-red-600'}`}>
-            {message}
-          </p>
-        )}
+        <StatusMessage message={message} />
       </form>
     </div>
   )

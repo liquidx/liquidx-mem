@@ -4,7 +4,6 @@ import { TagSuggestion } from './utils'
 interface HashtagAutocompleteProps {
   suggestions: TagSuggestion[]
   onSelect: (tag: string) => void
-  position: { top: number; left: number }
   selectedIndex: number
   onSelectedIndexChange: (index: number) => void
 }
@@ -12,17 +11,16 @@ interface HashtagAutocompleteProps {
 export function HashtagAutocomplete({
   suggestions,
   onSelect,
-  position,
   selectedIndex,
   onSelectedIndexChange
 }: HashtagAutocompleteProps) {
-  const listRef = useRef<HTMLUListElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (listRef.current && selectedIndex >= 0) {
       const selectedElement = listRef.current.children[selectedIndex] as HTMLElement
       if (selectedElement) {
-        selectedElement.scrollIntoView({ block: 'nearest' })
+        selectedElement.scrollIntoView({ block: 'nearest', inline: 'nearest' })
       }
     }
   }, [selectedIndex])
@@ -33,40 +31,42 @@ export function HashtagAutocomplete({
 
   return (
     <div
-      className="fixed z-50 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto"
-      style={{
-        top: position.top,
-        left: position.left,
-        minWidth: '150px',
-        maxWidth: '250px'
-      }}
+      ref={listRef}
+      className="hud-scroll mt-2 flex gap-1 overflow-x-auto pb-1"
+      role="listbox"
     >
-      <ul ref={listRef} className="py-1">
-        {suggestions.map((suggestion, index) => (
-          <li
+      {suggestions.map((suggestion, index) => {
+        const active = index === selectedIndex
+        return (
+          <button
+            type="button"
             key={suggestion.tag}
-            className={`px-3 py-2 cursor-pointer text-sm flex items-center justify-between ${
-              index === selectedIndex
-                ? 'bg-blue-500 text-white'
-                : 'text-gray-700 hover:bg-gray-100'
-            }`}
+            role="option"
+            aria-selected={active}
             onClick={() => onSelect(suggestion.tag)}
             onMouseEnter={() => onSelectedIndexChange(index)}
+            className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap border px-2 py-1 text-[11px] transition-colors ${
+              active
+                ? 'border-accent bg-accent/10 text-accent'
+                : 'border-hair text-ink-secondary hover:bg-accent/[0.06]'
+            }`}
           >
-            <span className="flex items-center">
-              {suggestion.icon && (
-                <span className="mr-2 text-xs">{suggestion.icon}</span>
-              )}
-              {suggestion.tag}
+            {suggestion.icon && (
+              <span className="text-[10px] leading-none">{suggestion.icon}</span>
+            )}
+            <span className="leading-none">
+              {suggestion.tag.startsWith('#') ? suggestion.tag : `#${suggestion.tag}`}
             </span>
-            <span className={`text-xs ${
-              index === selectedIndex ? 'text-blue-200' : 'text-gray-400'
-            }`}>
+            <span
+              className={`text-[10px] leading-none ${
+                active ? 'text-accent/70' : 'text-ink-faint'
+              }`}
+            >
               {suggestion.count}
             </span>
-          </li>
-        ))}
-      </ul>
+          </button>
+        )
+      })}
     </div>
   )
 }
