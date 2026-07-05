@@ -5,8 +5,6 @@
   import * as memModifiers from "$lib/mem.client";
   import type { MemListRequest } from "$lib/request.types";
   import MemList from "$lib/svelte/MemList.svelte";
-  import MemSearchBox from "$lib/svelte/MemSearchBox.svelte";
-  import MemTagList from "$lib/svelte/MemTagList.svelte";
   import { iconForTag } from "$lib/tags";
   import axios from "axios";
   import { toast } from "svelte-sonner";
@@ -19,6 +17,7 @@
   let mems: Mem[] = $state([]);
   let searchQuery: string = $state("");
   let collapsed: Record<string, boolean> = $state({});
+  let editingId: string | null = $state(null);
 
   interface TopicGroup {
     tag: string;
@@ -99,7 +98,7 @@
       .sort((a, b) => b.mems.length - a.mems.length || a.tag.localeCompare(b.tag));
 
     if (other.length > 0) {
-      topicGroups.push({ tag: "#__other", label: "Other", icon: "🗂️", mems: other });
+      topicGroups.push({ tag: "#__other", label: "other", icon: "🗂️", mems: other });
     }
 
     return topicGroups;
@@ -125,7 +124,7 @@
     collapsed = { ...collapsed, [tag]: !collapsed[tag] };
   };
 
-  // In the reading list, "Seen" means "I've read this": strip the reading-list
+  // In the reading list, "seen" means "I've read this": strip the reading-list
   // tags so it drops off the list while staying saved.
   const markReadMem = async (data: { mem: Mem }) => {
     const mem = data.mem;
@@ -133,23 +132,23 @@
       const updatedMem = await memModifiers.markReadMem(mem, $sharedUser);
       if (updatedMem) {
         removeFromList(mem._id);
-        toast.success("Marked as read");
+        toast.success("marked as read");
       } else {
-        toast.error("Failed to mark as read");
+        toast.error("failed to mark as read");
       }
     }
   };
 
   const annotateMem = async (data: { mem: Mem }) => {
-    toast("Annotating...");
+    toast("annotating…");
     const mem = data.mem;
     if (mem && $sharedUser) {
       const response = await memModifiers.annotateMem(mem, $sharedUser);
       if (response) {
         replaceInList(response.mem, response.mem._id);
-        toast.success("Done");
+        toast.success("done");
       } else {
-        toast.error("Failed to annotate...");
+        toast.error("failed to annotate");
       }
     }
   };
@@ -184,57 +183,17 @@
     }
   };
 
-  const updateNoteForMem = async (data: { mem: Mem; text: string }) => {
-    const mem = data.mem;
-    if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(
-        mem,
-        "note",
-        data.text,
-        $sharedUser
-      );
-      if (updatedMem) {
-        replaceInList(updatedMem, mem._id);
-      }
+  const editMem = async (data: { mem: Mem; updates: Partial<Mem> }) => {
+    const { mem, updates } = data;
+    if (Object.keys(updates).length === 0) {
+      return;
     }
-  };
-
-  const updateTitleForMem = async (data: { mem: Mem; text: string }) => {
-    const mem = data.mem;
     if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(
-        mem,
-        "title",
-        data.text,
-        $sharedUser
-      );
+      const updatedMem = await memModifiers.updateMemProperties(mem, updates, $sharedUser);
       if (updatedMem) {
         replaceInList(updatedMem, mem._id);
-      }
-    }
-  };
-
-  const updateUrlForMem = async (data: { mem: Mem; url: string }) => {
-    const mem = data.mem;
-    if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(mem, "url", data.url, $sharedUser);
-      if (updatedMem) {
-        replaceInList(updatedMem, mem._id);
-      }
-    }
-  };
-
-  const updateDescriptionForMem = async (data: { mem: Mem; text: string }) => {
-    const mem = data.mem;
-    if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(
-        mem,
-        "description",
-        data.text,
-        $sharedUser
-      );
-      if (updatedMem) {
-        replaceInList(updatedMem, mem._id);
+      } else {
+        toast.error("failed to save");
       }
     }
   };
@@ -259,8 +218,12 @@
     }
   };
 
-  const searchQueryDidChange = (data: { query: string }) => {
-    searchQuery = data.query;
+  const requestEdit = (data: { mem: Mem }) => {
+    editingId = data.mem._id ?? null;
+  };
+
+  const closeEdit = () => {
+    editingId = null;
   };
 
   $effect(() => {
@@ -271,47 +234,61 @@
 </script>
 
 <svelte:head>
-  <title>#mem - Reading List</title>
+  <title>#mem · reading list</title>
 </svelte:head>
 
-<div class="flex w-full flex-col overflow-x-hidden md:flex-row">
-  <section class="md:my-4">
-    <MemSearchBox onsearchQueryDidChange={searchQueryDidChange} />
-    <MemTagList currentTagFilters={undefined} />
-  </section>
-  <main class="max-w-screen flex-grow p-2 md:max-w-xl">
-    <h1 class="px-2 py-2 text-xl font-bold">📖 Reading List</h1>
+<div class="flex w-full flex-1 flex-col">
+  <div class="px-4 pt-[22px] md:px-6">
+    <div class="flex flex-row items-baseline gap-3">
+      <h1 class="text-[9px] font-semibold uppercase tracking-[.16em] text-accent-strong">
+        reading list
+      </h1>
+      <span class="text-[10px] text-faint">{filteredMems.length}</span>
+      <div class="h-px flex-1 bg-white/[.06]"></div>
+      <span class="text-[10px] text-faint">{READING_LIST_TAGS.join(" ")}</span>
+    </div>
+    <input
+      bind:value={searchQuery}
+      placeholder="filter"
+      class="mt-3 w-full border border-hairline-strong bg-surface px-4 py-2 text-[12px] text-content placeholder:text-[#8A8A94] focus:border-accent-strong focus:outline-none"
+    />
+  </div>
+
+  <main class="mt-4 flex-1 border-t border-white/[.06]">
     {#if filteredMems.length === 0}
-      <p class="px-2 py-4 text-muted-foreground">
-        Nothing to read. Tag mems with {READING_LIST_TAGS.join(", ")} to add them here.
-      </p>
+      <div class="px-4 py-10 text-center text-[12px] text-faint md:px-6">
+        nothing to read · tag mems with {READING_LIST_TAGS.join(", ")} to add them here
+      </div>
     {/if}
     {#each groups as group (group.tag)}
-      <section class="my-2">
+      <section>
         <button
-          class="flex w-full flex-row items-center gap-2 rounded-sm px-2 py-2 text-left font-bold hover:bg-neutral-900"
+          class="flex w-full flex-row items-center gap-2 border-b border-white/[.06] px-4 py-[9px] text-left text-[11px] hover:bg-white/[.025] md:px-6"
           onclick={() => toggleGroup(group.tag)}
         >
-          <span>{collapsed[group.tag] ? "▸" : "▾"}</span>
+          <span class="text-faint">{collapsed[group.tag] ? "▸" : "▾"}</span>
           <span>{group.icon}</span>
-          <span>{group.label}</span>
-          <span class="text-muted-foreground">({group.mems.length})</span>
+          <span class="text-accent-muted">{group.label}</span>
+          <span class="text-faint">{group.mems.length}</span>
         </button>
         {#if !collapsed[group.tag]}
-          <MemList
-            mems={group.mems}
-            onannotate={annotateMem}
-            onarchive={archiveMem}
-            onunarchive={unarchiveMem}
-            ondelete={deleteMem}
-            ondescriptionChanged={updateDescriptionForMem}
-            onnoteChanged={updateNoteForMem}
-            ontitleChanged={updateTitleForMem}
-            onfileUpload={uploadFilesForMem}
-            onseen={markReadMem}
-            onremovePhoto={removePhotoFromMem}
-            onurlChanged={updateUrlForMem}
-          />
+          <div class="border-b border-white/[.06]">
+            <MemList
+              mems={group.mems}
+              density="full"
+              {editingId}
+              onrequestEdit={requestEdit}
+              oncloseEdit={closeEdit}
+              onedit={editMem}
+              onannotate={annotateMem}
+              onarchive={archiveMem}
+              onunarchive={unarchiveMem}
+              ondelete={deleteMem}
+              onfileUpload={uploadFilesForMem}
+              onseen={markReadMem}
+              onremovePhoto={removePhotoFromMem}
+            />
+          </div>
         {/if}
       </section>
     {/each}

@@ -216,7 +216,9 @@
   const seenMem = async (data: { mem: Mem }) => {
     let mem: Mem = data.mem;
     if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.seenMem(mem, $sharedUser);
+      // "seen" strips all reading-list tags (#look/#next/#try), matching the
+      // Reading List's mark-as-read behavior.
+      const updatedMem = await memModifiers.markReadMem(mem, $sharedUser);
       if (updatedMem) {
         reload();
       }

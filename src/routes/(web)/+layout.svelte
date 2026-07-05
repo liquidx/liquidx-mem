@@ -45,6 +45,7 @@
     <div class="flex flex-row items-center gap-4 text-[10px] tracking-[.04em] text-faint">
       {#if $sharedUser}
         <nav class="hidden flex-row gap-4 md:flex">
+          <a href="/reading" class="hover:text-ui">reading list</a>
           <a href="/add" class="hover:text-ui">add</a>
           <a href="/prefs" class="hover:text-ui">prefs</a>
           <a href="/about" class="hover:text-ui">about</a>

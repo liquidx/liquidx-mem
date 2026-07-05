@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Mem, MemPhoto } from "$lib/common/mems";
   import { extractTags } from "$lib/common/parser";
+  import { READING_LIST_TAGS } from "$lib/common/reading";
   import { getCachedStorageUrl } from "$lib/storage";
   import { cn } from "$lib/utils";
   import { DateTime } from "luxon";
@@ -59,7 +60,7 @@
   let wasEditing = false;
   let skipCommit = false;
 
-  const unseen = $derived((mem.tags ?? []).includes("#look"));
+  const unseen = $derived((mem.tags ?? []).some((tag) => READING_LIST_TAGS.includes(tag)));
 
   const displayDate = $derived(
     mem.addedMs ? DateTime.fromJSDate(new Date(mem.addedMs)).toFormat("MM-dd") : ""
