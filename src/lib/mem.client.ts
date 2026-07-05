@@ -184,6 +184,52 @@ export async function markReadMem(mem: Mem, user: User): Promise<Mem | undefined
   });
 }
 
+export type MemViewCounts = { new: number; reading: number; archive: number };
+
+export async function getMemCounts(user: User): Promise<MemViewCounts | undefined> {
+  const url = `${serverUrl}/mem/count`;
+  const authToken = await user.getIdToken();
+  const headers = {
+    Authorization: `Bearer ${authToken}`
+  };
+
+  return axios
+    .get(url, { headers })
+    .then((response) => {
+      if (response.status != 200 || !response.data.counts) {
+        return undefined;
+      }
+      return response.data.counts as MemViewCounts;
+    })
+    .catch(() => {
+      return undefined;
+    });
+}
+
+export async function updateMemProperties(
+  mem: Mem,
+  updates: Partial<Mem>,
+  user: User
+): Promise<Mem | undefined> {
+  const url = `${serverUrl}/mem/edit`;
+  const body = { userId: user.uid, memId: mem._id, updates };
+  const authToken = await user.getIdToken();
+  const headers = {
+    Authorization: `Bearer ${authToken}`
+  };
+
+  return axios.post(url, body, { headers }).then((response) => {
+    if (response.status != 200) {
+      return;
+    }
+
+    if (!response.data.mem) {
+      return;
+    }
+    return memFromJson(response.data.mem);
+  });
+}
+
 export async function updatePropertyForMem(
   mem: Mem,
   property: string,

@@ -1,23 +1,22 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
-  import axios from "axios";
-  import { toast } from "svelte-sonner";
   import { goto } from "$app/navigation";
-
-  import { sharedUser } from "$lib/firebase-shared";
   import type { Mem, MemPhoto } from "$lib/common/mems";
+  import { type MemListOptions, listOptionsByString, stringFromListOptions } from "$lib/filter";
+  import { sharedUser } from "$lib/firebase-shared";
   import * as memModifiers from "$lib/mem.client";
-
-  import MemList from "$lib/svelte/MemList.svelte";
-  import MemAdd from "$lib/svelte/MemAdd.svelte";
-  import MoreMem from "$lib/svelte/MoreMem.svelte";
-  import MemTagList from "$lib/svelte/MemTagList.svelte";
+  import type { MemViewCounts } from "$lib/mem.client";
   import type { MemAnnotateResponse, MemListRequest } from "$lib/request.types";
-  import { stringFromListOptions, listOptionsByString, type MemListOptions } from "$lib/filter";
+  import MemList from "$lib/svelte/MemList.svelte";
+  import MoreMem from "$lib/svelte/MoreMem.svelte";
+  import OmniBar from "$lib/svelte/OmniBar.svelte";
+  import TagRow from "$lib/svelte/TagRow.svelte";
   import type { TagListItem } from "$lib/tags.types";
-  import MemListFilters from "./MemListFilters.svelte";
-  import MemSearchBox from "./MemSearchBox.svelte";
+  import { cn } from "$lib/utils";
+  import axios from "axios";
+  import { onMount, untrack } from "svelte";
+  import { toast } from "svelte-sonner";
+
+  type Density = "full" | "minimal";
 
   interface Props {
     filter?: string;
@@ -29,20 +28,51 @@
   let pageSize = 30;
   let visiblePages = 1;
   let mems: Mem[] = $state([]);
-  let moreMemsAvailable = true;
+  let moreMemsAvailable = $state(true);
   let viewTags: TagListItem[] = $state([]);
   let searchQuery: string = $state("");
-  let listOptions: MemListOptions = $state({
-    matchAllTags: [],
-    matchAnyTags: [],
-    onlyArchived: false,
-    onlyNew: true,
-    order: "newest"
+  let counts: MemViewCounts | null = $state(null);
+  let density: Density = $state("full");
+  let editingId: string | null = $state(null);
+
+  let listOptions: MemListOptions = $derived(listOptionsByString(filter));
+
+  const readingTag = "#look";
+
+  const isArchiveView = $derived(listOptions.onlyArchived);
+  const isReadingView = $derived(
+    !listOptions.onlyArchived &&
+      listOptions.matchAllTags.length === 1 &&
+      listOptions.matchAllTags[0] === readingTag
+  );
+  const isNewView = $derived(!isArchiveView && listOptions.matchAllTags.length === 0);
+  const activeTag = $derived(
+    !listOptions.onlyArchived && listOptions.matchAllTags.length === 1
+      ? listOptions.matchAllTags[0]
+      : null
+  );
+  const filterChipTag = $derived(activeTag && activeTag !== readingTag ? activeTag : null);
+
+  const feedHref = $derived.by(() => {
+    const primaryTag = listOptions.matchAllTags[0];
+    if (primaryTag && $sharedUser) {
+      const cleanedTag = primaryTag.startsWith("#") ? primaryTag.slice(1) : primaryTag;
+      return `/feed/${$sharedUser.uid}/${encodeURIComponent(cleanedTag)}.xml`;
+    }
+    return null;
   });
-  let feedHref: string | null = $state(null);
 
+  onMount(() => {
+    const savedDensity = localStorage.getItem("mem-density");
+    if (savedDensity === "full" || savedDensity === "minimal") {
+      density = savedDensity;
+    }
+  });
 
-
+  const setDensity = (value: Density) => {
+    density = value;
+    localStorage.setItem("mem-density", value);
+  };
 
   const loadFilters = async (tagFilters: MemListOptions) => {
     if (!$sharedUser) {
@@ -54,7 +84,16 @@
     if (tagsForView) {
       viewTags = tagsForView;
     }
-    return [];
+  };
+
+  const loadCounts = async () => {
+    if (!$sharedUser) {
+      return;
+    }
+    const result = await memModifiers.getMemCounts($sharedUser);
+    if (result) {
+      counts = result;
+    }
   };
 
   const loadMems = async (tagFilters: MemListOptions, searchQuery: string, append: boolean) => {
@@ -87,24 +126,29 @@
         } else {
           mems = data.mems;
         }
+        moreMemsAvailable = data.mems.length >= pageSize;
       }
     }
+  };
+
+  const reload = () => {
+    visiblePages = 1;
+    loadMems(listOptions, searchQuery, false);
+    loadFilters(listOptions);
+    loadCounts();
   };
 
   const loadMore = () => {
     visiblePages += 1;
     loadMems(listOptions, searchQuery, true);
-    console.log("loadMore", visiblePages);
   };
 
   const updateVisibleMems = (mems_: Mem[], updatedMem: Mem, updatedMemId: string | undefined) => {
-    console.log("updateVisibleMems", updatedMem);
     let didChange = false;
     let replacedMemId = updatedMemId || updatedMem._id;
     const replacedMems = mems_.map((mem) => {
       if (mem._id === replacedMemId) {
         didChange = true;
-        console.log("didChange", mem._id, updatedMem);
         return updatedMem;
       }
       return mem;
@@ -120,7 +164,7 @@
   ////
 
   const annotateMem = async (data: { mem: Mem }) => {
-    toast("Annotating...");
+    toast("annotating…");
     let mem: Mem = data.mem;
     if (mem && $sharedUser) {
       const response: MemAnnotateResponse | undefined = await memModifiers.annotateMem(
@@ -128,22 +172,22 @@
         $sharedUser
       );
       if (!response) {
-        toast.error("Failed to annotate...");
+        toast.error("failed to annotate");
       }
       if (response) {
         updateVisibleMems(mems, response.mem, response.mem._id);
-        toast.success("Done");
+        toast.success("done");
       }
     }
   };
 
   const deleteMem = async (data: { mem: Mem }) => {
     let mem: Mem = data.mem;
-    console.log("deleteMem", mem);
     if (mem && $sharedUser) {
       const deleteMemId = await memModifiers.deleteMem(mem, $sharedUser);
       if (deleteMemId) {
         mems = mems.filter((mem) => mem._id !== deleteMemId);
+        loadCounts();
       }
     }
   };
@@ -153,7 +197,6 @@
     let photo: MemPhoto = data.photo;
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.removePhotoFromMem(mem, photo, $sharedUser);
-      console.log("removePhotoFromMem", updatedMem);
       if (updatedMem) {
         updateVisibleMems(mems, updatedMem, mem._id);
       }
@@ -162,22 +205,20 @@
 
   const archiveMem = async (data: { mem: Mem }) => {
     let mem: Mem = data.mem;
-    console.log("archiveMem");
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.archiveMem(mem, $sharedUser);
       if (updatedMem) {
-        loadMems(listOptions, searchQuery, false);
+        reload();
       }
     }
   };
 
   const seenMem = async (data: { mem: Mem }) => {
     let mem: Mem = data.mem;
-    console.log("seenMem");
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.seenMem(mem, $sharedUser);
       if (updatedMem) {
-        loadMems(listOptions, searchQuery, false);
+        reload();
       }
     }
   };
@@ -187,56 +228,26 @@
     if (mem && $sharedUser) {
       const updatedMem = await memModifiers.unarchiveMem(mem, $sharedUser);
       if (updatedMem) {
-        loadMems(listOptions, searchQuery, false);
+        reload();
       }
     }
   };
 
-  const updateNoteForMem = async (data: { mem: Mem; text: string }) => {
-    const mem: Mem = data.mem;
-    const text = data.text;
-    if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(mem, "note", text, $sharedUser);
-      if (updatedMem) {
-        updateVisibleMems(mems, updatedMem, mem._id);
-      }
+  const editMem = async (data: { mem: Mem; updates: Partial<Mem> }) => {
+    const { mem, updates } = data;
+    if (Object.keys(updates).length === 0) {
+      return;
     }
-  };
-
-  const updateTitleForMem = async (data: { mem: Mem; text: string }) => {
-    let mem: Mem = data.mem;
-    let text = data.text;
     if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(mem, "title", text, $sharedUser);
+      const updatedMem = await memModifiers.updateMemProperties(mem, updates, $sharedUser);
       if (updatedMem) {
         updateVisibleMems(mems, updatedMem, mem._id);
-      }
-    }
-  };
-
-  const updateUrlForMem = async (data: { mem: Mem; url: string }) => {
-    let mem: Mem = data.mem;
-    let text = data.url;
-    if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(mem, "url", text, $sharedUser);
-      if (updatedMem) {
-        updateVisibleMems(mems, updatedMem, mem._id);
-      }
-    }
-  };
-
-  const updateDescriptionForMem = async (data: { mem: Mem; text: string }) => {
-    let mem: Mem = data.mem;
-    let text = data.text;
-    if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.updatePropertyForMem(
-        mem,
-        "description",
-        text,
-        $sharedUser
-      );
-      if (updatedMem) {
-        updateVisibleMems(mems, updatedMem, mem._id);
+        if (updates.tags) {
+          loadFilters(listOptions);
+          loadCounts();
+        }
+      } else {
+        toast.error("failed to save");
       }
     }
   };
@@ -253,98 +264,178 @@
   };
 
   const memDidAdd = (_data: { mem: Mem }) => {
-    loadMems(listOptions, searchQuery, false);
+    reload();
   };
 
-  const tagDidClick = (tag: TagListItem) => {
-    console.log("tagDidClick", tag, listOptions);
-
-    // Toggle the tag in the filters
-    if (listOptions.matchAllTags.includes(tag)) {
-      listOptions.matchAllTags = listOptions.matchAllTags.filter((t) => t !== tag);
-    } else {
-      listOptions.matchAllTags.push(tag);
-    }
-
-    // Easiest way to update the tag filters is to nav to the right URL.
-    let tagFiltersString = stringFromListOptions(listOptions);
-    if (tagFiltersString) {
-      goto(`/tag/${tagFiltersString}`);
-    } else {
+  const tagDidToggle = (tag: string) => {
+    const cleaned = tag.startsWith("#") ? tag.slice(1) : tag;
+    if (activeTag === tag) {
       goto("/");
+    } else {
+      goto(`/tag/${encodeURIComponent(cleaned)}`);
     }
   };
 
   const searchQueryDidChange = (data: { query: string }) => {
+    if (searchQuery === data.query) {
+      return;
+    }
     searchQuery = data.query;
-    console.log("searchQueryDidChange", data.query);
+    visiblePages = 1;
+    loadMems(listOptions, searchQuery, false);
   };
 
-  const sortOrderDidChange = (order: string) => {
-    listOptions.order = order;
-    listOptions = listOptions;
-    console.log("sortOrderDidChange", order);
+  const toggleSortOrder = () => {
+    listOptions.order = listOptions.order === "newest" ? "oldest" : "newest";
+    visiblePages = 1;
+    loadMems(listOptions, searchQuery, false);
   };
-  run(() => {
-    listOptions = listOptionsByString(filter);
-  });
-  run(() => {
+
+  const requestEdit = (data: { mem: Mem }) => {
+    editingId = data.mem._id ?? null;
+  };
+
+  const closeEdit = () => {
+    editingId = null;
+  };
+
+  $effect(() => {
+    // Reload whenever the user or the route filter changes.
+    listOptions;
     if ($sharedUser) {
-      loadMems(listOptions, searchQuery, false);
-      loadFilters(listOptions);
+      untrack(() => reload());
     }
   });
-  run(() => {
-    const allTags = listOptions.matchAllTags || [];
-    const primaryTag = allTags[0];
-    if (primaryTag && $sharedUser) {
-      const cleanedTag = primaryTag.startsWith("#") ? primaryTag.slice(1) : primaryTag;
-      feedHref = `/feed/${$sharedUser.uid}/${encodeURIComponent(cleanedTag)}.xml`;
-    } else {
-      feedHref = null;
+
+  const densities: Density[] = ["full", "minimal"];
+
+  const tabs = $derived([
+    { key: "new", label: "new", count: counts?.new, active: isNewView, href: "/" },
+    {
+      key: "reading",
+      label: "reading",
+      count: counts?.reading,
+      active: isReadingView,
+      href: "/tag/look"
+    },
+    {
+      key: "archive",
+      label: "archive",
+      count: counts?.archive,
+      active: isArchiveView,
+      href: "/tag/*"
     }
-  });
+  ]);
 </script>
 
 <svelte:head>
   <title>#mem</title>
 </svelte:head>
 
-<div class="flex w-full flex-col overflow-x-hidden md:flex-row">
-  {#if showTags}
-    <section class="md:my-4">
-      <MemSearchBox onsearchQueryDidChange={searchQueryDidChange} />
-      <MemTagList currentTagFilters={listOptions} />
-    </section>
-  {/if}
-  <main class="max-w-screen flex-grow p-2 md:max-w-xl">
-    <MemAdd onmemDidAdd={memDidAdd} />
-    {#if viewTags && viewTags.length > 0}
-      <MemListFilters
-        tags={viewTags}
-        {listOptions}
-        ontagDidClick={tagDidClick}
-        onsortOrderDidChange={sortOrderDidChange}
-      />
+<div class="flex w-full flex-1 flex-col">
+  <div class="px-4 pt-[22px] md:px-6">
+    <OmniBar onmemDidAdd={memDidAdd} onsearch={searchQueryDidChange} ontagFilter={tagDidToggle} />
+
+    <div class="mt-[14px] flex flex-row flex-wrap items-center gap-x-4 gap-y-3">
+      <div class="flex flex-1 flex-row border border-white/[.12] md:flex-initial">
+        {#each tabs as tab, i (tab.key)}
+          <a
+            href={tab.href}
+            class={cn(
+              "relative flex-1 whitespace-nowrap px-3 py-[7px] text-center text-[11px] text-ui md:flex-initial md:px-[14px]",
+              i > 0 && "border-l border-white/[.12]"
+            )}
+          >
+            {tab.label}
+            {#if tab.count !== undefined}
+              <span class="ml-1 text-faint">{tab.count}</span>
+            {/if}
+            {#if tab.active}
+              <span class="absolute inset-x-0 bottom-0 h-[2px] bg-accent-strong"></span>
+            {/if}
+          </a>
+        {/each}
+      </div>
+
+      <button class="hidden text-[11px] text-body md:block" onclick={toggleSortOrder}>
+        {listOptions.order}
+        {listOptions.order === "newest" ? "▾" : "▴"}
+      </button>
+
+      <div class="hidden flex-1 md:block"></div>
+
+      {#if filterChipTag}
+        <button
+          class="border border-accent-strong/40 px-[9px] py-1 text-[11px] text-accent-strong"
+          onclick={() => goto("/")}
+        >
+          {filterChipTag} ✕
+        </button>
+      {/if}
+
+      <div class="flex flex-row border border-white/[.12]">
+        {#each densities as value, i (value)}
+          <button
+            class={cn(
+              "relative px-3 py-[7px] text-[11px] text-ui md:px-[14px]",
+              i > 0 && "border-l border-white/[.12]",
+              density === value && "bg-accent-strong/10"
+            )}
+            onclick={() => setDensity(value)}
+          >
+            <span class="hidden md:inline">{value}</span>
+            <span class="md:hidden">{value === "minimal" ? "min" : value}</span>
+            {#if density === value}
+              <span class="absolute inset-x-0 bottom-0 h-[2px] bg-accent-strong"></span>
+            {/if}
+          </button>
+        {/each}
+      </div>
+    </div>
+
+    {#if showTags}
+      <TagRow tags={viewTags} {activeTag} ontagToggle={tagDidToggle} />
     {/if}
-    <MemList
-      {mems}
-      onannotate={annotateMem}
-      onarchive={archiveMem}
-      onunarchive={unarchiveMem}
-      ondelete={deleteMem}
-      ondescriptionChanged={updateDescriptionForMem}
-      onnoteChanged={updateNoteForMem}
-      ontitleChanged={updateTitleForMem}
-      onfileUpload={uploadFilesForMem}
-      onseen={seenMem}
-      onremovePhoto={removePhotoFromMem}
-      onurlChanged={updateUrlForMem}
-    />
-    <MoreMem moreAvailable={moreMemsAvailable} onloadMore={loadMore} />
+  </div>
+
+  <main class="mt-4 flex-1 border-t border-white/[.06]">
+    {#if mems.length === 0}
+      <div class="px-4 py-10 text-center text-[12px] text-faint md:px-6">
+        no items
+        {#if filterChipTag || searchQuery || isReadingView}
+          ·
+          <button class="text-accent-strong hover:underline" onclick={() => goto("/")}>
+            clear filter
+          </button>
+        {/if}
+      </div>
+    {:else}
+      <MemList
+        {mems}
+        {density}
+        {editingId}
+        onrequestEdit={requestEdit}
+        oncloseEdit={closeEdit}
+        onedit={editMem}
+        onannotate={annotateMem}
+        onarchive={archiveMem}
+        onunarchive={unarchiveMem}
+        ondelete={deleteMem}
+        onfileUpload={uploadFilesForMem}
+        onseen={seenMem}
+        onremovePhoto={removePhotoFromMem}
+      />
+      <MoreMem moreAvailable={moreMemsAvailable} onloadMore={loadMore} />
+    {/if}
     {#if feedHref}
-      <div class="mt-4 flex justify-end">
-        <a class="text-sm text-primary hover:underline" href={feedHref} rel="alternate">Feed</a>
+      <div class="flex justify-end px-4 pb-6 md:px-6">
+        <a
+          class="text-[10px] tracking-[.04em] text-faint hover:text-accent-strong"
+          href={feedHref}
+          rel="alternate"
+        >
+          rss feed
+        </a>
       </div>
     {/if}
   </main>

@@ -1,12 +1,10 @@
 <script lang="ts">
-  import Button from "$lib/components/ui/button/button.svelte";
+  import { page } from "$app/state";
   import { Toaster } from "$lib/components/ui/sonner";
   import { initializeFirebase } from "$lib/firebase-init";
-  import { sharedUser } from "$lib/firebase-shared";
-  import { sharedFirebaseApp } from "$lib/firebase-shared";
+  import { sharedFirebaseApp, sharedUser } from "$lib/firebase-shared";
   import SignIn from "$lib/svelte/SignIn.svelte";
-  import { SunIcon } from "@lucide/svelte";
-  import { ModeWatcher, toggleMode } from "mode-watcher";
+  import { getAuth, onAuthStateChanged } from "firebase/auth";
   import { onMount } from "svelte";
 
   import "../../app.css";
@@ -18,44 +16,52 @@
   let { children }: Props = $props();
 
   $sharedFirebaseApp = initializeFirebase();
+
+  onMount(() => {
+    if (!$sharedFirebaseApp) {
+      return;
+    }
+    const auth = getAuth($sharedFirebaseApp);
+    return onAuthStateChanged(auth, (signedInUser) => {
+      $sharedUser = signedInUser;
+    });
+  });
+
+  function signOut() {
+    if ($sharedFirebaseApp) {
+      getAuth($sharedFirebaseApp).signOut();
+    }
+  }
 </script>
 
-<ModeWatcher />
 <Toaster />
-<div id="app">
-  <div class="flex w-full flex-col overflow-x-hidden p-4 md:flex-row">
-    <header class="mt-0 w-screen p-2 md:min-h-screen md:w-48">
-      <div class="flex flex-row items-center justify-between">
-        <h1 class="text-md py-2 font-bold text-primary">
-          <a href="/">#mem</a>
-        </h1>
-        <div class="mx-4 md:m-2">
-          <Button variant="outline" size="sm" on:click={toggleMode}
-            ><SunIcon size={16}></SunIcon></Button
-          >
-        </div>
-      </div>
-
+<div id="app" class="flex min-h-screen flex-col bg-base font-mono">
+  <header
+    class="flex flex-row items-center justify-between border-b border-white/[.06] px-4 py-[14px] md:px-6"
+  >
+    <h1 class="text-[14px] font-semibold tracking-[.02em] text-accent-strong">
+      <a href="/">#mem</a>
+    </h1>
+    <div class="flex flex-row items-center gap-4 text-[10px] tracking-[.04em] text-faint">
       {#if $sharedUser}
-        <div class="py-2">
-          <ul>
-            <li>
-              <a href="/" class="underline">Home</a>
-            </li>
-            <li>
-              <a href="/add" class="underline">+ Add</a>
-            </li>
-            <li>
-              <a href="/prefs" class="underline">Preferences</a>
-            </li>
-            <li>
-              <a href="/about" class="underline">Help & About</a>
-            </li>
-          </ul>
-        </div>
+        <nav class="hidden flex-row gap-4 md:flex">
+          <a href="/add" class="hover:text-ui">add</a>
+          <a href="/prefs" class="hover:text-ui">prefs</a>
+          <a href="/about" class="hover:text-ui">about</a>
+        </nav>
+        <span class="hidden sm:inline">{$sharedUser.email}</span>
+        <span class="hidden sm:inline" aria-hidden="true">·</span>
+        <button class="hover:text-ui" onclick={signOut}>sign out</button>
+      {:else}
+        <a href="/about" class="hover:text-ui">about</a>
       {/if}
+    </div>
+  </header>
+  <div class="mx-auto flex w-full max-w-[1440px] flex-1 flex-col">
+    {#if $sharedUser || page.url.pathname.startsWith("/about")}
+      {@render children?.()}
+    {:else}
       <SignIn />
-    </header>
-    {@render children?.()}
+    {/if}
   </div>
 </div>

@@ -1,14 +1,10 @@
 <script lang="ts">
   import type { Mem, MemPhoto } from "$lib/common/mems";
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import * as Popover from "$lib/components/ui/popover";
+  import { extractTags } from "$lib/common/parser";
   import { getCachedStorageUrl } from "$lib/storage";
-  import AutoResizeTextarea from "$lib/thirdparty/autoresize-textarea/AutoresizeTextarea.svelte";
-  import { ArchiveIcon, EyeIcon, ImageUpIcon, PenLineIcon, Trash2Icon } from "@lucide/svelte";
+  import { cn } from "$lib/utils";
   import { DateTime } from "luxon";
-  import { onDestroy, onMount } from "svelte";
-  import { run } from "svelte/legacy";
+  import { onDestroy, onMount, tick } from "svelte";
 
   type MediaUrl = {
     photo?: MemPhoto;
@@ -20,6 +16,11 @@
 
   interface Props {
     mem: Mem;
+    density?: "full" | "minimal";
+    editing?: boolean;
+    onrequestEdit?: (data: { mem: Mem }) => void;
+    oncloseEdit?: () => void;
+    onedit?: (data: { mem: Mem; updates: Partial<Mem> }) => void;
     onarchive?: (data: { mem: Mem }) => void;
     onunarchive?: (data: { mem: Mem }) => void;
     onannotate?: (data: { mem: Mem }) => void;
@@ -27,121 +28,236 @@
     onseen?: (data: { mem: Mem }) => void;
     onremovePhoto?: (data: { mem: Mem; photo: MemPhoto | undefined }) => void;
     onfileUpload?: (data: { mem: Mem; files: FileList }) => void;
-    onnoteChanged?: (data: { mem: Mem; text: string }) => void;
-    ondescriptionChanged?: (data: { mem: Mem; text: string }) => void;
-    ontitleChanged?: (data: { mem: Mem; text: string }) => void;
-    onurlChanged?: (data: { mem: Mem; url: string }) => void;
   }
 
   let {
     mem,
+    density = "full",
+    editing = false,
+    onrequestEdit,
+    oncloseEdit,
+    onedit,
     onarchive,
     onunarchive,
     onannotate,
     ondelete,
     onseen,
     onremovePhoto,
-    onfileUpload,
-    onnoteChanged,
-    ondescriptionChanged,
-    ontitleChanged,
-    onurlChanged
+    onfileUpload
   }: Props = $props();
 
-  let maxChars = 1000;
-  let mediaImageUrl = $state("");
-  let displayPhotos: MediaUrl[] = $state([]);
-  let displayVideos: MediaUrl[] = $state([]);
   let isDragging = $state(false);
   let isHovered = $state(false);
-
-  let titleEl: HTMLSpanElement | null = $state(null);
   let uploadEl: HTMLInputElement | null = $state(null);
+  let titleInputEl: HTMLInputElement | null = $state(null);
 
-  function onArchive() {
-    console.log("onArchive");
-    onarchive?.({ mem });
-  }
+  // Editor draft
+  let draftTitle = $state("");
+  let draftUrl = $state("");
+  let draftNote = $state("");
+  let draftTags = $state("");
+  let wasEditing = false;
+  let skipCommit = false;
 
-  function onUnarchive() {
-    onunarchive?.({ mem });
-  }
+  const unseen = $derived((mem.tags ?? []).includes("#look"));
 
-  function onAnnotate() {
-    onannotate?.({ mem });
-  }
+  const displayDate = $derived(
+    mem.addedMs ? DateTime.fromJSDate(new Date(mem.addedMs)).toFormat("MM-dd") : ""
+  );
 
-  function onDelete() {
-    ondelete?.({ mem });
-  }
+  const displayTitle = $derived.by(() => {
+    if (mem.title) {
+      return mem.title;
+    }
+    if (mem.url) {
+      return mem.url.replace(/^http[s]?:\/\//, "").replace(/\/$/, "");
+    }
+    return "(untitled)";
+  });
 
-  function onSeen() {
-    onseen?.({ mem });
-  }
+  const displayUrl = $derived.by(() => {
+    if (!mem.url) {
+      return "";
+    }
+    let url = mem.url.replace(/^http[s]?:\/\//, "").replace(/\/$/, "");
+    if (url.length > 48) {
+      url = url.slice(0, 48) + "…";
+    }
+    return url;
+  });
+
+  const displayDomain = $derived.by(() => {
+    if (!mem.url) {
+      return "";
+    }
+    try {
+      return new URL(mem.url).hostname;
+    } catch {
+      return "";
+    }
+  });
+
+  const displayNote = $derived.by(() => {
+    // Tags render inline after the title; strip them out of the note so the
+    // note line only shows prose.
+    let text = mem.note || mem.description || "";
+    text = text
+      .replace(/#[^\s,]+/g, "")
+      .replace(/[ \t]+/g, " ")
+      .trim();
+    return text.length > 1000 ? text.slice(0, 1000) + "…" : text;
+  });
+
+  const displayPhotos = $derived.by(() => {
+    const photos: MediaUrl[] = [];
+    for (const photo of mem.photos ?? []) {
+      if (photo.cachedMediaPath) {
+        photos.push({ url: getCachedStorageUrl(photo.cachedMediaPath), status: "cached", photo });
+      } else if (photo.mediaUrl) {
+        photos.push({ photo, url: photo.mediaUrl, status: "live" });
+      }
+    }
+    if (mem.media?.path) {
+      photos.push({ url: getCachedStorageUrl(mem.media.path), status: "media" });
+    }
+    return photos;
+  });
+
+  const displayVideos = $derived.by(() => {
+    const videos: MediaUrl[] = [];
+    for (const video of mem.videos ?? []) {
+      if (video.cachedMediaPath) {
+        videos.push({
+          url: getCachedStorageUrl(video.cachedMediaPath),
+          posterUrl: video.posterUrl,
+          status: "cached"
+        });
+      } else if (video.mediaUrl) {
+        videos.push({ video, url: video.mediaUrl, posterUrl: video.posterUrl, status: "live" });
+      }
+    }
+    return videos;
+  });
+
+  ////
+  // Editor
+  ////
+
+  const parseTagsString = (value: string): string[] => {
+    return value
+      .split(/[\s,]+/)
+      .map((token) => token.trim())
+      .filter((token) => token.length > 0)
+      .map((token) => `#${token.replace(/^#+/, "").toLowerCase()}`);
+  };
+
+  const initDraft = () => {
+    draftTitle = mem.title ?? "";
+    draftUrl = mem.url ?? "";
+    draftNote = mem.note ?? "";
+    draftTags = (mem.tags ?? []).join(" ");
+  };
+
+  const commitDraft = () => {
+    const updates: Partial<Mem> = {};
+
+    if (draftTitle !== (mem.title ?? "")) {
+      updates.title = draftTitle;
+    }
+    if (draftUrl !== (mem.url ?? "")) {
+      updates.url = draftUrl;
+    }
+
+    // Tags live inside the note text (the server re-extracts them from it),
+    // so tag edits are folded into the note: removed tags are stripped from
+    // the text, added tags appended.
+    const originalTags = mem.tags ?? [];
+    const newTags = parseTagsString(draftTags);
+    const tagsChanged =
+      newTags.length !== originalTags.length || newTags.some((t) => !originalTags.includes(t));
+
+    let note = draftNote;
+    if (tagsChanged) {
+      const removed = originalTags.filter((t) => !newTags.includes(t));
+      for (const tag of removed) {
+        note = note.replaceAll(tag, "");
+      }
+      note = note.replace(/[ \t]+/g, " ").trim();
+      const missing = newTags.filter((t) => !extractTags(note).includes(t));
+      if (missing.length > 0) {
+        note = `${note} ${missing.join(" ")}`.trim();
+      }
+      updates.tags = newTags;
+    }
+    if (note !== (mem.note ?? "")) {
+      updates.note = note;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      onedit?.({ mem, updates });
+    }
+  };
+
+  $effect(() => {
+    if (editing && !wasEditing) {
+      wasEditing = true;
+      skipCommit = false;
+      initDraft();
+      tick().then(() => titleInputEl?.focus());
+    } else if (!editing && wasEditing) {
+      wasEditing = false;
+      if (!skipCommit) {
+        commitDraft();
+      }
+      skipCommit = false;
+    }
+  });
+
+  const dismissEditor = () => {
+    oncloseEdit?.();
+  };
+
+  const discardEditor = () => {
+    skipCommit = true;
+    oncloseEdit?.();
+  };
+
+  const editorKeydown = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      discardEditor();
+      return;
+    }
+    if (e.key === "Enter") {
+      const isTextarea = e.target instanceof HTMLTextAreaElement;
+      if (!isTextarea || !e.shiftKey) {
+        e.preventDefault();
+        dismissEditor();
+      }
+    }
+  };
+
+  ////
+  // Attachments
+  ////
 
   function onUploadDidClick() {
-    if (uploadEl) {
-      uploadEl.click();
-    }
-  }
-
-  function onRemovePhoto(photo: MemPhoto | undefined) {
-    console.log("onRemovePhoto", photo);
-    onremovePhoto?.({ mem, photo });
-  }
-
-  function getPrettyDate(mem_: Mem) {
-    if (!mem_.addedMs) {
-      return "";
-    }
-
-    const date = new Date(mem_.addedMs);
-    return DateTime.fromJSDate(date).toFormat("yyyy-MM-dd hh:mm");
-  }
-
-  function getPrettyTitle(mem_: Mem) {
-    if (!mem_) {
-      return "";
-    }
-
-    if (mem_.title) {
-      return mem_.title;
-    } else if (mem_.url) {
-      return mem_.url.replace(/http[s]:\/\//, "");
-    } else {
-      return "";
-    }
-  }
-
-  function getShortDescription(mem_: Mem) {
-    if (!mem_.description) {
-      return "";
-    }
-    if (mem_.description.length > maxChars) {
-      return mem_.description.substring(0, maxChars) + "...";
-    }
-    return mem_.description;
+    uploadEl?.click();
   }
 
   function fileDidChange(e: Event): void {
     const target: HTMLInputElement = e.target as HTMLInputElement;
-    if (!target) {
+    if (!target || !target.files) {
       return;
     }
-
-    if (!target.files) {
-      return;
-    }
-
-    console.log("fileDidChange for mem", mem);
     onfileUpload?.({ mem, files: target.files });
-    // TODO: Check if there are issues if we clear this too early?
-    // target.value = '';
   }
 
-  function ondragover(e: Event) {
+  function ondragover(e: DragEvent) {
     e.preventDefault();
-    isDragging = true;
+    if (e.dataTransfer?.types.includes("Files")) {
+      isDragging = true;
+    }
   }
 
   function ondragleave() {
@@ -150,14 +266,11 @@
 
   function ondrop(e: DragEvent) {
     e.preventDefault();
-
+    isDragging = false;
     const dataTransfer = e.dataTransfer;
     if (!dataTransfer) {
       return;
     }
-
-    console.log(e.dataTransfer.files);
-    isDragging = false;
     onfileUpload?.({ mem, files: dataTransfer.files });
   }
 
@@ -166,56 +279,18 @@
     if (!active) {
       return false;
     }
-
     if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) {
       return true;
     }
-
     return active.isContentEditable;
   };
 
   const handlePaste = (event: ClipboardEvent) => {
-    if (!isHovered) {
+    if (!isHovered || shouldBypassPaste()) {
       return;
     }
 
-    if (shouldBypassPaste()) {
-      return;
-    }
-
-    const clipboardData = event.clipboardData;
-    if (!clipboardData) {
-      return;
-    }
-
-    const types: string[] = [];
-    for (let i = 0; i < clipboardData.types.length; i += 1) {
-      const type = clipboardData.types[i];
-      if (type) {
-        types.push(type);
-      }
-    }
-
-    const items = [];
-    for (let i = 0; i < clipboardData.items.length; i += 1) {
-      const item = clipboardData.items[i];
-      if (item) {
-        items.push({ kind: item.kind, type: item.type });
-      }
-    }
-
-    const files = clipboardData.files;
-    const fileSummaries = files
-      ? Array.from(files).map((file) => ({ name: file.name, type: file.type, size: file.size }))
-      : [];
-
-    console.log("MemView paste", {
-      memId: mem._id,
-      clipboardTypes: types,
-      clipboardItems: items,
-      clipboardFiles: fileSummaries
-    });
-
+    const files = event.clipboardData?.files;
     if (!files || files.length === 0) {
       return;
     }
@@ -237,309 +312,234 @@
   };
 
   onMount(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
     window.addEventListener("paste", handlePaste);
   });
 
   onDestroy(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    window.removeEventListener("paste", handlePaste);
-  });
-
-  const noteDidChange = async (e: FocusEvent) => {
-    console.log("noteDidChange", e);
-    const target: HTMLInputElement = e.target as HTMLInputElement;
-    if (!target) {
-      return;
-    }
-    const noteValue = target.value;
-    console.log("noteDidChange", noteValue);
-    if (noteValue != mem.note) {
-      onnoteChanged?.({ mem, text: noteValue });
-      target.innerText = noteValue;
-    }
-  };
-
-  function descriptionDidChange(e: FocusEvent): void {
-    console.log("descriptionDidChange", e);
-    const target: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
-    if (!target) {
-      return;
-    }
-    const descriptionValue = target.value;
-    if (descriptionValue != mem.description) {
-      ondescriptionChanged?.({ mem, text: descriptionValue });
-    }
-  }
-
-  function startEdit() {
-    if (titleEl) {
-      const linkEl = titleEl.parentElement;
-      if (!linkEl) {
-        return;
-      }
-      const linkUrl = linkEl.getAttribute("href");
-      linkEl.removeAttribute("href");
-
-      titleEl.setAttribute("contenteditable", "true");
-      titleEl.focus();
-      titleEl.onblur = () => {
-        if (titleEl) {
-          ontitleChanged?.({ mem, text: titleEl.innerText });
-          titleEl.removeAttribute("contenteditable");
-          if (linkUrl) {
-            linkEl.setAttribute("href", linkUrl);
-          }
-        }
-      };
-    }
-  }
-
-  async function getMediaImageUrl() {
-    if (mem && mem.media && mem.media.path) {
-      console.log("Getting url", mem.media.path);
-      try {
-        console.log("Got url", mem.media.path);
-        mediaImageUrl = getCachedStorageUrl(mem.media.path);
-      } catch (e) {
-        // Silent fail
-      }
-    } else {
-      mediaImageUrl = "";
-    }
-  }
-
-  const onUrlDidKeyUp = (e: KeyboardEvent) => {
-    if (e.key === "Enter") {
-      const target = e.target as HTMLInputElement;
-      if (target) {
-        console.log("onUrlKeyUp", target.value);
-        onurlChanged?.({ mem, url: target.value });
-      }
-    }
-  };
-
-  async function getMediaUrls() {
-    if (!mem) {
-      displayPhotos = [];
-      displayVideos = [];
-      return;
-    }
-
-    if (mem.photos) {
-      const photos: MediaUrl[] = [];
-      for (let photo of mem.photos) {
-        if (photo.cachedMediaPath) {
-          photos.push({
-            url: getCachedStorageUrl(photo.cachedMediaPath),
-            status: "cached",
-            photo: photo
-          });
-        } else {
-          if (photo.mediaUrl) {
-            photos.push({ photo: photo, url: photo.mediaUrl, status: "live" });
-          }
-        }
-      }
-      displayPhotos = photos;
-    } else {
-      displayPhotos = [];
-    }
-
-    if (mem.videos) {
-      const videos: MediaUrl[] = [];
-      for (let video of mem.videos) {
-        if (video.cachedMediaPath) {
-          try {
-            const url = getCachedStorageUrl(video.cachedMediaPath);
-            videos.push({
-              url: url,
-              posterUrl: video.posterUrl,
-              status: "cached"
-            });
-          } catch (e) {
-            console.log("Error getting cached video", e);
-          }
-        } else {
-          if (video.mediaUrl) {
-            videos.push({
-              video: video,
-              url: video.mediaUrl,
-              posterUrl: video.posterUrl,
-              status: "live"
-            });
-          }
-        }
-      }
-      displayVideos = videos;
-    } else {
-      displayVideos = [];
-    }
-  }
-  run(() => {
-    if (mem) {
-      getMediaImageUrl();
-      getMediaUrls();
+    if (typeof window !== "undefined") {
+      window.removeEventListener("paste", handlePaste);
     }
   });
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div
-  class={"mem my-4 flex flex-col rounded-xl px-4 py-4 text-muted-foreground hover:bg-neutral-900  md:mx-2 md:px-6" +
-    (isDragging ? " bg-yellow-100" : "bg-card")}
-  {ondragover}
-  {ondragleave}
-  {ondrop}
-  onmouseenter={() => (isHovered = true)}
-  onmouseleave={() => (isHovered = false)}
->
-  <div>
-    <AutoResizeTextarea
-      class="my-2 h-8 min-h-[1rem] w-full rounded-xl bg-input px-4 py-2"
-      maxRows={4}
-      onblur={noteDidChange}
-      value={mem.note}
-    />
-
-    {#if mem.url}
-      <div class="max-h-48 overflow-clip px-1 py-1 text-lg">
-        <a href={mem.url} target="_blank" class="font-bold">
-          <span class="title-text" bind:this={titleEl}>{getPrettyTitle(mem)}</span>
-        </a>
-        <button class="text-primary hover:text-secondary" onclick={startEdit}>
-          <PenLineIcon class="align-middle" size="16" />
-        </button>
+{#if editing}
+  <div
+    class="relative border-l-2 border-accent-strong bg-accent-strong/[.045] px-4 pb-[18px] pt-4 md:px-6"
+  >
+    <div class="flex flex-row items-center">
+      <span class="text-[9px] font-semibold uppercase tracking-[.16em] text-accent-strong">
+        editing
+      </span>
+      <div class="flex-1"></div>
+      <span class="mr-3 text-[9px] tracking-[.1em] text-dim">⏎ done</span>
+      <button
+        class="text-faint hover:text-accent-strong"
+        aria-label="close editor"
+        onclick={dismissEditor}
+      >
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="square"
+          stroke-linejoin="miter"
+        >
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class="mt-3 flex flex-col gap-3" onkeydown={editorKeydown}>
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <label class="flex flex-col gap-1">
+          <span class="text-[9px] uppercase tracking-[.14em] text-faint">title</span>
+          <input
+            bind:this={titleInputEl}
+            bind:value={draftTitle}
+            class="border border-hairline-strong bg-base px-2.5 py-[7px] text-[12px] text-content focus:border-accent-strong focus:outline-none"
+          />
+        </label>
+        <label class="flex flex-col gap-1">
+          <span class="text-[9px] uppercase tracking-[.14em] text-faint">url</span>
+          <input
+            bind:value={draftUrl}
+            class="border border-hairline-strong bg-base px-2.5 py-[7px] text-[11px] text-accent-muted focus:border-accent-strong focus:outline-none"
+          />
+        </label>
       </div>
-    {/if}
-
-    <AutoResizeTextarea
-      class="my-2 h-8 w-full rounded-xl bg-input px-4 py-2"
-      minRows={2}
-      maxRows={10}
-      onblur={descriptionDidChange}
-      value={getShortDescription(mem)}
-    />
-
-    {#if displayVideos}
-      <div class="videos">
-        {#each displayVideos as video (video.url)}
-          <!-- svelte-ignore a11y_media_has_caption -->
-          <video src={video.url} title={video.status} class="my-4" playsinline controls loop>
-          </video>
-        {/each}
-      </div>
-    {/if}
-
-    {#if displayPhotos}
-      <div class="photos">
-        {#each displayPhotos as photo}
-          <div>
-            <img src={photo.url} alt={photo.status} title={photo.status} class="mt-4 rounded-md" />
-            <button
-              class="w-full text-right text-xs text-muted-foreground"
-              onclick={() => onRemovePhoto(photo.photo)}
-            >
-              Remove
-            </button>
-          </div>
-        {/each}
-      </div>
-    {/if}
-
-    {#if mem.media}
-      <div class="photos">
-        <img src={mediaImageUrl} alt="" />
-      </div>
-    {/if}
-
-    {#if mem.links}
-      <ul class="my-2 py-2">
-        {#each mem.links as link (link.url)}
-          <li>
-            <a href={link.url} target="_blank" class="text-primary-foreground">
-              {#if link.description}
-                {link.description}
-              {:else}
-                {link.url}
-              {/if}
-            </a>
-          </li>
-        {/each}
-      </ul>
-    {/if}
-
-    <div class="my-2 text-xs text-muted-foreground" title={mem._id}>
-      <div>{getPrettyDate(mem)}</div>
-      <div>
-        <a href={`/mem/${mem._id}`} class="hover:text-secondary-foreground">{mem._id}</a>
-      </div>
-
-      <Popover.Root>
-        <Popover.Trigger
-          ><div class="max-h-48 overflow-y-clip">
-            <button class="overflow-x-clip text-left hover:text-secondary-foreground"
-              >{mem.url} (edit)</button
-            >
-          </div>
-        </Popover.Trigger>
-        <Popover.Content>
-          <Input type="text" value={mem.url} onkeyup={onUrlDidKeyUp} />
-        </Popover.Content>
-      </Popover.Root>
+      <label class="flex flex-col gap-1">
+        <span class="text-[9px] uppercase tracking-[.14em] text-faint">note</span>
+        <textarea
+          bind:value={draftNote}
+          class="min-h-[48px] border border-hairline-strong bg-base px-2.5 py-[7px] text-[11px] leading-[1.6] text-body focus:border-accent-strong focus:outline-none"
+        ></textarea>
+      </label>
+      <label class="flex flex-col gap-1">
+        <span class="text-[9px] uppercase tracking-[.14em] text-faint">tags</span>
+        <input
+          bind:value={draftTags}
+          class="border border-hairline-strong bg-base px-2.5 py-[7px] text-[11px] text-accent-muted focus:border-accent-strong focus:outline-none"
+        />
+      </label>
     </div>
   </div>
+{:else}
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class={cn(
+      "group relative grid grid-cols-[34px_16px_1fr_20px] px-4 hover:bg-white/[.025] md:grid-cols-[44px_16px_1fr_20px] md:px-6",
+      density === "full" ? "py-[13px]" : "py-[5px]"
+    )}
+    {ondragover}
+    {ondragleave}
+    {ondrop}
+    onmouseenter={() => (isHovered = true)}
+    onmouseleave={() => (isHovered = false)}
+  >
+    <a
+      href={`/mem/${mem._id}`}
+      class="pt-[2px] text-[9px] text-faint hover:text-tertiary md:text-[10px]"
+    >
+      {displayDate}
+    </a>
 
-  <div class="flex flex-row flex-wrap gap-1 md:gap-2">
-    {#if mem.new}
-      <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onArchive}>
-        <ArchiveIcon class="align-middle" size="12" />
-        Archive
-      </Button>
+    <div class="pt-[5px]">
+      {#if unseen}
+        <span
+          class="block h-2 w-2 rounded-full bg-accent-strong shadow-[0_0_8px_rgba(217,142,82,.55)]"
+        ></span>
+      {/if}
+    </div>
+
+    <div class="min-w-0">
+      <div class="text-[12px] text-content md:text-[13px]">
+        {#if mem.url}
+          <a href={mem.url} target="_blank" rel="noreferrer" class="hover:underline">
+            {displayTitle}
+          </a>
+        {:else}
+          {displayTitle}
+        {/if}
+        {#if density === "minimal" && displayDomain}
+          <span class="ml-1 text-[10px] text-faint">{displayDomain}</span>
+        {/if}
+        {#if mem.tags && mem.tags.length > 0}
+          <span class="ml-1 whitespace-nowrap text-[10px] text-accent-muted">
+            {mem.tags.join(" ")}
+          </span>
+        {/if}
+      </div>
+
+      {#if density === "full"}
+        {#if displayUrl}
+          <div class="mt-[2px] text-[11px] text-accent-muted">
+            <a href={mem.url} target="_blank" rel="noreferrer" class="hover:underline">
+              {displayUrl}
+            </a>
+          </div>
+        {/if}
+
+        {#if displayNote}
+          <div class="mt-1 max-w-[560px] text-[12px] leading-[1.6] text-body">
+            {displayNote}
+          </div>
+        {/if}
+
+        {#each displayPhotos as photo, photoIndex (`${photoIndex}-${photo.url}`)}
+          <div class="relative mt-2 inline-block max-w-[420px]">
+            <img
+              src={photo.url}
+              alt=""
+              title={photo.status}
+              class="max-h-[120px] max-w-full border border-hairline object-cover"
+            />
+            {#if photo.photo}
+              <button
+                class="absolute right-0 top-0 flex h-[18px] w-[18px] items-center justify-center border border-danger/50 bg-[rgba(8,8,10,.85)] text-[10px] text-danger"
+                aria-label="remove image"
+                onclick={() => onremovePhoto?.({ mem, photo: photo.photo })}
+              >
+                ✕
+              </button>
+            {/if}
+          </div>
+        {/each}
+
+        {#each displayVideos as video, videoIndex (`${videoIndex}-${video.url}`)}
+          <!-- svelte-ignore a11y_media_has_caption -->
+          <video
+            src={video.url}
+            poster={video.posterUrl}
+            title={video.status}
+            class="mt-2 max-w-[420px] border border-hairline"
+            playsinline
+            controls
+            loop
+          ></video>
+        {/each}
+
+        <div class="mt-2 flex flex-row gap-4 text-[10px] text-tertiary">
+          {#if mem.new}
+            <button class="hover:text-content" onclick={() => onarchive?.({ mem })}>archive</button>
+          {:else}
+            <button class="hover:text-content" onclick={() => onunarchive?.({ mem })}>
+              unarchive
+            </button>
+          {/if}
+          {#if unseen}
+            <button class="hover:text-content" onclick={() => onseen?.({ mem })}>seen</button>
+          {/if}
+          <button class="hover:text-content" onclick={() => onannotate?.({ mem })}>annotate</button>
+          <button class="hover:text-content" onclick={onUploadDidClick}>upload</button>
+          <button class="text-danger/70 hover:text-danger" onclick={() => ondelete?.({ mem })}>
+            delete
+          </button>
+        </div>
+      {/if}
+    </div>
+
+    <button
+      class="justify-self-end self-start pt-[2px] text-faint opacity-0 hover:text-accent-strong focus:opacity-100 group-hover:opacity-100"
+      aria-label="edit"
+      onclick={() => onrequestEdit?.({ mem })}
+    >
+      <svg
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="square"
+        stroke-linejoin="miter"
+      >
+        <path d="M4 20h4L18.5 9.5a2.828 2.828 0 1 0-4-4L4 16v4" />
+        <path d="m13.5 6.5 4 4" />
+      </svg>
+    </button>
+
+    {#if isDragging}
+      <div
+        class="pointer-events-none absolute inset-0 flex items-center justify-center border border-dashed border-accent-strong bg-accent-strong/[.07]"
+      >
+        <span class="text-[11px] uppercase tracking-[.1em] text-accent-strong">
+          release to attach image
+        </span>
+      </div>
     {/if}
 
-    {#if !mem.new}
-      <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onUnarchive}>
-        <ArchiveIcon class="align-middle" size="12" />
-        Unarchive
-      </Button>
-    {/if}
-
-    <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onSeen}>
-      <EyeIcon class="align-middle" size="12" />
-      Seen
-    </Button>
-
-    <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onAnnotate}>
-      <PenLineIcon class="align-middle" size="12" />
-      Annotate
-    </Button>
-
-    <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onDelete}>
-      <Trash2Icon class="align-middle" size="12" />
-      Delete
-    </Button>
-
-    <Button class="flex flex-row gap-2" variant="outline" size="sm" onclick={onUploadDidClick}>
-      <ImageUpIcon class="align-middle" size="12" />
-      Upload
-    </Button>
-
-    <form enctype="multipart/form-data">
+    <form enctype="multipart/form-data" class="hidden">
       <input
         type="file"
-        class="hidden"
         multiple
         name="images[]"
-        id="fileInput"
         accept="image/*"
         bind:this={uploadEl}
         onchange={fileDidChange}
       />
     </form>
   </div>
-</div>
+{/if}

@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { parseText } from "$lib/common/parser";
   import type { Mem } from "$lib/common/mems";
-  import { Button } from "$lib/components/ui/button/index.js";
+  import { parseText } from "$lib/common/parser";
   import { sharedUser } from "$lib/firebase-shared";
   import { addMem, getTagSuggestions } from "$lib/mem.client";
   import type { TagListItem } from "$lib/tags.server";
@@ -158,37 +157,45 @@
   };
 </script>
 
-<div class="relative flex w-full flex-col px-0 py-1 md:px-1">
+<div class="relative flex w-full flex-col gap-3">
   <textarea
     bind:value={rawInput}
     bind:this={textareaEl}
-    placeholder="Enter text, urls, #tags here."
-    class="text-input-foreground m-0.5 h-16 w-full rounded-xl bg-input p-3"
+    placeholder="text, urls, #tags"
+    class="h-24 w-full border border-hairline-strong bg-surface p-3 text-[12px] leading-[1.6] text-content placeholder:text-[#8A8A94] focus:border-accent-strong focus:outline-none disabled:opacity-50"
     disabled={pending}
     oninput={handleInput}
     onkeydown={handleKeydown}
   ></textarea>
   {#if showSuggestions}
     <div
-      class="absolute left-0 right-0 top-full z-20 mt-1 rounded-lg border border-border bg-popover shadow-lg"
+      class="absolute left-0 right-0 top-full z-20 border border-hairline bg-surface shadow-[0_16px_48px_rgba(0,0,0,.7)]"
     >
       {#each suggestions as suggestion, index (suggestion.tag)}
         <button
           type="button"
           class={cn(
-            "flex w-full items-center gap-3 px-3 py-2 text-left text-sm",
-            index === highlightedIndex ? "bg-accent text-accent-foreground" : "text-foreground"
+            "flex w-full items-center gap-3 px-3 py-2 text-left text-[11px]",
+            index === highlightedIndex ? "bg-white/[.04] text-content" : "text-body"
           )}
           onmousedown={preventDefault(bubble("mousedown"))}
           onclick={() => void applySuggestion(suggestion.tag)}
         >
-          <span class="font-mono">{suggestion.tag}</span>
+          <span>{suggestion.tag}</span>
           {#if suggestion.count}
-            <span class="text-xs text-muted-foreground">{suggestion.count}</span>
+            <span class="text-[10px] text-faint">{suggestion.count}</span>
           {/if}
         </button>
       {/each}
     </div>
   {/if}
-  <Button class={cn("my-2", pending ? "animate-pulse" : "")} onclick={addNewMem}>Add</Button>
+  <button
+    class={cn(
+      "self-start border border-accent-strong/40 bg-accent-strong/10 px-4 py-2 text-[11px] text-accent-strong hover:bg-accent-strong/15",
+      pending && "animate-pulse"
+    )}
+    onclick={addNewMem}
+  >
+    add
+  </button>
 </div>

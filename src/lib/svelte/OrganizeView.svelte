@@ -1,16 +1,13 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
-  import axios from "axios";
-  import { toast } from "svelte-sonner";
-
-  import { sharedUser } from "$lib/firebase-shared";
   import type { Mem } from "$lib/common/mems";
+  import { sharedUser } from "$lib/firebase-shared";
   import * as memModifiers from "$lib/mem.client";
-
-  import MemView from "$lib/svelte/MemView.svelte";
   import type { MemListRequest } from "$lib/request.types";
+  import MemView from "$lib/svelte/MemView.svelte";
+  import axios from "axios";
   import { orderBy } from "lodash-es";
+  import { toast } from "svelte-sonner";
+  import { run } from "svelte/legacy";
 
   interface Props {
     filter?: string;
@@ -22,7 +19,6 @@
   let mems: Mem[] = $state([]);
 
   let duplicateMems: Mem[] = $state([]);
-
 
   const findDuplicatedMems = (mems_: Mem[]) => {
     let memsByUrl = {};
@@ -271,13 +267,9 @@
         onarchive={archiveMem}
         onunarchive={unarchiveMem}
         ondelete={deleteMem}
-        ondescriptionChanged={updateDescriptionForMem}
-        onnoteChanged={updateNoteForMem}
-        ontitleChanged={updateTitleForMem}
         onfileUpload={uploadFilesForMem}
         onseen={seenMem}
         onremovePhoto={removePhotoFromMem}
-        onurlChanged={updateUrlForMem}
       />
     {/if}
   </div>

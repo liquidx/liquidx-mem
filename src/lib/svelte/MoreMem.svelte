@@ -1,22 +1,21 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button/index.js";
-
   interface Props {
     moreAvailable?: boolean;
     onloadMore?: () => void;
   }
 
   let { moreAvailable = false, onloadMore }: Props = $props();
-
-  function loadMoreDidClick() {
-    onloadMore?.();
-  }
 </script>
 
-<div class="m-1 flex w-full flex-row justify-between">
+<div class="border-t border-white/[.05] px-4 py-4 md:px-6">
   {#if moreAvailable}
-    <Button onclick={loadMoreDidClick} class="my-4">More</Button>
+    <button
+      class="border border-hairline px-[14px] py-[7px] text-[11px] text-ui hover:bg-white/[.03]"
+      onclick={() => onloadMore?.()}
+    >
+      more ▾
+    </button>
   {:else}
-    <div>That's it.</div>
+    <div class="text-[10px] tracking-[.1em] text-faint">· end ·</div>
   {/if}
 </div>
