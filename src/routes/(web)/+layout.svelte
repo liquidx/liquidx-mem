@@ -1,10 +1,12 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import * as Popover from "$lib/components/ui/popover";
   import { Toaster } from "$lib/components/ui/sonner";
   import { initializeFirebase } from "$lib/firebase-init";
   import { sharedAuthState, sharedFirebaseApp, sharedUser } from "$lib/firebase-shared";
   import AppSkeleton from "$lib/svelte/AppSkeleton.svelte";
   import SignIn from "$lib/svelte/SignIn.svelte";
+  import { Menu } from "@lucide/svelte";
   import { getAuth, onAuthStateChanged } from "firebase/auth";
   import { onMount } from "svelte";
 
@@ -15,6 +17,8 @@
   }
 
   let { children }: Props = $props();
+
+  let menuOpen = $state(false);
 
   $sharedFirebaseApp = initializeFirebase();
 
@@ -55,7 +59,46 @@
         </nav>
         <span class="hidden sm:inline">{$sharedUser.email}</span>
         <span class="hidden sm:inline" aria-hidden="true">·</span>
-        <button class="hover:text-ui" onclick={signOut}>sign out</button>
+        <button class="hidden hover:text-ui md:inline" onclick={signOut}>sign out</button>
+
+        <Popover.Root bind:open={menuOpen}>
+          <Popover.Trigger
+            class="flex items-center text-faint hover:text-ui md:hidden"
+            aria-label="Menu"
+          >
+            <Menu size={16} />
+          </Popover.Trigger>
+          <Popover.Content
+            align="end"
+            class="flex w-44 flex-col gap-1 p-2 text-[10px] tracking-[.04em] text-faint"
+          >
+            <nav class="flex flex-col">
+              <a
+                href="/reading"
+                class="px-2 py-1.5 hover:text-ui"
+                onclick={() => (menuOpen = false)}>reading list</a
+              >
+              <a href="/add" class="px-2 py-1.5 hover:text-ui" onclick={() => (menuOpen = false)}
+                >add</a
+              >
+              <a href="/prefs" class="px-2 py-1.5 hover:text-ui" onclick={() => (menuOpen = false)}
+                >prefs</a
+              >
+              <a href="/about" class="px-2 py-1.5 hover:text-ui" onclick={() => (menuOpen = false)}
+                >about</a
+              >
+            </nav>
+            <div class="my-1 border-t border-white/[.06]"></div>
+            <span class="truncate px-2 text-dim">{$sharedUser.email}</span>
+            <button
+              class="px-2 py-1.5 text-left hover:text-ui"
+              onclick={() => {
+                menuOpen = false;
+                signOut();
+              }}>sign out</button
+            >
+          </Popover.Content>
+        </Popover.Root>
       {:else if $sharedAuthState === "pending"}
         <div class="hidden animate-pulse flex-row gap-4 md:flex" aria-hidden="true">
           {#each { length: 4 } as _, i (i)}
