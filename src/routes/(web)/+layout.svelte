@@ -2,7 +2,8 @@
   import { page } from "$app/state";
   import { Toaster } from "$lib/components/ui/sonner";
   import { initializeFirebase } from "$lib/firebase-init";
-  import { sharedFirebaseApp, sharedUser } from "$lib/firebase-shared";
+  import { sharedAuthState, sharedFirebaseApp, sharedUser } from "$lib/firebase-shared";
+  import AppSkeleton from "$lib/svelte/AppSkeleton.svelte";
   import SignIn from "$lib/svelte/SignIn.svelte";
   import { getAuth, onAuthStateChanged } from "firebase/auth";
   import { onMount } from "svelte";
@@ -19,11 +20,13 @@
 
   onMount(() => {
     if (!$sharedFirebaseApp) {
+      $sharedAuthState = "signed-out";
       return;
     }
     const auth = getAuth($sharedFirebaseApp);
     return onAuthStateChanged(auth, (signedInUser) => {
       $sharedUser = signedInUser;
+      $sharedAuthState = signedInUser ? "signed-in" : "signed-out";
     });
   });
 
@@ -53,6 +56,12 @@
         <span class="hidden sm:inline">{$sharedUser.email}</span>
         <span class="hidden sm:inline" aria-hidden="true">·</span>
         <button class="hover:text-ui" onclick={signOut}>sign out</button>
+      {:else if $sharedAuthState === "pending"}
+        <div class="hidden animate-pulse flex-row gap-4 md:flex" aria-hidden="true">
+          {#each { length: 4 } as _, i (i)}
+            <div class="h-[10px] w-12 bg-white/[.08]"></div>
+          {/each}
+        </div>
       {:else}
         <a href="/about" class="hover:text-ui">about</a>
       {/if}
@@ -61,6 +70,8 @@
   <div class="mx-auto flex w-full max-w-[1440px] flex-1 flex-col">
     {#if $sharedUser || page.url.pathname.startsWith("/about")}
       {@render children?.()}
+    {:else if $sharedAuthState === "pending"}
+      <AppSkeleton />
     {:else}
       <SignIn />
     {/if}
