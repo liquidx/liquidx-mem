@@ -179,6 +179,17 @@
     ontagFilter?.(tags);
   };
 
+  // Choosing a suggestion (Enter or click). When the box holds a URL it's an
+  // add-a-mem composition, so just autocomplete the tag and keep typing;
+  // otherwise it's a tag filter and we navigate immediately.
+  const pickSuggestion = (tag: string) => {
+    if (mode === "add") {
+      void applySuggestion(tag);
+    } else {
+      selectSuggestion(tag);
+    }
+  };
+
   const submit = async () => {
     const text = rawInput.trim();
 
@@ -238,7 +249,7 @@
         event.preventDefault();
         const choice = suggestions[highlightedIndex];
         if (choice) {
-          selectSuggestion(choice.tag);
+          pickSuggestion(choice.tag);
         }
         return;
       }
@@ -316,7 +327,7 @@
             index === highlightedIndex ? "bg-white/[.04] text-content" : "text-body"
           )}
           onmousedown={(e) => e.preventDefault()}
-          onclick={() => selectSuggestion(suggestion.tag)}
+          onclick={() => pickSuggestion(suggestion.tag)}
         >
           <span>{suggestion.icon ?? ""} {suggestion.tag}</span>
           {#if suggestion.count}
