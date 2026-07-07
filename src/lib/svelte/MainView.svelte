@@ -410,14 +410,11 @@
     />
 
     <div class="mt-[14px] flex flex-row flex-wrap items-center gap-x-4 gap-y-3">
-      <div class="flex flex-1 flex-row border border-white/[.12] md:flex-initial">
-        {#each tabs as tab, i (tab.key)}
+      <div class="flex flex-row flex-wrap">
+        {#each tabs as tab (tab.key)}
           <a
             href={tab.href}
-            class={cn(
-              "relative flex-1 whitespace-nowrap px-3 py-[7px] text-center text-[11px] text-ui md:flex-initial md:px-[14px]",
-              i > 0 && "border-l border-white/[.12]"
-            )}
+            class="relative -ml-px -mt-px whitespace-nowrap border border-white/[.12] px-3 py-[7px] text-center text-[11px] text-ui md:px-[14px]"
           >
             {tab.label}
             {#if tab.count !== undefined}
