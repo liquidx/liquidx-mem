@@ -59,7 +59,6 @@
   let draftNote = $state("");
   let draftTags = $state("");
   let wasEditing = false;
-  let skipCommit = false;
 
   const unseen = $derived((mem.tags ?? []).some((tag) => listTags.includes(tag)));
 
@@ -204,15 +203,11 @@
   $effect(() => {
     if (editing && !wasEditing) {
       wasEditing = true;
-      skipCommit = false;
       initDraft();
       tick().then(() => titleInputEl?.focus());
     } else if (!editing && wasEditing) {
       wasEditing = false;
-      if (!skipCommit) {
-        commitDraft();
-      }
-      skipCommit = false;
+      commitDraft();
     }
   });
 
@@ -220,15 +215,20 @@
     oncloseEdit?.();
   };
 
-  const discardEditor = () => {
-    skipCommit = true;
-    oncloseEdit?.();
+  // Pressing "e" while the mem row itself is focused opens the editor. The
+  // target === currentTarget check keeps it from firing when a child control
+  // (a link or action button) has focus instead of the row.
+  const rowKeydown = (e: KeyboardEvent) => {
+    if (e.key === "e" && e.target === e.currentTarget) {
+      e.preventDefault();
+      onrequestEdit?.({ mem });
+    }
   };
 
   const editorKeydown = (e: KeyboardEvent) => {
     if (e.key === "Escape") {
       e.preventDefault();
-      discardEditor();
+      dismissEditor();
       return;
     }
     if (e.key === "Enter") {
@@ -277,19 +277,12 @@
     onfileUpload?.({ mem, files: dataTransfer.files });
   }
 
-  const shouldBypassPaste = () => {
-    const active = document.activeElement as HTMLElement | null;
-    if (!active) {
-      return false;
-    }
-    if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) {
-      return true;
-    }
-    return active.isContentEditable;
-  };
-
   const handlePaste = (event: ClipboardEvent) => {
-    if (!isHovered || shouldBypassPaste()) {
+    // Attach a pasted image when this mem is the active one: either its editor
+    // is open ("selected") or the pointer is hovering it. We only act on image
+    // files, so a normal text paste (which carries no files) into an input or
+    // the editor fields still pastes as usual and is never hijacked here.
+    if (!editing && !isHovered) {
       return;
     }
 
@@ -329,76 +322,81 @@
   <div
     class="relative border-l-2 border-accent-strong bg-accent-strong/[.045] px-4 pb-[18px] pt-4 md:px-6"
   >
-    <div class="flex flex-row items-center">
-      <span class="text-[9px] font-semibold uppercase tracking-[.16em] text-accent-strong">
-        editing
-      </span>
-      <div class="flex-1"></div>
-      <span class="mr-3 text-[9px] tracking-[.1em] text-dim">⏎ done</span>
-      <button
-        class="text-faint hover:text-accent-strong"
-        aria-label="close editor"
-        onclick={dismissEditor}
-      >
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-linecap="square"
-          stroke-linejoin="miter"
+    <div class="md:ml-[58px] md:max-w-[660px]">
+      <div class="flex flex-row items-center">
+        <span class="text-[9px] font-semibold uppercase tracking-[.16em] text-accent-strong">
+          editing
+        </span>
+        <div class="flex-1"></div>
+        <span class="mr-3 text-[9px] tracking-[.1em] text-dim">⏎ done</span>
+        <button
+          class="text-faint hover:text-accent-strong"
+          aria-label="close editor"
+          onclick={dismissEditor}
         >
-          <path d="M18 6 6 18M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="mt-3 flex flex-col gap-3" onkeydown={editorKeydown}>
-      <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="square"
+            stroke-linejoin="miter"
+          >
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div class="mt-3 flex flex-col gap-3" onkeydown={editorKeydown}>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <label class="flex flex-col gap-1">
+            <span class="text-[9px] uppercase tracking-[.14em] text-faint">title</span>
+            <input
+              bind:this={titleInputEl}
+              bind:value={draftTitle}
+              class="border border-hairline-strong bg-base px-2.5 py-[7px] text-[12px] text-content focus:border-accent-strong focus:outline-none"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-[9px] uppercase tracking-[.14em] text-faint">url</span>
+            <input
+              bind:value={draftUrl}
+              class="border border-hairline-strong bg-base px-2.5 py-[7px] text-[11px] text-accent-muted focus:border-accent-strong focus:outline-none"
+            />
+          </label>
+        </div>
         <label class="flex flex-col gap-1">
-          <span class="text-[9px] uppercase tracking-[.14em] text-faint">title</span>
-          <input
-            bind:this={titleInputEl}
-            bind:value={draftTitle}
-            class="border border-hairline-strong bg-base px-2.5 py-[7px] text-[12px] text-content focus:border-accent-strong focus:outline-none"
-          />
+          <span class="text-[9px] uppercase tracking-[.14em] text-faint">note</span>
+          <textarea
+            bind:value={draftNote}
+            class="min-h-[48px] border border-hairline-strong bg-base px-2.5 py-[7px] text-[11px] leading-[1.6] text-body focus:border-accent-strong focus:outline-none"
+          ></textarea>
         </label>
         <label class="flex flex-col gap-1">
-          <span class="text-[9px] uppercase tracking-[.14em] text-faint">url</span>
+          <span class="text-[9px] uppercase tracking-[.14em] text-faint">tags</span>
           <input
-            bind:value={draftUrl}
+            bind:value={draftTags}
             class="border border-hairline-strong bg-base px-2.5 py-[7px] text-[11px] text-accent-muted focus:border-accent-strong focus:outline-none"
           />
         </label>
       </div>
-      <label class="flex flex-col gap-1">
-        <span class="text-[9px] uppercase tracking-[.14em] text-faint">note</span>
-        <textarea
-          bind:value={draftNote}
-          class="min-h-[48px] border border-hairline-strong bg-base px-2.5 py-[7px] text-[11px] leading-[1.6] text-body focus:border-accent-strong focus:outline-none"
-        ></textarea>
-      </label>
-      <label class="flex flex-col gap-1">
-        <span class="text-[9px] uppercase tracking-[.14em] text-faint">tags</span>
-        <input
-          bind:value={draftTags}
-          class="border border-hairline-strong bg-base px-2.5 py-[7px] text-[11px] text-accent-muted focus:border-accent-strong focus:outline-none"
-        />
-      </label>
     </div>
   </div>
 {:else}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <div
     class={cn(
-      "group relative grid grid-cols-[34px_16px_1fr_20px] px-4 hover:bg-white/[.025] md:grid-cols-[44px_16px_1fr_20px] md:px-6",
+      "group relative grid grid-cols-[34px_16px_minmax(0,640px)_20px_1fr] px-4 hover:bg-white/[.025] focus:outline-none focus-visible:bg-accent-strong/[.06] md:grid-cols-[44px_16px_minmax(0,640px)_20px_1fr] md:px-6",
       density === "full" ? "py-[13px]" : "py-[5px]"
     )}
+    tabindex={0}
     {ondragover}
     {ondragleave}
     {ondrop}
+    onkeydown={rowKeydown}
     onmouseenter={() => (isHovered = true)}
     onmouseleave={() => (isHovered = false)}
   >
