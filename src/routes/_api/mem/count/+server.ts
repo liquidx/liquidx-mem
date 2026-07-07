@@ -26,7 +26,7 @@ export const GET: RequestHandler = async ({ request, locals }) => {
   const [newCount, archiveCount, ...listCounts] = await Promise.all([
     collection.countDocuments({ $and: [{ userId }, { new: true }, notSuppressed] }),
     collection.countDocuments({ $and: [{ userId }, { new: false }, notSuppressed] }),
-    ...lists.map((list: any) =>
+    ...lists.map((list) =>
       collection.countDocuments({
         $and: [{ userId }, { tags: { $in: list.tags } }, notSuppressed]
       })
@@ -38,7 +38,7 @@ export const GET: RequestHandler = async ({ request, locals }) => {
     counts: {
       new: newCount,
       archive: archiveCount,
-      lists: lists.map((list: any, i: number) => ({ name: list.name, count: listCounts[i] }))
+      lists: lists.map((list, i) => ({ name: list.name, count: listCounts[i] }))
     }
   });
 };
