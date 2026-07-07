@@ -185,7 +185,8 @@ export async function markReadMem(mem: Mem, user: User): Promise<Mem | undefined
   });
 }
 
-export type MemViewCounts = { new: number; reading: number; archive: number };
+export type MemListCount = { name: string; count: number };
+export type MemViewCounts = { new: number; archive: number; lists: MemListCount[] };
 
 export async function getMemCounts(user: User): Promise<MemViewCounts | undefined> {
   const url = `${serverUrl}/mem/count`;

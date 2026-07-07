@@ -1,11 +1,12 @@
-import { getDb, getMemCollection } from "$lib/db";
+import { getDb, getMemCollection, getUserCollection } from "$lib/db";
 import { getFirebaseApp } from "$lib/firebase.server.js";
+import { listsForUser } from "$lib/common/lists";
 import { getUserId } from "$lib/server/api.server.js";
 import { error, json } from "@sveltejs/kit";
 
 import type { RequestHandler } from "./$types";
 
-// Counts for the three feed views: new (inbox), reading (#look queue), archive.
+// Counts for the feed views: new (inbox), each configured list, and archive.
 export const GET: RequestHandler = async ({ request, locals }) => {
   const firebaseApp = getFirebaseApp();
   const db = getDb(locals.mongoClient);
@@ -19,14 +20,25 @@ export const GET: RequestHandler = async ({ request, locals }) => {
   const notSuppressed = { tags: { $not: { $in: suppressedTags } } };
   const collection = getMemCollection(db);
 
-  const [newCount, readingCount, archiveCount] = await Promise.all([
+  const userDoc = await getUserCollection(db).findOne({ _id: userId });
+  const lists = listsForUser(userDoc?.lists);
+
+  const [newCount, archiveCount, ...listCounts] = await Promise.all([
     collection.countDocuments({ $and: [{ userId }, { new: true }, notSuppressed] }),
-    collection.countDocuments({ $and: [{ userId }, { tags: { $all: ["#look"] } }, notSuppressed] }),
-    collection.countDocuments({ $and: [{ userId }, { new: false }, notSuppressed] })
+    collection.countDocuments({ $and: [{ userId }, { new: false }, notSuppressed] }),
+    ...lists.map((list: any) =>
+      collection.countDocuments({
+        $and: [{ userId }, { tags: { $in: list.tags } }, notSuppressed]
+      })
+    )
   ]);
 
   return json({
     status: "OK",
-    counts: { new: newCount, reading: readingCount, archive: archiveCount }
+    counts: {
+      new: newCount,
+      archive: archiveCount,
+      lists: lists.map((list: any, i: number) => ({ name: list.name, count: listCounts[i] }))
+    }
   });
 };
