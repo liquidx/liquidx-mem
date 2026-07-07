@@ -12,6 +12,8 @@
   import TagRow from "$lib/svelte/TagRow.svelte";
   import type { TagListItem } from "$lib/tags.types";
   import { cn } from "$lib/utils";
+  import ArrowDownWideNarrowIcon from "@lucide/svelte/icons/arrow-down-wide-narrow";
+  import ArrowUpNarrowWideIcon from "@lucide/svelte/icons/arrow-up-narrow-wide";
   import axios from "axios";
   import { onMount, untrack } from "svelte";
   import { toast } from "svelte-sonner";
@@ -34,6 +36,10 @@
   let counts: MemViewCounts | null = $state(null);
   let density: Density = $state("full");
   let editingId: string | null = $state(null);
+  // Sort order is UI state that persists across route/filter changes, so it
+  // lives outside the route-derived listOptions (mutating a $derived isn't
+  // reactive, which is why the button used to not flip).
+  let order: MemListOptions["order"] = $state("newest");
 
   let listOptions: MemListOptions = $derived(listOptionsByString(filter));
 
@@ -121,7 +127,7 @@
     const params: MemListRequest = {
       userId: $sharedUser.uid,
       isArchived: tagFilters.onlyArchived,
-      order: tagFilters.order,
+      order,
       matchAllTags: tagFilters.matchAllTags,
       matchAnyTags: tagFilters.matchAnyTags,
       searchQuery: searchQuery,
@@ -314,7 +320,7 @@
   };
 
   const toggleSortOrder = () => {
-    listOptions.order = listOptions.order === "newest" ? "oldest" : "newest";
+    order = order === "newest" ? "oldest" : "newest";
     visiblePages = 1;
     loadMems(listOptions, searchQuery, false);
   };
@@ -390,11 +396,6 @@
         {/each}
       </div>
 
-      <button class="hidden text-[11px] text-body md:block" onclick={toggleSortOrder}>
-        {listOptions.order}
-        {listOptions.order === "newest" ? "▾" : "▴"}
-      </button>
-
       <div class="hidden flex-1 md:block"></div>
 
       {#if filterChipTag}
@@ -405,7 +406,13 @@
           {filterChipTag} ✕
         </button>
       {/if}
+    </div>
 
+    {#if showTags}
+      <TagRow tags={viewTags} {activeTag} ontagToggle={tagDidToggle} />
+    {/if}
+
+    <div class="mt-[14px] flex flex-row items-center gap-x-4">
       <div class="flex flex-row border border-white/[.12]">
         {#each densities as value, i (value)}
           <button
@@ -424,11 +431,19 @@
           </button>
         {/each}
       </div>
-    </div>
 
-    {#if showTags}
-      <TagRow tags={viewTags} {activeTag} ontagToggle={tagDidToggle} />
-    {/if}
+      <button
+        class="flex flex-row items-center gap-1.5 border border-white/[.12] px-3 py-[7px] text-[11px] text-ui md:px-[14px]"
+        onclick={toggleSortOrder}
+      >
+        {#if order === "newest"}
+          <ArrowDownWideNarrowIcon class="h-[13px] w-[13px]" />
+        {:else}
+          <ArrowUpNarrowWideIcon class="h-[13px] w-[13px]" />
+        {/if}
+        {order}
+      </button>
+    </div>
   </div>
 
   <main class="mt-4 flex-1 border-t border-white/[.06]">
