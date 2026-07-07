@@ -14,7 +14,7 @@ liquidx-mem is a note-taking service that allows users to collect content from a
 ## Development Commands
 
 ```bash
-# Development server
+# Development server (binds port 12000, per vite.config.js)
 pnpm run dev
 
 # Build for production
@@ -37,6 +37,26 @@ pnpm run check:watch # Svelte type checking in watch mode
 pnpm run tsc         # Watch mode for tools
 pnpm run tsc-once    # Single compilation
 ```
+
+### Running a dev server for debugging (agents)
+
+`pnpm run dev` binds port **12000** (from `vite.config.js`), which is the port a
+human developer typically uses. When an AI agent needs its own dev server for
+debugging or browser verification, run it on a **separate port** so it never
+collides with the developer's server, and clean up **by that port only** — never
+`pkill -f vite`, which also kills the developer's server (it exits with code 143 /
+SIGTERM and reports `[ELIFECYCLE] Command failed with exit code 143`).
+
+```bash
+# Start the agent's debug server on a dedicated port
+pnpm exec vite --port 5199 --strictPort
+
+# Stop only the agent's server (leaves the developer's 12000 untouched)
+lsof -ti :5199 | xargs kill
+```
+
+`--strictPort` makes vite fail loudly if 5199 is taken instead of silently
+drifting to another port. Use `http://localhost:5199` for agent browser checks.
 
 ## Project Architecture
 
