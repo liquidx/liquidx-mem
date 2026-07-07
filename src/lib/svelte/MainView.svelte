@@ -1,9 +1,11 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { type UserList, allListTags, listsForUser } from "$lib/common/lists";
   import type { Mem, MemPhoto } from "$lib/common/mems";
   import { type MemListOptions, listOptionsByString, stringFromListOptions } from "$lib/filter";
   import { sharedUser } from "$lib/firebase-shared";
   import * as memModifiers from "$lib/mem.client";
+  import { getLists } from "$lib/mem.client";
   import type { MemViewCounts } from "$lib/mem.client";
   import type { MemAnnotateResponse, MemListRequest } from "$lib/request.types";
   import MemList from "$lib/svelte/MemList.svelte";
@@ -43,21 +45,44 @@
 
   let listOptions: MemListOptions = $derived(listOptionsByString(filter));
 
-  const readingTag = "#look";
+  let lists: UserList[] = $state(listsForUser(null));
 
-  const isArchiveView = $derived(listOptions.onlyArchived);
-  const isReadingView = $derived(
-    !listOptions.onlyArchived &&
-      listOptions.matchAllTags.length === 1 &&
-      listOptions.matchAllTags[0] === readingTag
+  const listTags = $derived(allListTags(lists));
+
+  const activeFilterTags = $derived([...listOptions.matchAllTags, ...listOptions.matchAnyTags]);
+
+  const sameTagSet = (a: string[], b: string[]) => {
+    if (a.length !== b.length) return false;
+    const set = new Set(b);
+    return a.every((tag) => set.has(tag));
+  };
+
+  const listHref = (list: UserList) =>
+    `/tag/${list.tags
+      .map((tag) => (tag.startsWith("#") ? tag.slice(1) : tag))
+      .map(encodeURIComponent)
+      .join(",")}`;
+
+  const activeList = $derived(
+    listOptions.onlyArchived
+      ? null
+      : (lists.find((list) => sameTagSet(activeFilterTags, list.tags)) ?? null)
   );
-  const isNewView = $derived(!isArchiveView && listOptions.matchAllTags.length === 0);
+
   const activeTag = $derived(
     !listOptions.onlyArchived && listOptions.matchAllTags.length === 1
       ? listOptions.matchAllTags[0]
       : null
   );
-  const filterChipTag = $derived(activeTag && activeTag !== readingTag ? activeTag : null);
+
+  const isArchiveView = $derived(listOptions.onlyArchived);
+  const isNewView = $derived(
+    !isArchiveView && listOptions.matchAllTags.length === 0 && listOptions.matchAnyTags.length === 0
+  );
+  // Show a dismissable chip for an ad-hoc tag filter that is not one of the tabs.
+  const filterChipTag = $derived(
+    !isArchiveView && !activeList && activeFilterTags.length > 0 ? activeFilterTags.join(" ") : null
+  );
 
   // The active tag filter as a "#a #b" string, mirrored into the OmniBar so a
   // /tag/... URL keeps its tags visible in the box. Archive (#*) isn't a real
@@ -113,6 +138,12 @@
     if (result) {
       counts = result;
     }
+  };
+
+  const loadLists = async () => {
+    if (!$sharedUser) return;
+    const saved = await getLists($sharedUser);
+    lists = listsForUser(saved);
   };
 
   const loadMems = async (tagFilters: MemListOptions, searchQuery: string, append: boolean) => {
@@ -337,7 +368,10 @@
     // Reload whenever the user or the route filter changes.
     listOptions;
     if ($sharedUser) {
-      untrack(() => reload());
+      untrack(() => {
+        loadLists();
+        reload();
+      });
     }
   });
 
@@ -345,13 +379,13 @@
 
   const tabs = $derived([
     { key: "new", label: "new", count: counts?.new, active: isNewView, href: "/" },
-    {
-      key: "reading",
-      label: "reading",
-      count: counts?.reading,
-      active: isReadingView,
-      href: "/tag/look"
-    },
+    ...lists.map((list) => ({
+      key: `list:${list.name}`,
+      label: list.name,
+      count: counts?.lists.find((entry) => entry.name === list.name)?.count,
+      active: activeList?.name === list.name,
+      href: listHref(list)
+    })),
     {
       key: "archive",
       label: "archive",
@@ -450,7 +484,7 @@
     {#if mems.length === 0}
       <div class="px-4 py-10 text-center text-[12px] text-faint md:px-6">
         no items
-        {#if filterChipTag || searchQuery || isReadingView}
+        {#if filterChipTag || searchQuery || activeList}
           ·
           <button class="text-accent-strong hover:underline" onclick={() => goto("/")}>
             clear filter
@@ -461,6 +495,7 @@
       <MemList
         {mems}
         {density}
+        {listTags}
         {editingId}
         onrequestEdit={requestEdit}
         oncloseEdit={closeEdit}
