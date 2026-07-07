@@ -35,6 +35,8 @@
   let visiblePages = 1;
   let mems: Mem[] = $state([]);
   let moreMemsAvailable = $state(true);
+  // Guards infinite-scroll paging so overlapping fetches can't fire.
+  let loading = $state(false);
   let viewTags: TagListItem[] = $state([]);
   let searchQuery: string = $state("");
   let counts: MemViewCounts | null = $state(null);
@@ -153,33 +155,40 @@
       return;
     }
 
-    const authToken = await $sharedUser.getIdToken();
-    const headers = {
-      Authorization: `Bearer ${authToken}`
-    };
-    const params: MemListRequest = {
-      userId: $sharedUser.uid,
-      isArchived: tagFilters.onlyArchived,
-      order,
-      matchAllTags: tagFilters.matchAllTags,
-      matchAnyTags: tagFilters.matchAnyTags,
-      searchQuery: searchQuery,
-      pageSize: pageSize,
-      page: visiblePages - 1
-    };
+    // Set synchronously (before the first await) so the infinite-scroll effect
+    // and loadMore see the guard immediately and can't kick off a second fetch.
+    loading = true;
+    try {
+      const authToken = await $sharedUser.getIdToken();
+      const headers = {
+        Authorization: `Bearer ${authToken}`
+      };
+      const params: MemListRequest = {
+        userId: $sharedUser.uid,
+        isArchived: tagFilters.onlyArchived,
+        order,
+        matchAllTags: tagFilters.matchAllTags,
+        matchAnyTags: tagFilters.matchAnyTags,
+        searchQuery: searchQuery,
+        pageSize: pageSize,
+        page: visiblePages - 1
+      };
 
-    const result = await axios.post(`/_api/mem/list`, params, { headers });
+      const result = await axios.post(`/_api/mem/list`, params, { headers });
 
-    if (result.data) {
-      const { data } = result;
-      if (data.status == "OK" && data.mems) {
-        if (append) {
-          mems = [...mems, ...data.mems];
-        } else {
-          mems = data.mems;
+      if (result.data) {
+        const { data } = result;
+        if (data.status == "OK" && data.mems) {
+          if (append) {
+            mems = [...mems, ...data.mems];
+          } else {
+            mems = data.mems;
+          }
+          moreMemsAvailable = data.mems.length >= pageSize;
         }
-        moreMemsAvailable = data.mems.length >= pageSize;
       }
+    } finally {
+      loading = false;
     }
   };
 
@@ -191,6 +200,9 @@
   };
 
   const loadMore = () => {
+    if (loading || !moreMemsAvailable) {
+      return;
+    }
     visiblePages += 1;
     loadMems(listOptions, searchQuery, true);
   };
@@ -509,7 +521,7 @@
         ondelete={deleteMem}
         onseen={seenMem}
       />
-      <MoreMem moreAvailable={moreMemsAvailable} onloadMore={loadMore} />
+      <MoreMem moreAvailable={moreMemsAvailable} {loading} onloadMore={loadMore} />
     {:else}
       <MemList
         {mems}
@@ -527,7 +539,7 @@
         onseen={seenMem}
         onremovePhoto={removePhotoFromMem}
       />
-      <MoreMem moreAvailable={moreMemsAvailable} onloadMore={loadMore} />
+      <MoreMem moreAvailable={moreMemsAvailable} {loading} onloadMore={loadMore} />
     {/if}
     {#if feedHref}
       <div class="flex justify-end px-4 pb-6 md:px-6">
