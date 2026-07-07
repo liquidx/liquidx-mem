@@ -1,4 +1,4 @@
-import { getDb, getTagCollection } from "$lib/db";
+import { getDb, getTagCollection } from "$lib/db.server";
 import { listOptionsByString } from "$lib/filter";
 import { getFirebaseApp } from "$lib/firebase.server.js";
 import { getMems } from "$lib/mem.db.server";

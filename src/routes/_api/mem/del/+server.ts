@@ -1,4 +1,4 @@
-import { getDb } from "$lib/db";
+import { getDb } from "$lib/db.server";
 import { getFirebaseApp } from "$lib/firebase.server.js";
 import { deleteMem } from "$lib/mem.db.server";
 import { getUserId } from "$lib/server/api.server.js";

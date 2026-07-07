@@ -1,5 +1,5 @@
 import type { Mem } from "$lib/common/mems";
-import { getDb } from "$lib/db";
+import { getDb } from "$lib/db.server";
 import { htmlEscape } from "$lib/html";
 import { getMems } from "$lib/mem.db.server";
 import type { MemListRequest } from "$lib/request.types";

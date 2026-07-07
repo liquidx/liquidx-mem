@@ -2,7 +2,7 @@
   import { page } from "$app/state";
   import * as Popover from "$lib/components/ui/popover";
   import { Toaster } from "$lib/components/ui/sonner";
-  import { initializeFirebase } from "$lib/firebase-init";
+  import { initializeFirebase } from "$lib/firebase-init.svelte";
   import { sharedAuthState, sharedFirebaseApp, sharedUser } from "$lib/firebase-shared";
   import AppSkeleton from "$lib/svelte/AppSkeleton.svelte";
   import SignIn from "$lib/svelte/SignIn.svelte";

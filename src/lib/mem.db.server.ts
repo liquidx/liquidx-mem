@@ -1,12 +1,12 @@
-import type { Mem } from "$lib/common/mems";
-import { getMemCollection, getUserCollection } from "$lib/db";
-import { autoArchiveTags, listsForUser } from "$lib/common/lists";
+import { autoArchiveTags, listsForUser } from "$lib/common/lists.js";
+import type { Mem } from "$lib/common/mems.js";
+import { getMemCollection, getUserCollection } from "$lib/db.server.js";
 import { mirrorMedia } from "$lib/server/mirror.js";
 import type { S3Client } from "@aws-sdk/client-s3";
 import { DateTime } from "luxon";
 import { type Db, type DeleteResult } from "mongodb";
 
-import type { MemListRequest } from "./request.types";
+import type { MemListRequest } from "./request.types.js";
 
 export interface MemOptions {
   maxResults?: number;
@@ -22,7 +22,7 @@ export const updateMem = async (db: Db, mem: Mem): Promise<Mem | undefined> => {
 };
 
 export const deleteMem = async (db: Db, memId: string): Promise<DeleteResult> => {
-  const memTable = db.collection("mems");
+  const memTable = db.collection<{ _id: string }>("mems");
   return await memTable.deleteOne({ _id: memId });
 };
 
@@ -46,11 +46,12 @@ export const addMem = async (db: Db, userId: string, mem: Mem): Promise<Mem | vo
 export const mirrorMediaInMem = async (
   db: Db,
   s3client: S3Client,
+  bucket: string,
   mem: Mem,
   userId: string
 ): Promise<Mem | void> => {
   const outputPath = `users/${userId}/media`;
-  const updatedMem = await mirrorMedia(mem, s3client, outputPath);
+  const updatedMem = await mirrorMedia(mem, s3client, bucket, outputPath);
   const result = await updateMem(db, updatedMem);
   if (result) {
     return updatedMem;
@@ -98,9 +99,9 @@ export const getMems = async (
   }
 
   if (request && request.pageSize) {
-    const pageSize = parseInt(request.pageSize);
+    const pageSize = request.pageSize;
     options.limit = pageSize;
-    const page = request.page ? parseInt(request.page) : 0;
+    const page = request.page ?? 0;
     options.skip = page * pageSize;
   }
 
@@ -155,7 +156,7 @@ export const getMems = async (
 };
 
 export const getMem = async (db: Db, userId: string, memId: string): Promise<Mem | undefined> => {
-  return getMemCollection(db).findOne({ _id: memId, userId: userId });
+  return (await getMemCollection(db).findOne({ _id: memId, userId: userId })) ?? undefined;
 };
 
 export const findMemByUrl = async (
@@ -163,7 +164,7 @@ export const findMemByUrl = async (
   userId: string,
   url: string
 ): Promise<Mem | undefined> => {
-  return getMemCollection(db).findOne({ userId: userId, url: url });
+  return (await getMemCollection(db).findOne({ userId: userId, url: url })) ?? undefined;
 };
 
 // TODO: merge with getMems

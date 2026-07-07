@@ -1,8 +1,8 @@
 import { orderBy, toPairs } from "lodash-es";
 import type { Db } from "mongodb";
 
-import type { Mem } from "./common/mems";
-import { getMemCollection, getTagCollection } from "./db";
+import type { Mem } from "./common/mems.js";
+import { getMemCollection, getTagCollection } from "./db.server.js";
 
 export type TagIndex = { [field: string]: number };
 export type TagListItem = { tag: string; count: number; icon?: string };

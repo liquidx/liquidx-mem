@@ -1,4 +1,4 @@
-import { getDb, getUserCollection } from "$lib/db";
+import { getDb, getUserCollection } from "$lib/db.server";
 import { getFirebaseApp } from "$lib/firebase.server.js";
 import type { SettingsReadResponse, SettingsWriteRequest } from "$lib/request.types.js";
 import { getUserId } from "$lib/server/api.server.js";

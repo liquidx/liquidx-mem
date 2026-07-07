@@ -1,5 +1,6 @@
+import { S3_BUCKET } from "$env/static/private";
 import { memToJson } from "$lib/common/mems";
-import { getDb } from "$lib/db";
+import { getDb } from "$lib/db.server";
 import { getFirebaseApp } from "$lib/firebase.server.js";
 import { getMem } from "$lib/mem.db.server";
 import { mirrorMediaInMem } from "$lib/mem.db.server";
@@ -36,7 +37,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   }
 
   let updatedMem = await annotateMem(mem);
-  const updatedMemWithMedia = await mirrorMediaInMem(db, s3client, updatedMem, userId);
+  const updatedMemWithMedia = await mirrorMediaInMem(db, s3client, S3_BUCKET, updatedMem, userId);
   if (updatedMemWithMedia) {
     updatedMem = updatedMemWithMedia;
   }

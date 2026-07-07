@@ -1,4 +1,4 @@
-import { getDb } from "$lib/db";
+import { getDb } from "$lib/db.server";
 import { htmlEscape } from "$lib/html";
 import { getAllMems } from "$lib/mem.db.server";
 

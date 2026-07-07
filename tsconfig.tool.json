@@ -4,6 +4,7 @@
       "$lib": ["./src/lib"],
       "$lib/*": ["./src/lib/*"]
     },
+    "rootDir": "./",
     "outDir": "./dist",
     "allowJs": true,
     "checkJs": true,
@@ -25,12 +26,23 @@
     "types": ["jest"],
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
-  "include": ["src/tool.ts", "src/lib/**.ts", "src/tools/**.ts"],
+  "include": [
+    "src/tool.ts",
+    "src/lib/**.server.ts",
+    "src/lib/common/**.ts",
+    "src/tools/**.ts",
+    "src/lib/server/m3u8.d.ts",
+    "src/lib/tool-shims.d.ts",
+    "**.types.ts"
+  ],
   "exclude": [
     "node_modules",
     "./node_modules/**",
     "vite.config.js",
     "tailwind.config.js",
-    "svelte.config.js"
+    "svelte.config.js",
+    "src/lib/**.svelte.ts",
+    "src/lib/**.client.ts",
+    "src/lib/components"
   ]
 }

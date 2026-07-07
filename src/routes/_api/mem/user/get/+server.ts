@@ -1,4 +1,4 @@
-import { getDb } from "$lib/db";
+import { getDb } from "$lib/db.server";
 import { userForSharedSecret } from "$lib/user.db.server";
 import { error, json } from "@sveltejs/kit";
 

@@ -1,6 +1,6 @@
 // @ts-expect-error $env actually exists
 import { MONGO_DB_PASSWORD, MONGO_DB_USERNAME } from "$env/static/private";
-import { getDbClient } from "$lib/db";
+import { getDbClient } from "$lib/db.server";
 import type { Handle } from "@sveltejs/kit";
 import type { HandleServerError } from "@sveltejs/kit";
 import { sequence } from "@sveltejs/kit/hooks";
@@ -23,26 +23,26 @@ const dbPrepare: Handle = async ({ event, resolve }) => {
 
 const cors: Handle = async ({ event, resolve }) => {
   // Handle preflight requests
-  if (event.request.method === 'OPTIONS') {
+  if (event.request.method === "OPTIONS") {
     return new Response(null, {
       status: 200,
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      }
     });
   }
 
   const response = await resolve(event);
-  
+
   // Add CORS headers to all API responses
-  if (event.url.pathname.startsWith('/_api/')) {
-    response.headers.set('Access-Control-Allow-Origin', '*');
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (event.url.pathname.startsWith("/_api/")) {
+    response.headers.set("Access-Control-Allow-Origin", "*");
+    response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
   }
-  
+
   return response;
 };
 

@@ -1,6 +1,6 @@
-import { getDb, getMemCollection, getUserCollection } from "$lib/db";
-import { getFirebaseApp } from "$lib/firebase.server.js";
 import { listsForUser } from "$lib/common/lists";
+import { getDb, getMemCollection, getUserCollection } from "$lib/db.server";
+import { getFirebaseApp } from "$lib/firebase.server.js";
 import { getUserId } from "$lib/server/api.server.js";
 import { error, json } from "@sveltejs/kit";
 

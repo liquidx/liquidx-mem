@@ -1,4 +1,4 @@
-import { getDb } from "$lib/db";
+import { getDb } from "$lib/db.server";
 import { getMems } from "$lib/mem.db.server";
 
 export const load = async ({ params, locals }) => {

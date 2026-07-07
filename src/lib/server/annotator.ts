@@ -1,4 +1,4 @@
-import type { Mem, MemPhoto } from "../common/mems.js";
+import { type Mem, type MemPhoto, dedupePhotos } from "../common/mems.js";
 import { type OpenGraphImage, type OpenGraphTags, fetchOpenGraph } from "../opengraph.js";
 import { removeUrlTrackingParams } from "../url.js";
 import { ANNOTATOR_URL_CONFIG, type AnnotatorUrlConfig } from "./annotator-config.js";
@@ -57,7 +57,9 @@ const annotateWithOpenGraph = (
       }
 
       if (og.images && (!annotated.photos || annotated.photos.length === 0)) {
-        annotated.photos = ogImageToPhotos(og.images, url);
+        // Pages often emit the same image as both og:image and og:image:url,
+        // so dedupe before storing.
+        annotated.photos = dedupePhotos(ogImageToPhotos(og.images, url));
       }
       return annotated;
     })

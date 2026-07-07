@@ -1,4 +1,4 @@
-import { getDb, getTagCollection } from "$lib/db";
+import { getDb, getTagCollection } from "$lib/db.server";
 import { getFirebaseApp } from "$lib/firebase.server.js";
 import { getUserId } from "$lib/server/api.server.js";
 import type { TagCount, TagIndex } from "$lib/tags.types";

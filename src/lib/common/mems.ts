@@ -65,6 +65,41 @@ export interface Mem {
   links?: MemLink[];
 }
 
+// Identity of a photo for dedup purposes: prefer the source URL, fall back to
+// the mirrored path. Empty string means "no stable identity" (never deduped).
+export const photoKey = (photo: MemPhoto): string =>
+  photo.mediaUrl || photo.cachedMediaPath || "";
+
+// Remove duplicate photos that share the same identity, preserving order and
+// keeping the first occurrence. Useful fields (cachedMediaPath, size) from a
+// later duplicate are merged into the kept photo so nothing is lost.
+export const dedupePhotos = (photos: MemPhoto[]): MemPhoto[] => {
+  const seen = new Map<string, MemPhoto>();
+  const result: MemPhoto[] = [];
+  for (const photo of photos) {
+    const key = photoKey(photo);
+    if (!key) {
+      // No stable identity to dedupe on; keep it.
+      result.push(photo);
+      continue;
+    }
+    const existing = seen.get(key);
+    if (!existing) {
+      const copy = { ...photo };
+      seen.set(key, copy);
+      result.push(copy);
+      continue;
+    }
+    if (!existing.cachedMediaPath && photo.cachedMediaPath) {
+      existing.cachedMediaPath = photo.cachedMediaPath;
+    }
+    if (!existing.size && photo.size) {
+      existing.size = photo.size;
+    }
+  }
+  return result;
+};
+
 export const memFromJson = (json: Mem) => {
   const mem = Object.assign({}, json);
   return mem;

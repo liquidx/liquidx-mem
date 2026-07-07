@@ -1,4 +1,4 @@
-import type { Mem } from "./common/mems";
+import type { Mem } from "./common/mems.js";
 
 export interface MemListRequest {
   userId: string;

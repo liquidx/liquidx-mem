@@ -1,5 +1,5 @@
 import { memToJson } from "$lib/common/mems";
-import { getDb } from "$lib/db";
+import { getDb } from "$lib/db.server";
 import { getFirebaseApp } from "$lib/firebase.server.js";
 import { getMem } from "$lib/mem.db.server";
 import { getUserId } from "$lib/server/api.server.js";

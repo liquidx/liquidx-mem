@@ -371,7 +371,7 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 In `src/lib/mem.db.server.ts`, update the db import and add the lists import:
 
 ```ts
-import { getMemCollection, getUserCollection } from "$lib/db";
+import { getMemCollection, getUserCollection } from "$lib/db.server";
 import { autoArchiveTags, listsForUser } from "$lib/common/lists";
 ```
 
@@ -435,7 +435,7 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>"
 Replace the contents of `src/routes/_api/mem/count/+server.ts` with:
 
 ```ts
-import { getDb, getMemCollection, getUserCollection } from "$lib/db";
+import { getDb, getMemCollection, getUserCollection } from "$lib/db.server";
 import { getFirebaseApp } from "$lib/firebase.server.js";
 import { listsForUser } from "$lib/common/lists";
 import { getUserId } from "$lib/server/api.server.js";
@@ -762,7 +762,7 @@ In `src/routes/_api/mem/flag/+server.ts`, replace the reading import and add the
 ```ts
 // Replace: import { READING_LIST_TAGS } from "$lib/common/reading";
 import { allListTags, listsForUser } from "$lib/common/lists";
-import { getDb, getUserCollection } from "$lib/db";
+import { getDb, getUserCollection } from "$lib/db.server";
 ```
 
 (The file currently imports `getDb` from `$lib/db`; combine into the single import above.)

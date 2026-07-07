@@ -1,14 +1,9 @@
 import { EJSON } from "bson";
-import { type Db, MongoClient, ServerApiVersion } from "mongodb";
+import { type Db, MongoClient } from "mongodb";
 
-const MONGO_DB_ATLAS_SERVER = "cluster0.uakqn3b.mongodb.net";
-const MONGO_DB_ATLAS_CLUSTER_NAME = "Cluster0";
+import type { Mem } from "./common/mems.js";
+import type { User } from "./user.types.js";
 
-const MONGO_DB_ATLAS_PARAMS = {
-  retryWrites: "true",
-  w: "majority",
-  appName: MONGO_DB_ATLAS_CLUSTER_NAME
-};
 const MONGO_DB_MEM_DB = "mem";
 const MONGO_DB_MEM_COLLECTION = "mems";
 const MONGO_DB_USER_COLLECTION = "users";
@@ -31,11 +26,11 @@ export const getDbName = () => {
 };
 
 export const getMemCollection = (db: Db) => {
-  return db.collection(MONGO_DB_MEM_COLLECTION);
+  return db.collection<Mem>(MONGO_DB_MEM_COLLECTION);
 };
 
 export const getUserCollection = (db: Db) => {
-  return db.collection(MONGO_DB_USER_COLLECTION);
+  return db.collection<User>(MONGO_DB_USER_COLLECTION);
 };
 
 export const getTagCollection = (db: Db) => {

@@ -1,4 +1,3 @@
-import { S3_BUCKET } from "$env/static/private";
 import { writeFileToS3 } from "$lib/s3.server.js";
 import type { S3Client } from "@aws-sdk/client-s3";
 import axios from "axios";
@@ -10,22 +9,24 @@ import type { Mem } from "../common/mems.js";
 // Writes a file to cloud storage.
 export const writeToCloudStorage = async (
   s3client: S3Client,
+  bucket: string,
   storagePath: string,
   contents: ArrayBuffer
 ): Promise<string> => {
-  return writeFileToS3(s3client, S3_BUCKET, storagePath, Buffer.from(contents));
+  return writeFileToS3(s3client, bucket, storagePath, Buffer.from(contents));
 };
 
 // Downloads and writes media to cloud storage.
 const writeMediaToCloudStorage = async (
   s3client: S3Client,
+  bucket: string,
   storagePath: string,
   imageUrl: string
 ): Promise<string | void> => {
   return axios
     .get(imageUrl, { responseType: "arraybuffer" })
     .then((response) => {
-      return writeFileToS3(s3client, S3_BUCKET, storagePath, response.data);
+      return writeFileToS3(s3client, bucket, storagePath, response.data);
     })
     .catch((err) => {
       if (err.response) {
@@ -38,6 +39,7 @@ const writeMediaToCloudStorage = async (
 };
 
 // Gets the best streaming URL from a M3U8 master playlist.
+// @ts-expect-error unused
 const getBestStreamUrl = async (streamUrl: string) => {
   // Download the master playlist.
   const masterResponse = await axios.get(streamUrl);
@@ -78,6 +80,7 @@ const getBestStreamUrl = async (streamUrl: string) => {
 export const mirrorMedia = async (
   mem: Mem,
   s3client: S3Client,
+  bucket: string,
   outputPath: string
 ): Promise<Mem> => {
   const requests = [];
@@ -93,14 +96,17 @@ export const mirrorMedia = async (
         const extension = mediaUrl.pathname.split(".").pop();
         const destinationPath = `${outputPath}/${destinationSubpath}/${destinationFilename}.${extension}`;
 
-        const request = writeMediaToCloudStorage(s3client, destinationPath, media.mediaUrl).then(
-          (outputPath) => {
-            if (outputPath) {
-              media.cachedMediaPath = destinationPath;
-            }
-            return media;
+        const request = writeMediaToCloudStorage(
+          s3client,
+          bucket,
+          destinationPath,
+          media.mediaUrl
+        ).then((outputPath) => {
+          if (outputPath) {
+            media.cachedMediaPath = destinationPath;
           }
-        );
+          return media;
+        });
         requests.push(request);
       }
     }
@@ -118,6 +124,7 @@ export const mirrorMedia = async (
             const destinationPath = `${outputPath}/${destinationSubpath}/${destinationFilename}.${extension}`;
             const request = writeMediaToCloudStorage(
               s3client,
+              bucket,
               destinationPath,
               media.mediaUrl
             ).then(() => {

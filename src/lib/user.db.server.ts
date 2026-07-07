@@ -1,7 +1,7 @@
 import { type Db } from "mongodb";
 
-import { getUserCollection } from "./db";
-import { type User } from "./user.types";
+import { getUserCollection } from "./db.server.js";
+import type { User } from "./user.types.js";
 
 export const USER_NOT_FOUND = "";
 
