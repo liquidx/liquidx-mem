@@ -1,5 +1,6 @@
 import type { Mem } from "$lib/common/mems";
-import { getMemCollection } from "$lib/db";
+import { getMemCollection, getUserCollection } from "$lib/db";
+import { autoArchiveTags, listsForUser } from "$lib/common/lists";
 import { mirrorMedia } from "$lib/server/mirror.js";
 import type { S3Client } from "@aws-sdk/client-s3";
 import { DateTime } from "luxon";
@@ -28,7 +29,11 @@ export const deleteMem = async (db: Db, memId: string): Promise<DeleteResult> =>
 export const addMem = async (db: Db, userId: string, mem: Mem): Promise<Mem | void> => {
   mem._id = crypto.randomUUID();
   mem.userId = userId;
-  mem.new = true;
+  // Items in an auto-archiving list are kept out of the "new" inbox (they still
+  // appear in the list, which queries by tag regardless of archive state).
+  const userDoc = await getUserCollection(db).findOne({ _id: userId });
+  const laterTags = autoArchiveTags(listsForUser(userDoc?.lists));
+  mem.new = !(mem.tags ?? []).some((tag) => laterTags.includes(tag));
   mem.addedMs = DateTime.utc().toMillis();
 
   const result = await getMemCollection(db).insertOne(mem);

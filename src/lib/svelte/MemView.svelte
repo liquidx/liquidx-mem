@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { Mem, MemPhoto } from "$lib/common/mems";
   import { extractTags } from "$lib/common/parser";
-  import { READING_LIST_TAGS } from "$lib/common/reading";
   import { getCachedStorageUrl } from "$lib/storage";
   import { cn } from "$lib/utils";
   import { DateTime } from "luxon";
@@ -18,6 +17,7 @@
   interface Props {
     mem: Mem;
     density?: "full" | "minimal";
+    listTags?: string[];
     editing?: boolean;
     onrequestEdit?: (data: { mem: Mem }) => void;
     oncloseEdit?: () => void;
@@ -34,6 +34,7 @@
   let {
     mem,
     density = "full",
+    listTags = [],
     editing = false,
     onrequestEdit,
     oncloseEdit,
@@ -60,7 +61,7 @@
   let wasEditing = false;
   let skipCommit = false;
 
-  const unseen = $derived((mem.tags ?? []).some((tag) => READING_LIST_TAGS.includes(tag)));
+  const unseen = $derived((mem.tags ?? []).some((tag) => listTags.includes(tag)));
 
   const displayDate = $derived(
     mem.addedMs ? DateTime.fromJSDate(new Date(mem.addedMs)).toFormat("MM-dd") : ""

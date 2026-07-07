@@ -5,7 +5,8 @@ import { type Mem, type MemPhoto, memFromJson } from "./common/mems";
 import type { MemAnnotateResponse } from "./request.types";
 import { iconForTag } from "./tags";
 import type { TagListItem } from "./tags.server";
-import type { UserView, UserWriteSecret } from "./user.types";
+import type { UserWriteSecret } from "./user.types";
+import type { UserList } from "./common/lists";
 
 const serverUrl = "/_api";
 // For debugging.
@@ -184,7 +185,8 @@ export async function markReadMem(mem: Mem, user: User): Promise<Mem | undefined
   });
 }
 
-export type MemViewCounts = { new: number; reading: number; archive: number };
+export type MemListCount = { name: string; count: number };
+export type MemViewCounts = { new: number; archive: number; lists: MemListCount[] };
 
 export async function getMemCounts(user: User): Promise<MemViewCounts | undefined> {
   const url = `${serverUrl}/mem/count`;
@@ -346,33 +348,26 @@ export const removePhotoFromMem = async (
   });
 };
 
-export const getSavedViews = async (user: User): Promise<UserView[] | undefined> => {
-  const url = `${serverUrl}/prefs?key=views`;
+export const getLists = async (user: User): Promise<UserList[]> => {
+  const url = `${serverUrl}/prefs?key=lists`;
   const authToken = await user.getIdToken();
-  const headers = {
-    Authorization: `Bearer ${authToken}`
-  };
-
-  return axios.get(url, { headers }).then((response) => {
-    if (!response.data) {
-      return [];
-    }
-    if (!response.data.settings) {
-      return [];
-    }
-    const views = response.data.settings as UserView[];
-    return views;
-  });
+  const headers = { Authorization: `Bearer ${authToken}` };
+  return axios
+    .get(url, { headers })
+    .then((response) => {
+      if (response.status != 200 || !response.data.settings) {
+        return [];
+      }
+      return response.data.settings as UserList[];
+    })
+    .catch(() => []);
 };
 
-export const updateSavedViews = async (user: User, settings: UserView[]): Promise<void> => {
+export const updateLists = async (user: User, lists: UserList[]): Promise<void> => {
   const url = `${serverUrl}/prefs`;
   const authToken = await user.getIdToken();
-  const headers = {
-    Authorization: `Bearer ${authToken}`
-  };
-
-  return axios.post(url, { key: "views", settings }, { headers });
+  const headers = { Authorization: `Bearer ${authToken}` };
+  await axios.post(url, { key: "lists", settings: lists }, { headers });
 };
 
 export const getWriteSecret = async (user: User): Promise<UserWriteSecret> => {

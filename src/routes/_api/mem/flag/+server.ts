@@ -1,6 +1,6 @@
 import { memToJson } from "$lib/common/mems";
-import { READING_LIST_TAGS } from "$lib/common/reading";
-import { getDb } from "$lib/db";
+import { allListTags, listsForUser } from "$lib/common/lists";
+import { getDb, getUserCollection } from "$lib/db";
 import { getFirebaseApp } from "$lib/firebase.server.js";
 import { getMem } from "$lib/mem.db.server";
 import { updateMem } from "$lib/mem.db.server";
@@ -56,14 +56,16 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     }
   }
 
-  // Mark a mem as read: strip all reading-list tags so it drops off the
-  // Reading List while staying saved.
+  // Mark a mem as read/seen: strip the user's configured list tags so it drops
+  // off every later list while staying saved.
   if (body.markRead) {
+    const userDoc = await getUserCollection(db).findOne({ _id: userId });
+    const listTags = allListTags(listsForUser(userDoc?.lists));
     if (mem.tags) {
-      mem.tags = mem.tags.filter((tag) => !READING_LIST_TAGS.includes(tag));
+      mem.tags = mem.tags.filter((tag) => !listTags.includes(tag));
     }
     if (mem.note) {
-      for (const tag of READING_LIST_TAGS) {
+      for (const tag of listTags) {
         mem.note = mem.note.replaceAll(tag, "");
       }
       mem.note = mem.note.replace(/\s+/g, " ").trim();

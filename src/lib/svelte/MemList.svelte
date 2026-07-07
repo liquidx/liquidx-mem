@@ -7,6 +7,7 @@
   interface Props {
     mems?: Mem[];
     density?: "full" | "minimal";
+    listTags?: string[];
     editingId?: string | null;
     onrequestEdit?: (data: { mem: Mem }) => void;
     oncloseEdit?: () => void;
@@ -23,6 +24,7 @@
   let {
     mems = [],
     density = "full",
+    listTags = [],
     editingId = null,
     onrequestEdit,
     oncloseEdit,
@@ -43,6 +45,7 @@
       <MemView
         {mem}
         {density}
+        {listTags}
         editing={editingId !== null && editingId === mem._id}
         {onrequestEdit}
         {oncloseEdit}

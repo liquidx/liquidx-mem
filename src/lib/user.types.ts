@@ -1,3 +1,5 @@
+import type { UserList } from "./common/lists.js";
+
 export interface UserView {
   tags: string;
 }
@@ -9,4 +11,5 @@ export interface User {
   username: string;
   writeSecret: UserWriteSecret;
   views: UserView[];
+  lists?: UserList[];
 }
