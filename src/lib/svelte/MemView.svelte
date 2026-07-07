@@ -27,7 +27,7 @@
     onannotate?: (data: { mem: Mem }) => void;
     ondelete?: (data: { mem: Mem }) => void;
     onseen?: (data: { mem: Mem }) => void;
-    onremovePhoto?: (data: { mem: Mem; photo: MemPhoto | undefined }) => void;
+    onremovePhoto?: (data: { mem: Mem; photo: MemPhoto | undefined; photoIndex: number }) => void;
     onfileUpload?: (data: { mem: Mem; files: FileList }) => void;
   }
 
@@ -463,7 +463,7 @@
               <button
                 class="absolute right-0 top-0 flex h-[18px] w-[18px] items-center justify-center border border-danger/50 bg-[rgba(8,8,10,.85)] text-[10px] text-danger"
                 aria-label="remove image"
-                onclick={() => onremovePhoto?.({ mem, photo: photo.photo })}
+                onclick={() => onremovePhoto?.({ mem, photo: photo.photo, photoIndex: photoIndex })}
               >
                 ✕
               </button>

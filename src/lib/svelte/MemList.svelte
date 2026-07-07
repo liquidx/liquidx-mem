@@ -18,7 +18,7 @@
     onseen?: (data: { mem: Mem }) => void;
     onfileUpload?: (data: { mem: Mem; files: FileList }) => void;
     onunarchive?: (data: { mem: Mem }) => void;
-    onremovePhoto?: (data: { mem: Mem; photo: MemPhoto | undefined }) => void;
+    onremovePhoto?: (data: { mem: Mem; photo: MemPhoto | undefined; photoIndex: number }) => void;
   }
 
   let {

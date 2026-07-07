@@ -14,6 +14,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   const body = await request.json();
   const memId = body["memId"] || "";
   const mediaUrl = body["mediaUrl"] || "";
+  const photoIndex: number | undefined = body["photoIndex"] || undefined;
 
   console.log("/_api/mem/media-remove:", body);
 
@@ -40,11 +41,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
   // Iterate through the media to remove the item that has the mediaURl
   if (mem.photos) {
-    const photos = [];
-    for (let i = 0; i < mem.photos.length; i++) {
-      const photo: MemPhoto = mem.photos[i];
-      if (photo.mediaUrl !== mediaUrl) {
-        photos.push(photo);
+    let photos = [];
+    if (photoIndex !== undefined) {
+      photos = mem.photos.filter((f, i) => i !== photoIndex);
+    } else {
+      for (let i = 0; i < mem.photos.length; i++) {
+        const photo: MemPhoto = mem.photos[i];
+        if (photo.mediaUrl !== mediaUrl) {
+          photos.push(photo);
+        }
       }
     }
     mem.photos = photos;

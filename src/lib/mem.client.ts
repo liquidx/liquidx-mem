@@ -1,12 +1,12 @@
 import axios from "axios";
 import type { User } from "firebase/auth";
 
+import type { UserList } from "./common/lists";
 import { type Mem, type MemPhoto, memFromJson } from "./common/mems";
 import type { MemAnnotateResponse } from "./request.types";
 import { iconForTag } from "./tags";
 import type { TagListItem } from "./tags.server";
 import type { UserWriteSecret } from "./user.types";
-import type { UserList } from "./common/lists";
 
 const serverUrl = "/_api";
 // For debugging.
@@ -327,10 +327,16 @@ export async function uploadFilesForMem(
 export const removePhotoFromMem = async (
   mem: Mem,
   photo: MemPhoto,
+  photoIndex: number,
   user: User
 ): Promise<Mem | undefined> => {
   const url = `${serverUrl}/mem/media-remove`;
-  const body = { userId: user.uid, memId: mem._id, mediaUrl: photo.mediaUrl };
+  const body = {
+    userId: user.uid,
+    memId: mem._id,
+    mediaUrl: photo.mediaUrl,
+    photoIndex: photoIndex
+  };
   const authToken = await user.getIdToken();
   const headers = {
     Authorization: `Bearer ${authToken}`

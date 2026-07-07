@@ -112,11 +112,12 @@
     }
   };
 
-  const removePhotoFromMem = async (data: { mem: Mem; photo: MemPhoto }) => {
+  const removePhotoFromMem = async (data: { mem: Mem; photo: MemPhoto; photoIndex: number }) => {
     let mem: Mem = data.mem;
     let photo: MemPhoto = data.photo;
+    let photoIndex: number = data.photoIndex;
     if (mem && $sharedUser) {
-      const updatedMem = await memModifiers.removePhotoFromMem(mem, photo, $sharedUser);
+      const updatedMem = await memModifiers.removePhotoFromMem(mem, photo, photoIndex, $sharedUser);
       console.log("removePhotoFromMem", updatedMem);
       if (updatedMem) {
         updateVisibleMems(mems, updatedMem, mem._id);
