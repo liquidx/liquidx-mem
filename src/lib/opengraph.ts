@@ -151,29 +151,52 @@ export const parseOpenGraph = (content: string): OpenGraphTags => {
   return ogTags;
 };
 
-// Detects HTTP headers that specify the content-type, and if it is not
-// UTF-8, transcode it to UTF-8.
+// Determine the charset of an HTML response body. Precedence follows a
+// simplified version of the WHATWG encoding sniffing algorithm: an explicit
+// charset in the HTTP Content-Type header wins, otherwise we fall back to the
+// <meta> charset declaration inside the HTML itself. Many Japanese sites
+// (e.g. itmedia.co.jp) serve Shift_JIS content but only send
+// `Content-Type: text/html` with no charset, relying on the meta tag to
+// announce the encoding. Without the meta fallback the bytes get decoded as
+// UTF-8 and turn into mojibake.
+export const detectCharset = (data: Buffer, contentType?: string): string => {
+  const contentCharsetPattern = /charset=([^;]*)/i;
+
+  const fromHeader = contentType?.match(contentCharsetPattern);
+  if (fromHeader && fromHeader[1].trim().length > 0) {
+    return fromHeader[1].trim().toLowerCase();
+  }
+
+  // Meta charset declarations are always ASCII, so we can decode the first
+  // chunk as latin1 to scan for them without knowing the encoding yet. This
+  // matches both the HTML5 form (<meta charset="shift_jis">) and the legacy
+  // http-equiv form (<meta http-equiv="Content-Type"
+  // content="text/html; charset=Shift_JIS">).
+  const head = data.subarray(0, 4096).toString("latin1");
+  const fromMeta = head.match(/<meta[^>]+charset\s*=\s*["']?\s*([\w-]+)/i);
+  if (fromMeta) {
+    return fromMeta[1].trim().toLowerCase();
+  }
+
+  return "utf-8";
+};
+
+// Detects the charset of the content-type (header or HTML meta tag), and if it
+// is not UTF-8, transcodes the body to UTF-8.
 const transcodeResponse = (response: AxiosResponse): AxiosResponse => {
-  const contentCharsetPattern = /charset=([^;]*)/;
+  const charset = detectCharset(response.data, response.headers["content-type"]);
 
-  const contentType = response.headers["content-type"];
-  if (!contentType) {
+  if (charset === "utf-8" || charset === "utf8") {
+    // toString() decodes as UTF-8 by default, so leave the buffer as-is.
     return response;
   }
 
-  const charsetMatch = contentType.match(contentCharsetPattern);
-  if (!charsetMatch) {
+  if (!iconv.encodingExists(charset)) {
+    console.warn("Unknown charset, decoding as UTF-8:", charset);
     return response;
   }
 
-  const charset = charsetMatch[1].toLowerCase();
-  if (charset === "utf-8") {
-    return response;
-  }
-
-  const decodedString = iconv.decode(response.data, charset);
-  response.data = decodedString;
-
+  response.data = iconv.decode(response.data, charset);
   return response;
 };
 
