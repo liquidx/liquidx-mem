@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 import { addMongoCommands } from "./tools/mongo-tools.js";
 
-const DEFAULT_USER = "BB8zGVrCbrQ2QryHyiZNaUZJjQ93";
+//const DEFAULT_USER = "BB8zGVrCbrQ2QryHyiZNaUZJjQ93";
 
 const main = async () => {
   dotenv.config();
@@ -19,7 +19,7 @@ const main = async () => {
     return;
   }
 
-  program.option("-u --user-id <userId>", "User ID", DEFAULT_USER);
+  //program.option("-u --user-id <userId>", "User ID", DEFAULT_USER);
   addMongoCommands(program.command("mongo"), dbUser, dbPassword);
 
   program.parse();
