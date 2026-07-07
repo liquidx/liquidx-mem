@@ -8,7 +8,9 @@
   import { getLists } from "$lib/mem.client";
   import type { MemViewCounts } from "$lib/mem.client";
   import type { MemAnnotateResponse, MemListRequest } from "$lib/request.types";
+  import MemGrid from "$lib/svelte/MemGrid.svelte";
   import MemList from "$lib/svelte/MemList.svelte";
+  import MemView from "$lib/svelte/MemView.svelte";
   import MoreMem from "$lib/svelte/MoreMem.svelte";
   import OmniBar from "$lib/svelte/OmniBar.svelte";
   import TagRow from "$lib/svelte/TagRow.svelte";
@@ -20,7 +22,7 @@
   import { onMount, untrack } from "svelte";
   import { toast } from "svelte-sonner";
 
-  type Density = "full" | "minimal";
+  type Density = "full" | "minimal" | "images";
 
   interface Props {
     filter?: string;
@@ -108,7 +110,7 @@
 
   onMount(() => {
     const savedDensity = localStorage.getItem("mem-density");
-    if (savedDensity === "full" || savedDensity === "minimal") {
+    if (savedDensity === "full" || savedDensity === "minimal" || savedDensity === "images") {
       density = savedDensity;
     }
   });
@@ -376,7 +378,13 @@
     }
   });
 
-  const densities: Density[] = ["full", "minimal"];
+  const densities: Density[] = ["full", "minimal", "images"];
+
+  // In the images grid there is no inline editor, so edits open the full
+  // MemView in a modal overlay. Resolve the mem being edited from its id.
+  const editingMem = $derived(
+    editingId ? (mems.find((mem) => mem._id === editingId) ?? null) : null
+  );
 
   const tabs = $derived([
     { key: "new", label: "new", count: counts?.new, active: isNewView, href: "/" },
@@ -456,7 +464,9 @@
             onclick={() => setDensity(value)}
           >
             <span class="hidden md:inline">{value}</span>
-            <span class="md:hidden">{value === "minimal" ? "min" : value}</span>
+            <span class="md:hidden">
+              {value === "minimal" ? "min" : value === "images" ? "img" : value}
+            </span>
             {#if density === value}
               <span class="absolute inset-x-0 bottom-0 h-[2px] bg-accent-strong"></span>
             {/if}
@@ -489,6 +499,17 @@
           </button>
         {/if}
       </div>
+    {:else if density === "images"}
+      <MemGrid
+        {mems}
+        {listTags}
+        onrequestEdit={requestEdit}
+        onarchive={archiveMem}
+        onunarchive={unarchiveMem}
+        ondelete={deleteMem}
+        onseen={seenMem}
+      />
+      <MoreMem moreAvailable={moreMemsAvailable} onloadMore={loadMore} />
     {:else}
       <MemList
         {mems}
@@ -521,3 +542,36 @@
     {/if}
   </main>
 </div>
+
+{#if density === "images" && editingMem}
+  <!-- Grid mode has no inline editor; edit opens the full MemView in a modal. -->
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 px-4 py-10 backdrop-blur-sm"
+    onclick={closeEdit}
+  >
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      class="w-full max-w-[640px] border border-hairline bg-[#08080a]"
+      onclick={(event) => event.stopPropagation()}
+    >
+      <MemView
+        mem={editingMem}
+        density="full"
+        {listTags}
+        editing={true}
+        onrequestEdit={requestEdit}
+        oncloseEdit={closeEdit}
+        onedit={editMem}
+        onannotate={annotateMem}
+        onarchive={archiveMem}
+        onunarchive={unarchiveMem}
+        ondelete={deleteMem}
+        onfileUpload={uploadFilesForMem}
+        onseen={seenMem}
+        onremovePhoto={removePhotoFromMem}
+      />
+    </div>
+  </div>
+{/if}
