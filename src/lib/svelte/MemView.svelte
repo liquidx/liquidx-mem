@@ -99,9 +99,10 @@
   });
 
   const displayNote = $derived.by(() => {
-    // Tags render inline after the title; strip them out of the note so the
-    // note line only shows prose.
-    let text = mem.note || mem.description || "";
+    // Prefer the annotated description (e.g. Open Graph) and fall back to the
+    // user's note. Tags render inline after the title, so strip them out here
+    // so this line only shows prose.
+    let text = mem.description || mem.note || "";
     text = text
       .replace(/#[^\s,]+/g, "")
       .replace(/[ \t]+/g, " ")
@@ -415,7 +416,7 @@
       {/if}
     </div>
 
-    <div class="min-w-0">
+    <div class="min-w-0 max-w-[640px]">
       <div class="text-[12px] text-content md:text-[13px]">
         {#if mem.url}
           <a href={mem.url} target="_blank" rel="noreferrer" class="hover:underline">
@@ -444,7 +445,7 @@
         {/if}
 
         {#if displayNote}
-          <div class="mt-1 max-w-[560px] text-[12px] leading-[1.6] text-body">
+          <div class="mt-1 text-[12px] leading-[1.6] text-body">
             {displayNote}
           </div>
         {/if}
