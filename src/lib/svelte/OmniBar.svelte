@@ -5,18 +5,23 @@
   import { addMem, getTagSuggestions } from "$lib/mem.client";
   import type { TagListItem } from "$lib/tags.types";
   import { cn } from "$lib/utils";
+  import HashIcon from "@lucide/svelte/icons/hash";
+  import LinkIcon from "@lucide/svelte/icons/link";
+  import SearchIcon from "@lucide/svelte/icons/search";
   import { DateTime } from "luxon";
-  import { onMount, tick } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
   import { toast } from "svelte-sonner";
   import urlRegexSafe from "url-regex-safe";
 
   interface Props {
+    // The active tag filter as a "#a #b" string, reflected into the input.
+    query?: string;
     onmemDidAdd?: (data: { mem: Mem }) => void;
     onsearch?: (data: { query: string }) => void;
-    ontagFilter?: (tag: string) => void;
+    ontagFilter?: (tags: string[]) => void;
   }
 
-  let { onmemDidAdd, onsearch, ontagFilter }: Props = $props();
+  let { query = "", onmemDidAdd, onsearch, ontagFilter }: Props = $props();
 
   let pending = $state(false);
   let rawInput = $state("");
@@ -35,18 +40,53 @@
     return matches.some((m) => m.startsWith("http://") || m.startsWith("https://"));
   };
 
-  const hint = $derived(
-    rawInput.trim().startsWith("#") && !containsUrl(rawInput)
-      ? "⏎ filter"
-      : rawInput.trim() && !containsUrl(rawInput)
-        ? "⏎ search"
-        : "⏎ add"
+  // Every whitespace-separated "#token" in the text (a lone "#" is ignored).
+  const extractHashtags = (text: string): string[] =>
+    text
+      .trim()
+      .split(/\s+/)
+      .filter((token) => token.startsWith("#") && token.length > 1);
+
+  // True when the input is made up entirely of one or more #tags (and no URL),
+  // e.g. "#a" or "#a #b". "#a hello" is not a tag filter — it's a search.
+  const isTagFilter = $derived.by(() => {
+    const trimmed = rawInput.trim();
+    if (!trimmed || containsUrl(rawInput)) {
+      return false;
+    }
+    return trimmed.split(/\s+/).every((token) => token.startsWith("#") && token.length > 1);
+  });
+
+  type Mode = "idle" | "add" | "filter" | "search";
+  const mode: Mode = $derived.by(() => {
+    if (!rawInput.trim()) {
+      return "idle";
+    }
+    if (containsUrl(rawInput)) {
+      return "add";
+    }
+    return isTagFilter ? "filter" : "search";
+  });
+
+  const modeLabel = $derived(
+    mode === "add" ? "ADD" : mode === "filter" ? "FILTER" : mode === "search" ? "SEARCH" : ""
   );
 
   onMount(() => {
     if (window.innerWidth < 720) {
       placeholder = "search / paste / #tag";
     }
+  });
+
+  // Mirror the active tag filter into the box, but never clobber what the user
+  // is actively typing.
+  $effect(() => {
+    const incoming = query;
+    untrack(() => {
+      if (!focused && rawInput !== incoming) {
+        rawInput = incoming;
+      }
+    });
   });
 
   const resetSuggestions = () => {
@@ -127,6 +167,18 @@
     inputEl.focus();
   };
 
+  // Picking a suggestion filters immediately, combining any complete #tags
+  // already typed before the current token with the chosen one.
+  const selectSuggestion = (tag: string) => {
+    const before = rawInput.slice(0, tokenStartIndex);
+    const resolved = extractHashtags(`${before}${tag}`);
+    const tags = resolved.length ? resolved : [tag];
+    resetSuggestions();
+    // Show the resolved tags in the box rather than the half-typed token.
+    rawInput = tags.join(" ");
+    ontagFilter?.(tags);
+  };
+
   const submit = async () => {
     const text = rawInput.trim();
 
@@ -151,9 +203,8 @@
       return;
     }
 
-    if (text.startsWith("#") && !text.includes(" ")) {
-      ontagFilter?.(text);
-      rawInput = "";
+    if (isTagFilter) {
+      ontagFilter?.(extractHashtags(text));
       resetSuggestions();
       return;
     }
@@ -183,7 +234,16 @@
         return;
       }
 
-      if (event.key === "Enter" || event.key === "Tab") {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const choice = suggestions[highlightedIndex];
+        if (choice) {
+          selectSuggestion(choice.tag);
+        }
+        return;
+      }
+
+      if (event.key === "Tab") {
         event.preventDefault();
         const choice = suggestions[highlightedIndex];
         if (choice) {
@@ -207,7 +267,15 @@
       focused ? "border-accent-strong/60" : "border-hairline-strong"
     )}
   >
-    <span class="select-none text-[14px] font-semibold text-accent-strong">&gt;</span>
+    {#if mode === "add"}
+      <LinkIcon class="h-[15px] w-[15px] shrink-0 text-accent-strong" />
+    {:else if mode === "filter"}
+      <HashIcon class="h-[15px] w-[15px] shrink-0 text-accent-strong" />
+    {:else if mode === "search"}
+      <SearchIcon class="h-[15px] w-[15px] shrink-0 text-accent-strong" />
+    {:else}
+      <span class="select-none text-[14px] font-semibold text-accent-strong">&gt;</span>
+    {/if}
     <div class="relative flex flex-1 flex-row items-center">
       <input
         bind:value={rawInput}
@@ -230,7 +298,11 @@
         </div>
       {/if}
     </div>
-    <span class="select-none whitespace-nowrap text-[10px] tracking-[.1em] text-dim">{hint}</span>
+    {#if modeLabel}
+      <span class="select-none whitespace-nowrap text-[10px] tracking-[.1em] text-dim"
+        >{modeLabel} ⏎</span
+      >
+    {/if}
   </div>
   {#if showSuggestions}
     <div
@@ -244,7 +316,7 @@
             index === highlightedIndex ? "bg-white/[.04] text-content" : "text-body"
           )}
           onmousedown={(e) => e.preventDefault()}
-          onclick={() => void applySuggestion(suggestion.tag)}
+          onclick={() => selectSuggestion(suggestion.tag)}
         >
           <span>{suggestion.icon ?? ""} {suggestion.tag}</span>
           {#if suggestion.count}

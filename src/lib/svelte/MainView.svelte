@@ -53,6 +53,19 @@
   );
   const filterChipTag = $derived(activeTag && activeTag !== readingTag ? activeTag : null);
 
+  // The active tag filter as a "#a #b" string, mirrored into the OmniBar so a
+  // /tag/... URL keeps its tags visible in the box. Archive (#*) isn't a real
+  // tag query, so it stays blank.
+  const omniQuery = $derived.by(() => {
+    if (listOptions.onlyArchived) {
+      return "";
+    }
+    const tags = listOptions.matchAllTags.length
+      ? listOptions.matchAllTags
+      : listOptions.matchAnyTags;
+    return tags.join(" ");
+  });
+
   const feedHref = $derived.by(() => {
     const primaryTag = listOptions.matchAllTags[0];
     if (primaryTag && $sharedUser) {
@@ -278,6 +291,19 @@
     }
   };
 
+  // Multiple tags map to a match-all filter: /tag/a+b (bare tags joined by "+",
+  // matching stringFromListOptions/listOptionsByString).
+  const applyTagFilter = (tags: string[]) => {
+    const cleaned = tags
+      .map((tag) => (tag.startsWith("#") ? tag.slice(1) : tag).trim())
+      .filter(Boolean);
+    if (cleaned.length === 0) {
+      goto("/");
+      return;
+    }
+    goto(`/tag/${cleaned.map(encodeURIComponent).join("+")}`);
+  };
+
   const searchQueryDidChange = (data: { query: string }) => {
     if (searchQuery === data.query) {
       return;
@@ -336,7 +362,12 @@
 
 <div class="flex w-full flex-1 flex-col">
   <div class="px-4 pt-[22px] md:px-6">
-    <OmniBar onmemDidAdd={memDidAdd} onsearch={searchQueryDidChange} ontagFilter={tagDidToggle} />
+    <OmniBar
+      query={omniQuery}
+      onmemDidAdd={memDidAdd}
+      onsearch={searchQueryDidChange}
+      ontagFilter={applyTagFilter}
+    />
 
     <div class="mt-[14px] flex flex-row flex-wrap items-center gap-x-4 gap-y-3">
       <div class="flex flex-1 flex-row border border-white/[.12] md:flex-initial">
