@@ -16,7 +16,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   const mediaUrl = body["mediaUrl"] || "";
   const photoIndex: number | undefined = body["photoIndex"] || undefined;
 
-  console.log("/_api/mem/media-remove:", body);
+  //console.log("/_api/mem/media-remove:", body);
 
   if (!mediaUrl) {
     return error(400, JSON.stringify({ error: "No mediaUrl" }));
