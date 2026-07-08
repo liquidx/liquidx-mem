@@ -72,7 +72,12 @@
   // full density / reduced motion). Comparing against `run` is race-free: a new
   // run makes `resolvedRun !== run` automatically, so no reset effect is needed.
   let resolvedRun = $state(0);
-  const metaVisible = $derived(density !== "minimal" || !run || resolvedRun === run);
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const metaVisible = $derived(
+    density !== "minimal" || !run || prefersReducedMotion || resolvedRun === run
+  );
 
   const displayDate = $derived(
     mem.addedMs ? DateTime.fromJSDate(new Date(mem.addedMs)).toFormat("MM-dd") : ""

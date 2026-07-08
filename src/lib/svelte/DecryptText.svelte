@@ -3,7 +3,6 @@
   import {
     scrambleFrame,
     isResolved,
-    MS_PER_CHAR,
     GLYPH_REROLL_MS,
     MAX_RUN_MS,
     type Cell
@@ -72,6 +71,14 @@
   $effect(() => {
     run;
     start(run);
+  });
+
+  // Keep the rendered text in sync when `text` changes outside an active run
+  // (e.g. an in-place mem update). Only touch `cells` while idle so we never
+  // clobber a scramble in progress; the running tick already reads `text` live.
+  $effect(() => {
+    const t = text;
+    if (frame === 0) cells = finalCells(t);
   });
 
   onDestroy(stop);
