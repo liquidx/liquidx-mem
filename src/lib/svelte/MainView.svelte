@@ -42,6 +42,22 @@
   let counts: MemViewCounts | null = $state(null);
   let density: Density = $state("full");
   let editingId: string | null = $state(null);
+  // Timestamp that (re)starts the minimal-list decrypt animation. It bumps once
+  // when the minimal list first has content and once each time the user switches
+  // INTO minimal density — never on appends, search refetches, or edits.
+  let minimalRun = $state(0);
+  let minimalArmed = false;
+  $effect(() => {
+    const hasContent = mems.length > 0;
+    if (density === "minimal") {
+      if (hasContent && !minimalArmed) {
+        minimalRun = Date.now();
+        minimalArmed = true;
+      }
+    } else {
+      minimalArmed = false;
+    }
+  });
   // Sort order is UI state that persists across route/filter changes, so it
   // lives outside the route-derived listOptions (mutating a $derived isn't
   // reactive, which is why the button used to not flip).
@@ -526,6 +542,7 @@
       <MemList
         {mems}
         {density}
+        run={minimalRun}
         {listTags}
         {editingId}
         onrequestEdit={requestEdit}
