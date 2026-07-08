@@ -4,11 +4,11 @@
 
   interface Props {
     tags?: TagListItem[];
-    activeTag?: string | null;
+    activeTags?: string[];
     ontagToggle?: (tag: string) => void;
   }
 
-  let { tags = [], activeTag = null, ontagToggle }: Props = $props();
+  let { tags = [], activeTags = [], ontagToggle }: Props = $props();
 
   const chipCount = 8;
   let expanded = $state(false);
@@ -16,7 +16,8 @@
   const chips = $derived(tags.slice(0, chipCount));
   const remaining = $derived(Math.max(tags.length - chipCount, 0));
 
-  const isActive = (tag: TagListItem) => activeTag === tag.tag;
+  const activeSet = $derived(new Set(activeTags.map((tag) => tag.toLowerCase())));
+  const isActive = (tag: TagListItem) => activeSet.has(tag.tag.toLowerCase());
 </script>
 
 {#if tags.length > 0}

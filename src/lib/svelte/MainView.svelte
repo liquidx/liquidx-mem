@@ -89,10 +89,13 @@
       : (lists.find((list) => sameTagSet(activeFilterTags, list.tags)) ?? null)
   );
 
-  const activeTag = $derived(
-    !listOptions.onlyArchived && listOptions.matchAllTags.length === 1
-      ? listOptions.matchAllTags[0]
-      : null
+  // The tags currently applied as an AND (match-all) restrict, used to highlight
+  // the active chips in TagRow. Archive (#*) and OR (match-any) views don't map
+  // to togglable chips, so they highlight nothing.
+  const activeTags = $derived(
+    !listOptions.onlyArchived && listOptions.matchAnyTags.length === 0
+      ? listOptions.matchAllTags
+      : []
   );
 
   const isArchiveView = $derived(listOptions.onlyArchived);
@@ -350,12 +353,26 @@
     reload();
   };
 
+  // Clicking a tag toggles it into the current match-all (AND) restrict rather
+  // than replacing it: #look + click #map -> /tag/look+map. Clicking an active
+  // tag removes just that tag; removing the last one returns to the new view.
   const tagDidToggle = (tag: string) => {
-    const cleaned = tag.startsWith("#") ? tag.slice(1) : tag;
-    if (activeTag === tag) {
+    const normalize = (t: string) => (t.startsWith("#") ? t : `#${t}`).toLowerCase();
+    const clicked = normalize(tag);
+
+    // Only combine within a plain tag view. Archive (*) and OR (match-any) views
+    // don't compose with an AND restrict, so clicking a tag starts fresh there.
+    const canCombine = !listOptions.onlyArchived && listOptions.matchAnyTags.length === 0;
+    const current = canCombine ? listOptions.matchAllTags.map(normalize) : [];
+
+    const next = current.includes(clicked)
+      ? current.filter((t) => t !== clicked)
+      : [...current, clicked];
+
+    if (next.length === 0) {
       goto("/");
     } else {
-      goto(`/tag/${encodeURIComponent(cleaned)}`);
+      goto(`/tag/${next.map((t) => encodeURIComponent(t.slice(1))).join("+")}`);
     }
   };
 
@@ -477,7 +494,7 @@
     </div>
 
     {#if showTags}
-      <TagRow tags={viewTags} {activeTag} ontagToggle={tagDidToggle} />
+      <TagRow tags={viewTags} {activeTags} ontagToggle={tagDidToggle} />
     {/if}
 
     <div class="mt-[14px] flex flex-row items-center gap-x-4">
