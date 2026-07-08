@@ -3,10 +3,12 @@
   import { cn } from "$lib/utils";
 
   import MemView from "./MemView.svelte";
+  import { ROW_STAGGER_MS, ROW_CAP } from "./decryptText";
 
   interface Props {
     mems?: Mem[];
     density?: "full" | "minimal";
+    run?: number;
     listTags?: string[];
     editingId?: string | null;
     onrequestEdit?: (data: { mem: Mem }) => void;
@@ -24,6 +26,7 @@
   let {
     mems = [],
     density = "full",
+    run = 0,
     listTags = [],
     editingId = null,
     onrequestEdit,
@@ -41,10 +44,17 @@
 
 <div class={cn(density === "full" && "divide-y divide-white/[.05]")}>
   {#each mems as mem, index (mem._id)}
-    <div class="animate-rise-in" style={`animation-delay: ${Math.min(index, 10) * 60}ms`}>
+    <div
+      class={cn(density !== "minimal" && "animate-rise-in")}
+      style={density === "minimal"
+        ? undefined
+        : `animation-delay: ${Math.min(index, 10) * 60}ms`}
+    >
       <MemView
         {mem}
         {density}
+        {run}
+        rowDelay={Math.min(index, ROW_CAP) * ROW_STAGGER_MS}
         {listTags}
         editing={editingId !== null && editingId === mem._id}
         {onrequestEdit}
