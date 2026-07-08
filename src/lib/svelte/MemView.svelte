@@ -5,6 +5,7 @@
   import { cn } from "$lib/utils";
   import { DateTime } from "luxon";
   import { onDestroy, onMount, tick } from "svelte";
+  import DecryptText from "./DecryptText.svelte";
 
   type MediaUrl = {
     photo?: MemPhoto;
@@ -19,6 +20,8 @@
     density?: "full" | "minimal";
     listTags?: string[];
     editing?: boolean;
+    run?: number;
+    rowDelay?: number;
     onrequestEdit?: (data: { mem: Mem }) => void;
     oncloseEdit?: () => void;
     onedit?: (data: { mem: Mem; updates: Partial<Mem> }) => void;
@@ -36,6 +39,8 @@
     density = "full",
     listTags = [],
     editing = false,
+    run = 0,
+    rowDelay = 0,
     onrequestEdit,
     oncloseEdit,
     onedit,
@@ -61,6 +66,13 @@
   let wasEditing = false;
 
   const unseen = $derived((mem.tags ?? []).some((tag) => listTags.includes(tag)));
+
+  // Track which `run` the title finished decrypting for. Metadata is visible
+  // when the current run has resolved (or when there is no active run at all —
+  // full density / reduced motion). Comparing against `run` is race-free: a new
+  // run makes `resolvedRun !== run` automatically, so no reset effect is needed.
+  let resolvedRun = $state(0);
+  const metaVisible = $derived(density !== "minimal" || !run || resolvedRun === run);
 
   const displayDate = $derived(
     mem.addedMs ? DateTime.fromJSDate(new Date(mem.addedMs)).toFormat("MM-dd") : ""
@@ -410,7 +422,8 @@
     <div class="pt-[5px]">
       {#if unseen}
         <span
-          class="block h-2 w-2 rounded-full bg-accent-strong shadow-[0_0_8px_rgba(217,142,82,.55)]"
+          class="block h-2 w-2 rounded-full bg-accent-strong shadow-[0_0_8px_rgba(217,142,82,.55)] transition-opacity duration-200"
+          style={density === "minimal" ? `opacity:${metaVisible ? 1 : 0}` : ""}
         ></span>
       {/if}
     </div>
@@ -419,16 +432,38 @@
       <div class="text-[12px] text-content md:text-[13px]">
         {#if mem.url}
           <a href={mem.url} target="_blank" rel="noreferrer" class="hover:underline">
-            {displayTitle}
+            {#if density === "minimal" && run}
+              <DecryptText
+                text={displayTitle}
+                {run}
+                delay={rowDelay}
+                onresolved={() => (resolvedRun = run)}
+              />
+            {:else}
+              {displayTitle}
+            {/if}
           </a>
+        {:else if density === "minimal" && run}
+          <DecryptText
+            text={displayTitle}
+            {run}
+            delay={rowDelay}
+            onresolved={() => (resolvedRun = run)}
+          />
         {:else}
           {displayTitle}
         {/if}
         {#if density === "minimal" && displayDomain}
-          <span class="ml-1 text-[10px] text-faint">{displayDomain}</span>
+          <span
+            class="ml-1 text-[10px] text-faint transition-opacity duration-200"
+            style={`opacity:${metaVisible ? 1 : 0}`}>{displayDomain}</span
+          >
         {/if}
         {#if mem.tags && mem.tags.length > 0}
-          <span class="ml-1 whitespace-nowrap text-[10px] text-accent-muted">
+          <span
+            class="ml-1 whitespace-nowrap text-[10px] text-accent-muted transition-opacity duration-200"
+            style={density === "minimal" ? `opacity:${metaVisible ? 1 : 0}` : ""}
+          >
             {mem.tags.join(" ")}
           </span>
         {/if}
